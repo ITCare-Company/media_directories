@@ -1,0 +1,11 @@
+name: Media directories
+description: 'Add directory structure to Media entities.'
+type: module
+core: 8.x
+configure: media_directories.config_form
+
+dependencies:
+  - media
+  - media_library
+  - taxonomy
+  - views

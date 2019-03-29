@@ -1,0 +1,48 @@
+<?php
+
+use Drupal\Core\Field\BaseFieldDefinition;
+
+/**
+ * Implements hook_field_widget_WIDGET_TYPE_form_alter().
+ */
+function media_directories_field_widget_options_select_form_alter(&$element, \Drupal\Core\Form\FormStateInterface $form_state, $context) {
+   /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $items */
+   $items = $context['items'];
+
+   if ($items->getName() === 'directory') {
+     // Set better name for empty value.
+     $element['#options']['_none'] = t('Root directory');
+   }
+
+}
+
+/**
+ * Implements hook_entity_base_field_info().
+ */
+function media_directories_entity_base_field_info(\Drupal\Core\Entity\EntityTypeInterface $entity_type) {
+  if ($entity_type->id() === 'media') {
+    $fields = [];
+
+    $fields['directory'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Directory'))
+      ->setDescription(t('The ID of the taxonomy term.'))
+      ->setSetting('handler', 'media_directory:default')
+      ->setSetting('target_type', 'taxonomy_term')
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayOptions('form', [
+        'type' => 'options_select',
+        'weight' => 2,
+      ]);
+
+    $config = \Drupal::config('media_directories.settings');
+    $vocabulary = $config->get('directory_taxonomy');
+
+    if ($vocabulary) {
+      $fields['directory']->setSetting('handler_settings', [
+        'target_bundles' => [$vocabulary => $vocabulary],
+      ]);
+    }
+
+    return $fields;
+  }
+}
