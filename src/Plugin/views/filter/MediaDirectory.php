@@ -46,7 +46,7 @@ class MediaDirectory extends ManyToOne {
   /**
    * The configuration factory.
    *
-   * @var ConfigFactoryInterface
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
    */
   protected $configFactory;
 

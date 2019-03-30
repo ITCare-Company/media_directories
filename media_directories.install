@@ -5,6 +5,8 @@
  * Installation and update impementations.
  */
 
+ use Drupal\views\Entity\View;
+
 /**
  * Implements hook_install().
  *
@@ -45,7 +47,7 @@ function media_directories_install() {
     'plugin_id' => 'media_directory',
   ];
   // Alter Media library view configuration.
-  $view = \Drupal\views\Entity\View::load('media_library');
+  $view = View::load('media_library');
   $default_display = &$view->getDisplay('default');
   $widget_display = &$view->getDisplay('widget');
   $widget_table_display = &$view->getDisplay('widget_table');
@@ -57,7 +59,7 @@ function media_directories_install() {
   unset($default_display);
 
   // Alter default Media view configuration.
-  $view_table = \Drupal\views\Entity\View::load('media');
+  $view_table = View::load('media');
   $default_display = &$view_table->getDisplay('default');
   $default_display['display_options']['filters'] = array_merge(['directory' => $filter], $default_display['display_options']['filters']);
   $view_table->save();
