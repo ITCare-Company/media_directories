@@ -9,8 +9,11 @@ Drupal core 8.7
 Media (core)
 Media library (core)
 
+INSTALLATION
+======================
+1. Enable module
+
 CONFIGURATION
 ======================
-1. Enable module.
-2. Create taxonomy to hold directory structure.
-3. Select taxonomy from the settings: /admin/config/media/media_directories
+1. Create taxonomy to hold directory structure.
+2. Select taxonomy from the settings: /admin/config/media/media_directories

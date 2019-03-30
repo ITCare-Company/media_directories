@@ -14,6 +14,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class MediaDirectoriesConfigForm extends ConfigFormBase {
 
   /**
+   * The entity type manager.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;

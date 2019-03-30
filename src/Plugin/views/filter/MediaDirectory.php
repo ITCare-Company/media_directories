@@ -64,6 +64,7 @@ class MediaDirectory extends ManyToOne {
    * @param \Drupal\taxonomy\TermStorageInterface $term_storage
    *   The term storage.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   The config factory object.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, VocabularyStorageInterface $vocabulary_storage, TermStorageInterface $term_storage, ConfigFactoryInterface $configFactory) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
@@ -162,7 +163,7 @@ class MediaDirectory extends ManyToOne {
     }
 
     if (!$form_state->get('exposed')) {
-      // Retain the helper option
+      // Retain the helper option.
       $this->helper->buildOptionsForm($form, $form_state);
 
       // Show help text if not exposed to end users.
@@ -254,7 +255,7 @@ class MediaDirectory extends ManyToOne {
     if ($form_state->getValue($identifier) != 'All') {
       $this->validated_exposed_input = (array) $form_state->getValue($identifier);
     }
-    return;
+
   }
 
   /**

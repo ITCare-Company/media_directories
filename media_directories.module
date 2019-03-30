@@ -1,19 +1,23 @@
 <?php
 
+/**
+ * @file
+ * Main module file.
+ */
+
 use Drupal\Core\Field\BaseFieldDefinition;
 
 /**
  * Implements hook_field_widget_WIDGET_TYPE_form_alter().
  */
 function media_directories_field_widget_options_select_form_alter(&$element, \Drupal\Core\Form\FormStateInterface $form_state, $context) {
-   /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $items */
-   $items = $context['items'];
+  /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $items */
+  $items = $context['items'];
 
-   if ($items->getName() === 'directory') {
-     // Set better name for empty value.
-     $element['#options']['_none'] = t('Root directory');
-   }
-
+  if ($items->getName() === 'directory') {
+    // Set better name for empty value.
+    $element['#options']['_none'] = t('Root directory');
+  }
 }
 
 /**

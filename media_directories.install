@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Installation and update impementations.
+ */
+
+/**
  * Implements hook_install().
  *
  * @throws \Drupal\Core\Entity\EntityStorageException
