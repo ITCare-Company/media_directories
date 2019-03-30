@@ -13,6 +13,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Filter media by directory.
+ *
  * Overrides default 'All' option behaviour.
  *
  * @ingroup views_filter_handlers
@@ -21,7 +22,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class MediaDirectory extends ManyToOne {
 
-  // Stores the exposed input for this filter.
+  /**
+   * Stores the exposed input for this filter.
+   *
+   * @var array
+   */
   public $validated_exposed_input = NULL;
 
   /**
@@ -129,7 +134,8 @@ class MediaDirectory extends ManyToOne {
           $keys = array_keys($options);
           $default_value = array_shift($keys);
         }
-        // Due to #1464174 there is a chance that array('') was saved in the admin ui.
+        // Due to #1464174 there is a chance that array('')
+        // was saved in the admin ui.
         // Let's choose a safe default value.
         elseif ($default_value == ['']) {
           $default_value = 'All';
@@ -205,7 +211,7 @@ class MediaDirectory extends ManyToOne {
     }
 
     // If view is an attachment and is inheriting exposed filters, then assume
-    // exposed input has already been validated
+    // exposed input has already been validated.
     if (!empty($this->view->is_attachment) && $this->view->display_handler->usesExposed()) {
       $this->validated_exposed_input = (array) $this->view->exposed_raw_input[$this->options['expose']['identifier']];
     }
@@ -255,7 +261,7 @@ class MediaDirectory extends ManyToOne {
    * {@inheritdoc}
    */
   protected function valueSubmit($form, FormStateInterface $form_state) {
-    // prevent array_filter from messing up our arrays in parent submit.
+    // Prevent array_filter from messing up our arrays in parent submit.
   }
 
   /**
@@ -275,7 +281,7 @@ class MediaDirectory extends ManyToOne {
    * {@inheritdoc}
    */
   public function adminSummary() {
-    // set up $this->valueOptions for the parent summary
+    // Set up $this->valueOptions for the parent summary.
     $this->valueOptions = [];
 
     if ($this->value) {

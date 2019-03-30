@@ -3,10 +3,8 @@
 namespace Drupal\media_directories\Plugin\EntityReferenceSelection;
 
 use Drupal\Component\Utility\Html;
-use Drupal\Core\Entity\Plugin\EntityReferenceSelection\DefaultSelection;
 use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\taxonomy\Plugin\EntityReferenceSelection\TermSelection;
-
 
 /**
  * Default plugin implementation of the Entity Reference Selection plugin.
@@ -17,7 +15,6 @@ use Drupal\taxonomy\Plugin\EntityReferenceSelection\TermSelection;
  * @see \Drupal\Core\Entity\EntityReferenceSelection\SelectionPluginManager
  * @see \Drupal\Core\Entity\Annotation\EntityReferenceSelection
  * @see \Drupal\Core\Entity\EntityReferenceSelection\SelectionInterface
- * @see \Drupal\Core\Entity\Plugin\Derivative\DefaultSelectionDeriver
  * @see plugin_api
  *
  * @EntityReferenceSelection(

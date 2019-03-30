@@ -1,4 +1,5 @@
 <?php
+
 namespace Drupal\media_directories\Form;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -7,6 +8,9 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Media directories configuration form.
+ */
 class MediaDirectoriesConfigForm extends ConfigFormBase {
 
   /**

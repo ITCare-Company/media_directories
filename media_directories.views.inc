@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Views hooks.
+ */
 
 /**
  * Implements hook_views_data_alter().
