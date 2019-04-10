@@ -1,4 +1,4 @@
-name: Media directories
+name: Media Directories
 description: 'Add directory structure to Media entities.'
 type: module
 core: 8.x
