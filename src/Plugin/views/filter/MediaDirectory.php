@@ -316,7 +316,7 @@ class MediaDirectory extends ManyToOne {
     $vid = $config->get('directory_taxonomy');
     $dependencies = parent::calculateDependencies();
 
-    $vocabulary = $this->vocabularyStorage->load($vid);
+    $vocabulary = $vid ? $this->vocabularyStorage->load($vid) : NULL;
 
     if ($vocabulary) {
       $dependencies[$vocabulary->getConfigDependencyKey()][] = $vocabulary->getConfigDependencyName();

@@ -40,7 +40,6 @@ function media_directories_install() {
     'is_grouped' => FALSE,
     'group_info' => [],
     'reduce_duplicates' => FALSE,
-    'type' => 'select',
     'error_message' => TRUE,
     'entity_type' => 'media',
     'entity_field' => 'directory',
