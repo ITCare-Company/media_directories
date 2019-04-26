@@ -92,8 +92,6 @@ class MediaUploadForm extends FormBase {
     $build_info = $form_state->getBuildInfo();
     $target_types = isset($build_info['args'][1]) ? $build_info['args'][1] : NULL;
 
-    $video_embedded_enabled = $target_types === NULL || in_array('video_embedded', $target_types);
-
     // Add special wrapper with ID for ajax to replace.
     $form['#theme_wrappers'] = [
       'form',
@@ -127,29 +125,26 @@ class MediaUploadForm extends FormBase {
     $form['media_type'] = [
       '#type' => 'radios',
       '#title' => $this->t('Media type'),
-      '#options' => [
-        'upload' => $this->t('File upload'),
-        'video' => $this->t('Embedded video'),
-      ],
+      '#options' => [],
       '#default_value' => 'upload',
+      '#ajax' => [
+        'callback' => [$this, 'changeMediaType'],
+      ],
     ];
+
+    /** @var \Drupal\media\Entity\MediaType[] $types */
+    $types = $this->entityTypeManager->getStorage('media_type')->loadMultiple();
+
+    foreach ($types as $type) {
+      $form['media_type']['#options'][$type->id()] = $type->label();
+    }
 
     $form['upload'] = [
       '#type' => 'container',
       '#tree' => TRUE,
-      '#states' => [
-        'visible' => [
-          'input[name="media_type"]' => ['value' => 'upload'],
-        ],
-      ],
     ];
 
-    if (!$video_embedded_enabled) {
-      $form['media_type']['#access'] = FALSE;
-      $form['upload']['#states'] = [];
-    }
-
-    $max_filesize = file_upload_max_size();
+    $max_filesize = \Drupal\Component\Utility\Environment::getUploadMaxSize();
 
     $form['upload']['files'] = [
       '#type' => 'dropzonejs',
@@ -162,23 +157,6 @@ class MediaUploadForm extends FormBase {
       '#clientside_resize' => TRUE,
       '#thumbnail_method' => 'crop',
       '#theme' => 'dropzonejs__media_upload',
-    ];
-
-    $form['video'] = [
-      '#type' => 'container',
-      '#tree' => TRUE,
-      '#states' => [
-        'visible' => [
-          'input[name="media_type"]' => ['value' => 'video'],
-        ],
-      ],
-      '#access' => $video_embedded_enabled
-    ];
-
-    $form['video']['urls'] = [
-      '#type' => 'textarea',
-      '#description' => $this->t('One URL per line.'),
-      '#title' => $this->t('Video URLs'),
     ];
 
     $form['actions'] = [
@@ -291,7 +269,7 @@ class MediaUploadForm extends FormBase {
     $entities = [];
 
     foreach ($this->getFiles($form, $form_state) as $file) {
-      $media_type = $this->getType($file);
+      $media_type = $this->getType($form_state->getValue('media_type'));
       $entities[] = $this->entityTypeManager->getStorage('media')->create([
         'bundle' => $media_type->id(),
         $media_type->getSource()->getConfiguration()['source_field'] => $file,
@@ -500,5 +478,9 @@ class MediaUploadForm extends FormBase {
     $valid_extensions = array_unique($valid_extensions);
 
     return implode(' ', $valid_extensions);
+  }
+
+  public function changeMediaType(array &$form, FormStateInterface $form_state) {
+    return $form;
   }
 }

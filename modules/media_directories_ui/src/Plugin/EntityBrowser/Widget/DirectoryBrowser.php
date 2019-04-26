@@ -12,6 +12,10 @@ use Drupal\entity_browser\Plugin\views\field\SelectForm;
 use Drupal\entity_browser\WidgetBase;
 use Drupal\Core\Url;
 use Drupal\entity_browser\WidgetValidationManager;
+use Drupal\media_directories_ui\Controller\MediaDirectoriesController;
+use Drupal\media_directories_ui\MediaDirectoriesUiBuilder;
+use Drupal\media_directories_ui\MediaDirectoriesUiState;
+use Drupal\media_library\MediaLibraryState;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -108,7 +112,7 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
       'media.delete' => Url::fromRoute('media_directories_ui.media.delete')->toString(),
     ];
 
-    $cardinality = NestedArray::getValue($form_state->getStorage(), ['entity_browser', 'validators', 'cardinality', 'cardinality']);
+    $cardinality = (int) NestedArray::getValue($form_state->getStorage(), ['entity_browser', 'validators', 'cardinality', 'cardinality']);
     $target_bundles = NestedArray::getValue($form_state->getStorage(), ['entity_browser', 'validators', 'target_bundles']);
 
     if ($cardinality) {
@@ -116,16 +120,18 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
     }
 
     if ($target_bundles) {
-      $form['#attached']['drupalSettings']['media_directories']['target_bundles'] = $target_bundles['bundle'];
+      $enabled_bundles = $target_bundles['bundle'];
     }
     else {
       /** @var \Drupal\media\Entity\MediaType[] $types */
       $types = $this->entityTypeManager->getStorage('media_type')->loadMultiple();
 
       foreach ($types as $type) {
-        $form['#attached']['drupalSettings']['media_directories']['target_bundles'][] = $type->id();
+        $enabled_bundles[] = $type->id();
       }
     }
+
+    $form['#attached']['drupalSettings']['media_directories']['target_bundles'] = $enabled_bundles;
 
     $form['browser'] = [
       '#theme' => 'media_directories_browser',
@@ -258,6 +264,22 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
     $this->configuration['submit_text'] = $values['submit_text'];
     $this->configuration['auto_select'] = $values['auto_select'];
 
+  }
+
+  /**
+   * New media entity add form.
+   *
+   * @param array $form
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *
+   * @return \Drupal\Core\Ajax\AjaxResponse
+   */
+  public function mediaAdd(array &$form, FormStateInterface $form_state) {
+    $triggering_element = $form_state->getTriggeringElement();
+    $library_ui = \Drupal::service('media_directories_ui.ui_builder')->buildUi($triggering_element['#media_library_state']);
+    $dialog_options = MediaDirectoriesUiBuilder::dialogOptions();
+    return (new AjaxResponse())
+      ->addCommand(new OpenModalDialogCommand($dialog_options['title'], $library_ui, $dialog_options));
   }
 
 }

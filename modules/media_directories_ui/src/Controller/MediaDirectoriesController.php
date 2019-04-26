@@ -237,13 +237,9 @@ class MediaDirectoriesController extends ControllerBase {
     $active_directory = $request->get('active_directory');
     $target_bundles = $request->get('target_bundles');
 
-    //$form = $this->formBuilder->getForm(MediaUploadForm::class, $active_directory, $target_bundles);
-    // $response->addCommand(new OpenModalDialogCommand($this->t('Add media'), $form, ['width' => '800']));
+    $form = $this->formBuilder->getForm(MediaUploadForm::class, $active_directory, $target_bundles);
+    $response->addCommand(new OpenModalDialogCommand($this->t('Add media'), $form, ['width' => '800']));
 
-    $library_ui = \Drupal::service('media_directories_ui.ui_builder')->buildUi();
-    $dialog_options = MediaDirectoriesUiBuilder::dialogOptions();
-    return (new AjaxResponse())
-      ->addCommand(new OpenModalDialogCommand($dialog_options['title'], $library_ui, $dialog_options));
 
     return $response;
   }
