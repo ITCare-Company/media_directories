@@ -282,40 +282,4 @@ class MediaDirectoriesUiBuilder {
     return $this->formBuilder->buildForm($plugin_definition['forms']['media_library_add'], $form_state);
   }
 
-  /**
-   * Get the media library view.
-   *
-   * @param \Drupal\media_library\MediaLibraryState $state
-   *   The current state of the media library, derived from the current request.
-   *
-   * @return array
-   *   The render array for the media library view.
-   */
-  protected function buildMediaLibraryView(MediaDirectoriesUiState $state) {
-    // @todo Make the view configurable in
-    //   https://www.drupal.org/project/drupal/issues/2971209
-    $view = $this->entityTypeManager->getStorage('view')->load('media_library');
-    $view_executable = $this->viewsExecutableFactory->get($view);
-    $display_id = 'widget';
-
-    // Make sure the state parameters are set in the request so the view can
-    // pass the parameters along in the pager, filters etc.
-    $view_request = $view_executable->getRequest();
-    $view_request->query->add($state->all());
-    $view_executable->setRequest($view_request);
-
-    $args = [$state->getSelectedTypeId()];
-
-    // Make sure the state parameters are set in the request so the view can
-    // pass the parameters along in the pager, filters etc.
-    $request = $view_executable->getRequest();
-    $request->query->add($state->all());
-    $view_executable->setRequest($request);
-
-    $view_executable->setDisplay($display_id);
-    $view_executable->preExecute($args);
-    $view_executable->execute($display_id);
-
-    return $view_executable->buildRenderable($display_id, $args, FALSE);
-  }
 }

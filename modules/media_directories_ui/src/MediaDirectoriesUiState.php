@@ -87,11 +87,7 @@ class MediaDirectoriesUiState extends ParameterBag {
    *   Thrown when the hash query parameter is invalid.
    */
   public static function fromRequest(Request $request) {
-    $query = $request->request;
-
-    if (!$query->get('media_library_opener_id')) {
-      $query = $request->query;
-    }
+    $query = $request->query;
 
     // Create a MediaLibraryState object through the create method to make sure
     // all validation runs.

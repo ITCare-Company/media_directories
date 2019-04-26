@@ -6,11 +6,14 @@ use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\HtmlCommand;
 use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Form\FormBuilder;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\media\MediaInterface;
 use Drupal\media_directories_ui\Form\MediaUploadForm;
 use Drupal\media_directories_ui\MediaDirectoriesUiBuilder;
+use Drupal\media_directories_ui\MediaDirectoriesUiState;
+use Drupal\media_library\MediaLibraryState;
 use Drupal\media_library\MediaLibraryUiBuilder;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\media_directories_ui\Ajax\RefreshDirectoryTree;
@@ -237,11 +240,24 @@ class MediaDirectoriesController extends ControllerBase {
     $active_directory = $request->get('active_directory');
     $target_bundles = $request->get('target_bundles');
 
-    $form = $this->formBuilder->getForm(MediaUploadForm::class, $active_directory, $target_bundles);
-    $response->addCommand(new OpenModalDialogCommand($this->t('Add media'), $form, ['width' => '800']));
+    //$form = $this->formBuilder->getForm(MediaUploadForm::class, $active_directory, $target_bundles);
+    //$response->addCommand(new OpenModalDialogCommand($this->t('Add media'), $form, ['width' => '800']));
 
+    // Create a new media library URL with the correct state parameters.
+    //$remaining = $cardinality_unlimited ? FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED : $remaining;
+    // The opener ID is used by the select form and the upload form to add the
+    // selected/uploaded media items to the widget.
+    $opener_id = $request->get('media_library_opener_id');
+    $allowed_media_type_ids = $request->get('media_library_allowed_types');
+    $selected_type_id = $request->get('media_library_selected_type', reset($allowed_media_type_ids));
+    $remaining = $request->get('media_library_remaining');
 
-    return $response;
+    $state = MediaDirectoriesUiState::create($opener_id, $allowed_media_type_ids, $selected_type_id, $remaining);
+
+    $library_ui = \Drupal::service('media_directories_ui.ui_builder')->buildUi($state);
+    $dialog_options = MediaDirectoriesUiBuilder::dialogOptions();
+    return (new AjaxResponse())
+      ->addCommand(new OpenModalDialogCommand($dialog_options['title'], $library_ui, $dialog_options));
   }
 
   /**
