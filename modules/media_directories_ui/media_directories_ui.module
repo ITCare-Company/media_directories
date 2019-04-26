@@ -1,0 +1,65 @@
+<?php
+
+/**
+ * @file
+ * Main module file.
+ */
+
+use Drupal\Core\Asset\AttachedAssetsInterface;
+use Drupal\Core\Url;
+
+/**
+ * Implements hook_theme().
+ */
+function media_directories_ui_theme($existing, $type, $theme, $path) {
+  return [
+    'media_directories_browser' => [
+      'render element' => 'browser',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_css_alter().
+ */
+function media_directories_ui_css_alter(&$css, AttachedAssetsInterface $assets) {
+  $route = 'entity_browser.directory_browser';
+
+  if (Drupal::routeMatch()->getRouteName() === $route) {
+    unset($css[drupal_get_path('module', 'entity_browser') . '/css/entity_browser.entity_browser.css']);
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function media_directories_ui_preprocess_views_view_unformatted__media_directory_browser(&$variables) {
+  foreach ($variables['rows'] as &$row) {
+    /** @var \Drupal\media\Entity\Media $entity */
+    $entity = $row['content']['#row']->_entity;
+    $entity_id = $entity->id();
+    $row['attributes']->setAttribute('data-mid', $entity_id);
+    $row['attributes']->addClass('media-item');
+    $row['attributes']->addClass('media-type--' . $entity->bundle());
+    //$row['attributes']->setAttribute('data-edit-url', Url::fromRoute('media_directories.directory.edit_form', ['media' => $entity->id()])->toString());
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function media_directories_ui_preprocess_views_view_fields__media_directory_browser(&$variables) {
+  foreach ($variables['fields'] as $name => &$field) {
+    /** @var \Drupal\media\Entity\Media $entity */
+    $entity = $variables['row']->_entity;
+
+    if ($name === 'thumbnail__target_id') {
+      $field->wrapper_attributes->addClass('media-thumbnail');
+      $field->wrapper_attributes->addClass('media-thumbnail--' . $entity->bundle());
+    }
+    elseif ($name === 'name') {
+      $field->wrapper_attributes->addClass('media-name');
+      $field->wrapper_attributes->addClass('media-name--' . $entity->bundle());
+    }
+  }
+}

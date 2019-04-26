@@ -1,0 +1,6 @@
+
+media_directories_ui.directory_browser.tab:
+  route_name: entity_browser.directory_browser
+  title: 'Media browser'
+  base_route: system.admin_content
+  weight: 20

@@ -1,0 +1,20 @@
+
+<div{{ attributes }}>
+  <div class="browser">
+    {{ browser.active_directory }}
+    <div class="browser--header">
+      <div class="browser-toolbar">
+        <div class="browser-toolbar__item"><a href="" class="button" id="browser-add-media"><i class="fas fa-upload"></i> {{ "Add media"|t }}</a></div>
+        <div class="browser-toolbar__item"><a href="" class="button is-disabled" id="browser-edit-media">{{ "Edit media"|t }}</a></div>
+        <div class="browser-toolbar__item"><a href="" class="button is-disabled" id="browser-delete-media">{{ "Delete media"|t }}</a></div>
+      </div>
+    </div>
+    <div class="browser--body">
+      <div class="browser--tree">
+        <div id="jstree-container"></div>
+      </div>
+      <div class="browser--listing"></div>
+    </div>
+    <div class="browser--footer">{{ browser.actions }}</div>
+  </div>
+</div>

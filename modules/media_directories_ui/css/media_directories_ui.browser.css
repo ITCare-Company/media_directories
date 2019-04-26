@@ -1,0 +1,88 @@
+.browser {
+  display: flex;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+  height: 100vh;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none;
+}
+
+.browser > div {
+  box-sizing: border-box;
+
+}
+
+.browser .form-actions {
+  margin: 0 1em;
+}
+
+.browser--header {
+  width: 100%;
+  background: #e1e2dc;
+  border-bottom: 1px solid #ccc;
+  padding: 1em;
+  align-self: self-start;
+}
+
+.browser--body {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  align-self: stretch;
+  height: calc(100% - 53px - 53px);
+  width: 100%;
+}
+
+.browser--footer {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  background: #e1e2dc;
+  border-top: 1px solid #ccc;
+  padding: 1em;
+  align-self: self-end;
+}
+
+.browser--tree {
+  width: 25%;
+  background: #fcfcfa;
+  padding: 0;
+  border-right: 1px solid #ccc;
+}
+
+.browser--listing {
+  width: 75%;
+  padding: 1em;
+  overflow: auto;
+}
+
+.browser--listing .form-actions {
+  display: none;
+}
+
+.browser-toolbar {
+  display: flex;
+}
+
+.browser-toolbar__item {
+  margin-right: 1em;
+}
+
+.media-browser--full .browser {
+  height: 67vh;
+}
+
+.media-browser--full .browser--body {
+  height: calc(100% - 53px - 27px);
+}
+
+.jstree-wholerow-ul {
+  width: 100%;
+}

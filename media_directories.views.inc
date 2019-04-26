@@ -13,4 +13,10 @@ function media_directories_views_data_alter(array &$data) {
     'id' => 'media_directory',
     'title' => t('Media directory filter'),
   ];
+
+  $data['media_field_data']['directory']['argument'] = [
+    'id' => 'media_directory',
+    'title' => t('Media directory'),
+    'help' => t('Media directory context filter.'),
+  ];
 }
