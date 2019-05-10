@@ -8,9 +8,12 @@ use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Form\FormBuilder;
+use Drupal\Core\Form\FormState;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\media\MediaInterface;
+use Drupal\media_directories_ui\Form\FileUploadForm;
 use Drupal\media_directories_ui\Form\MediaUploadForm;
+use Drupal\media_directories_ui\Form\OEmbedForm;
 use Drupal\media_directories_ui\MediaDirectoriesUiBuilder;
 use Drupal\media_directories_ui\MediaDirectoriesUiState;
 use Drupal\media_library\MediaLibraryState;
@@ -239,25 +242,52 @@ class MediaDirectoriesController extends ControllerBase {
     $response = new AjaxResponse();
     $active_directory = $request->get('active_directory');
     $target_bundles = $request->get('target_bundles');
+    /** @var \Drupal\media\Entity\MediaType[] $types */
+    $types = $this->entityTypeManager()->getStorage('media_type')->loadMultiple();
+
+    $build = [
+      '#theme' => 'media_directories_add',
+    ];
+
+/*    $build['tabs'] = [
+      '#type' => 'vertical_tabs',
+    ];*/
+
+    foreach ($types as $type) {
+      $build['media_' . $type->id()] = [
+        '#type' => 'fieldset',
+        '#title' => $type->label(),
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+        //'#group' => 'tabs',
+      ];
+
+      if ($type->id() !== 'file') {
+        continue;
+      }
+
+      $form_state = new FormState();
+      $form_state->setValue('media_type', $type);
+
+      $source_field = $type->getSource()->getConfiguration()['source_field'];
+      $field_config = $this->entityTypeManager->getStorage('field_config')->load('media.' . $type->id() .'.' . $source_field);
+
+
+      if (in_array($field_config->getType(), ['file', 'image'])) {
+        $form = new FileUploadForm($this->entityTypeManager(), $this->currentUser(), $type);
+        $build['media_' . $type->id()]['form'] = $this->formBuilder->getForm($form);
+      }
+      else {
+        //$build['media_' . $type->id()]['form'] = $this->formBuilder->buildForm(OEmbedForm::class, $form_state);
+      }
+    }
 
     //$form = $this->formBuilder->getForm(MediaUploadForm::class, $active_directory, $target_bundles);
-    //$response->addCommand(new OpenModalDialogCommand($this->t('Add media'), $form, ['width' => '800']));
+    $response->addCommand(new OpenModalDialogCommand($this->t('Add media'), $build, ['width' => '800']));
 
-    // Create a new media library URL with the correct state parameters.
-    //$remaining = $cardinality_unlimited ? FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED : $remaining;
-    // The opener ID is used by the select form and the upload form to add the
-    // selected/uploaded media items to the widget.
-    $opener_id = $request->get('media_library_opener_id');
-    $allowed_media_type_ids = $request->get('media_library_allowed_types');
-    $selected_type_id = $request->get('media_library_selected_type', reset($allowed_media_type_ids));
-    $remaining = $request->get('media_library_remaining');
+    return $response;
 
-    $state = MediaDirectoriesUiState::create($opener_id, $allowed_media_type_ids, $selected_type_id, $remaining);
 
-    $library_ui = \Drupal::service('media_directories_ui.ui_builder')->buildUi($state);
-    $dialog_options = MediaDirectoriesUiBuilder::dialogOptions();
-    return (new AjaxResponse())
-      ->addCommand(new OpenModalDialogCommand($dialog_options['title'], $library_ui, $dialog_options));
   }
 
   /**

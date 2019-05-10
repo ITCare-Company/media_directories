@@ -6,7 +6,7 @@
  */
 
 use Drupal\Core\Asset\AttachedAssetsInterface;
-use Drupal\Core\Url;
+use Drupal\media_directories_ui\Form\MediaDirectoriesFileUploadForm;
 
 /**
  * Implements hook_theme().
@@ -15,6 +15,17 @@ function media_directories_ui_theme($existing, $type, $theme, $path) {
   return [
     'media_directories_browser' => [
       'render element' => 'browser',
+    ],
+    'dropzonejs__media_upload' => [
+      'base hook' => 'dropzonejs',
+      'template' => 'dropzonejs--media-upload',
+    ],
+    'media_directories_add' => [
+      'render element' => 'content',
+    ],
+    'views_view_unformatted__media_directory_browser' => [
+      'base hook' => 'views_view_unformatted',
+      'template' => 'views-view-unformatted--media-directory-browser',
     ],
   ];
 }

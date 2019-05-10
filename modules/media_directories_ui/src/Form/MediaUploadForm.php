@@ -6,6 +6,7 @@ use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\CloseModalDialogCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -21,6 +22,14 @@ use Drupal\media_directories_ui\Ajax\LoadDirectoryContent;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
+/**
+ * Class MediaUploadForm
+ * TODO: remove this class.
+ *
+ * @deprecated will be removed
+ *
+ * @package Drupal\media_directories_ui\Form
+ */
 class MediaUploadForm extends FormBase {
 
   /**
@@ -111,6 +120,10 @@ class MediaUploadForm extends FormBase {
       '#default_value' => isset($build_info['args'][0]) ? (int)$build_info['args'][0] : -1,
     ];
 
+    $form['media_types'] = [
+      '#type' => 'vertical_tabs',
+    ];
+
     if ($target_types !== NULL) {
       $form['target_bundles']['#tree'] = TRUE;
 
@@ -122,48 +135,65 @@ class MediaUploadForm extends FormBase {
       }
     }
 
-    $form['media_type'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Media type'),
-      '#options' => [],
-      '#default_value' => 'upload',
-      '#ajax' => [
-        'callback' => [$this, 'changeMediaType'],
-      ],
-    ];
-
     /** @var \Drupal\media\Entity\MediaType[] $types */
     $types = $this->entityTypeManager->getStorage('media_type')->loadMultiple();
 
     foreach ($types as $type) {
-      $form['media_type']['#options'][$type->id()] = $type->label();
+      $form['media_' . $type->id()] = [
+        '#type' => 'details',
+        '#title' => $type->label(),
+        '#group' => 'media_types',
+        '#tree' => TRUE,
+      ];
+
+      $max_filesize = \Drupal\Component\Utility\Environment::getUploadMaxSize();
+
+      /*$form['media_' . $type->id()]['upload']['files'] = [
+        '#type' => 'dropzonejs',
+        '#title' => $this->t('Select files'),
+        '#dropzone_description' => $this->t('Drag and drop files'),
+        '#max_filesize_description' => $this->t('Maximum upload size: @size', ['@size' => format_size($max_filesize)]),
+        '#extensions' => $this->getValidExtensions([$type->id()]),
+        '#extensions_description' => $this->t('Allowed file extensions: @extensions', ['@extensions' => $this->getValidExtensions([$type->id()])]),
+        '#max_files' => 0,
+        '#clientside_resize' => TRUE,
+        '#thumbnail_method' => 'crop',
+        '#theme' => 'dropzonejs__media_upload',
+      ];*/
+
+      $source_field = $type->getSource()->getConfiguration()['source_field'];
+      $field_config = $this->entityTypeManager->getStorage('field_config')->load('media.' . $type->id() .'.' . $source_field);
+
+      if (in_array($field_config->getType(), ['file', 'image'])) {
+        $form['media_' . $type->id()]['upload']['files'] = [
+          '#type' => 'managed_file',
+          '#title' => $field_config->label(),
+          '#description' => $this->t('Allowed file extensions: @extensions', ['@extensions' => $field_config->getSetting('file_extensions')]),
+          '#upload_validators' => [
+            'file_validate_extensions' => [$field_config->getSetting('file_extensions')],
+          ],
+          '#multiple' => TRUE,
+          '#upload_location' => 'public://media-directories/',
+        ];
+        $form['media_' . $type->id()]['upload']['media_type'] = [
+          '#type' => 'value',
+          '#value' => $type->id(),
+        ];
+      }
+      else {
+        $form['media_' . $type->id()][$field_config->bundle()] = [
+          '#type' => 'textfield',
+          '#title' => $field_config->label(),
+          '#description' => $field_config->getDescription(),
+        ];
+      }
     }
-
-    $form['upload'] = [
-      '#type' => 'container',
-      '#tree' => TRUE,
-    ];
-
-    $max_filesize = \Drupal\Component\Utility\Environment::getUploadMaxSize();
-
-    $form['upload']['files'] = [
-      '#type' => 'dropzonejs',
-      '#title' => $this->t('Select files'),
-      '#dropzone_description' => $this->t('Drag and drop files'),
-      '#max_filesize_description' => $this->t('Maximum upload size: @size', ['@size' => format_size($max_filesize)]),
-      '#extensions' => $this->getValidExtensions($target_types),
-      '#extensions_description' => $this->t('Allowed file extensions: @extensions', ['@extensions' => $this->getValidExtensions($target_types)]),
-      '#max_files' => 0,
-      '#clientside_resize' => TRUE,
-      '#thumbnail_method' => 'crop',
-      '#theme' => 'dropzonejs__media_upload',
-    ];
 
     $form['actions'] = [
       '#type' => 'actions',
     ];
 
-    $form['actions']['submit'] = [
+    /*$form['actions']['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Add media'),
       '#button_type' => 'primary',
@@ -171,16 +201,25 @@ class MediaUploadForm extends FormBase {
         'callback' => [$this, 'submitModalAjax'],
         'event' => 'click',
       ]
-    ];
+    ];*/
 
     $form['#attached']['library'][] = 'core/drupal.dialog.ajax';
 
     /** @var \Drupal\Core\GeneratedUrl $url */
-    $url = Url::fromRoute('dropzonejs.upload')->toString(TRUE);
+    //$url = Url::fromRoute('dropzonejs.upload')->toString(TRUE);
     // Merge csrf token placeholders into form array,
     // tokens are not replaced correctly when form is called by ajax.
     // @see https://www.drupal.org/project/drupal/issues/2630920
-    $form['#attached'] = array_merge($form['#attached'], $url->getAttachments());
+    //$form['#attached'] = array_merge($form['#attached'], $url->getAttachments());
+
+    if (!$form_state->isValueEmpty('media_entities')) {
+      $media_entities = $form_state->getValue('media_entities');
+
+      foreach ($media_entities as $media_entity) {
+        $form_display = EntityFormDisplay::collectRenderDisplay($media_entity, 'media_library');
+      }
+
+    }
 
     return $form;
   }
@@ -221,6 +260,12 @@ class MediaUploadForm extends FormBase {
       if ($form_state->isValueEmpty(['upload', 'files', 'uploaded_files'])) {
         $form_state->setError($form['upload']['files'], $this->t('Add at least one file!'));
       }
+
+    }
+
+    if (!$form_state->isValueEmpty(['media_file', 'upload', 'files'])) {
+      $entities = $this->prepareEntities($form, $form_state);
+      $form_state->setValue('media_entities', $entities);
     }
   }
 
@@ -269,6 +314,9 @@ class MediaUploadForm extends FormBase {
     $entities = [];
 
     foreach ($this->getFiles($form, $form_state) as $file) {
+
+
+
       $media_type = $this->getType($form_state->getValue('media_type'));
       $entities[] = $this->entityTypeManager->getStorage('media')->create([
         'bundle' => $media_type->id(),
@@ -326,7 +374,7 @@ class MediaUploadForm extends FormBase {
     //$config = $this->getConfiguration();
     $additional_validators = ['file_validate_size' => [file_upload_max_size(), 0]];
 
-    $files = $form_state->get(['upload', 'files']);
+    $files = $form_state->get(['media_file','upload', 'files']);
 
     if (!$files) {
       $files = [];

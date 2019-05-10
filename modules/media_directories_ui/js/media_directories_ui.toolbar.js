@@ -17,7 +17,6 @@
             target_bundles: Drupal.MediaBrowser.targetBundles,
             media_library_opener_id: 'test',
             media_library_allowed_types: Drupal.MediaBrowser.targetBundles,
-            media_library_selected_type: 'image',
             // TODO
             media_library_remaining: '10'
           }

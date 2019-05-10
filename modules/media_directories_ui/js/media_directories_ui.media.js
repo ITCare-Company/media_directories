@@ -49,7 +49,7 @@
                 return true;
               }
 
-              nodes.push({ id : this.dataset.mid, element: $(this) });
+              //nodes.push({ id : this.dataset.mid, element: $(this) });
             });
 
             // If nothing is selected, then just use active item.
