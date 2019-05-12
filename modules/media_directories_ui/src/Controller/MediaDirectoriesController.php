@@ -274,7 +274,7 @@ class MediaDirectoriesController extends ControllerBase {
 
 
       if (in_array($field_config->getType(), ['file', 'image'])) {
-        $form = new FileUploadForm($this->entityTypeManager(), $this->currentUser(), $type);
+        $form = new FileUploadForm($this->entityTypeManager(), $this->currentUser(), $type, $active_directory);
         $build['media_' . $type->id()]['form'] = $this->formBuilder->getForm($form);
       }
       else {

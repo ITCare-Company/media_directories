@@ -15,10 +15,6 @@
           submit: {
             active_directory: Drupal.MediaBrowser.active_directory,
             target_bundles: Drupal.MediaBrowser.targetBundles,
-            media_library_opener_id: 'test',
-            media_library_allowed_types: Drupal.MediaBrowser.targetBundles,
-            // TODO
-            media_library_remaining: '10'
           }
         };
 

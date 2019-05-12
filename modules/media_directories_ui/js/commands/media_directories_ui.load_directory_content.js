@@ -8,7 +8,6 @@
    * @param status
    */
   Drupal.AjaxCommands.prototype.loadDirectoryContent = function (ajax, response, status) {
-    console.log('dsdsds')
     const $jsTree = $(Drupal.MediaBrowser.treeSelector);
     const target_bundles = Drupal.MediaBrowser.targetBundles;
     let active_element = $jsTree.jstree('get_selected', true);
@@ -21,7 +20,7 @@
     let ajaxSettings = {
       url: Drupal.MediaBrowser.getUrl('directory.content'),
       submit: {
-        active_directory: active_tid,
+        directory_id: active_tid,
         target_bundles: target_bundles
       }
     };

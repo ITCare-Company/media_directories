@@ -41,16 +41,25 @@ class AddMediaFormBase extends FormBase {
   protected $mediaType;
 
   /**
+   * The directory id to add media.
+   *
+   * @var int
+   */
+  protected $directoryId;
+
+  /**
    * MediaUploadForm constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
    * @param \Drupal\media\Entity\MediaType $media_type
+   * @param int $directory_id
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, MediaType $media_type) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, MediaType $media_type, $directory_id) {
     $this->entityTypeManager = $entity_type_manager;
     $this->currentUser = $current_user;
     $this->mediaType = $media_type;
+    $this->directoryId = $directory_id === -1 ?  NULL : $directory_id;
   }
 
   /**
@@ -95,7 +104,13 @@ class AddMediaFormBase extends FormBase {
       'js-media-library-add-form',
     ];
 
+    $form['active_directory'] = [
+      '#type' => 'hidden',
+      '#value' => $this->directoryId,
+    ];
+
     $storage = $form_state->getStorage();
+    /** @var \Drupal\media\Entity\Media[] $added_media */
     $added_media = isset($storage['media_entities']) ? $storage['media_entities'] : NULL;
 
     if (empty($added_media)) {
@@ -134,6 +149,7 @@ class AddMediaFormBase extends FormBase {
       ];
 
       foreach ($added_media as $delta => $media) {
+        // $media->set('directory', $this->directoryId);
         $form['media'][$delta] = $this->buildEntityFormElement($media, $form, $form_state, $delta);
       }
 
@@ -207,6 +223,7 @@ class AddMediaFormBase extends FormBase {
         'uid' => $this->currentUser->id(),
         'status' => TRUE,
         'type' => $this->mediaType->getSource()->getPluginId(),
+        'directory' => $this->directoryId,
       ]);
     }
 

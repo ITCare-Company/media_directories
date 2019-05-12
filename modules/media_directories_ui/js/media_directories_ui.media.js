@@ -11,12 +11,12 @@
       // register keypress inside iframe without focusing iframe first.
       $(top.document, document).on('keydown', function (e) {
         if (e.which === 17) {
-          this.ctrlPressed = true;
+          Drupal.MediaBrowser.media.ctrlPressed = true;
         }
       });
 
       $(top.document, document).on('keyup', function () {
-        this.ctrlPressed = false;
+        Drupal.MediaBrowser.media.ctrlPressed = false;
       });
 
       $browser_listing.find('.media-item').once().each(function () {
