@@ -429,7 +429,15 @@ class AddMediaFormBase extends FormBase {
       // shift focus back to the first tabbable element (which should be the
       // source field).
       if (empty($added_media)) {
-        //$response->addCommand(new ReplaceCommand('#media-library-add-form-wrapper', $this->buildMediaLibraryUi($form_state)));
+        // TODO not yet working.
+        $build = [
+          '#theme' => 'media_directories_add',
+          '#selected_type' => $this->mediaType->id(),
+          '#active_directory' => $this->directoryId,
+          // TODO need to pass this information.
+          '#target_bundles' => [],
+        ];
+        $response->addCommand(new ReplaceCommand('#media-library-add-form-wrapper', $build));
         //$response->addCommand(new InvokeCommand('#media-library-add-form-wrapper :tabbable', 'focus'));
       }
       // When there are still more items, update the form and shift the focus to
@@ -446,6 +454,33 @@ class AddMediaFormBase extends FormBase {
     }
 
     return $response;
+  }
+
+  /**
+   * Submit handler for the remove button.
+   *
+   * @param array $form
+   *   The form render array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   */
+  public function removeButtonSubmit(array $form, FormStateInterface $form_state) {
+    // Retrieve the delta of the media item from the parents of the remove
+    // button.
+    $triggering_element = $form_state->getTriggeringElement();
+    $delta = array_slice($triggering_element['#array_parents'], -2, 1)[0];
+
+    $added_media = $form_state->get('media_entities');
+    $removed_media = $added_media[$delta];
+
+    // Update the list of added media items in the form state.
+    unset($added_media[$delta]);
+
+    // Update the media items in the form state.
+    $form_state->set('media_entities', $added_media)->setRebuild();
+
+    // Show a message to the user to confirm the media is removed.
+    $this->messenger()->addStatus($this->t('The media item %label has been removed.', ['%label' => $removed_media->label()]));
   }
 
   /**

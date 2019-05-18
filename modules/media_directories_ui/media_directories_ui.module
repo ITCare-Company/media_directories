@@ -6,6 +6,9 @@
  */
 
 use Drupal\Core\Asset\AttachedAssetsInterface;
+use Drupal\Core\Form\FormState;
+use Drupal\Core\Url;
+use Drupal\media_directories_ui\Form\FileUploadForm;
 
 /**
  * Implements hook_theme().
@@ -20,7 +23,11 @@ function media_directories_ui_theme($existing, $type, $theme, $path) {
       'template' => 'dropzonejs--media-upload',
     ],
     'media_directories_add' => [
-      'render element' => 'content',
+      'variables' => [
+        'selected_type' => NULL,
+        'active_directory' => NULL,
+        'target_bundles' => NULL,
+      ],
     ],
     'views_view_unformatted__media_directory_browser' => [
       'base hook' => 'views_view_unformatted',
@@ -72,4 +79,55 @@ function media_directories_ui_preprocess_views_view_fields__media_directory_brow
       $field->wrapper_attributes->addClass('media-name--' . $entity->bundle());
     }
   }
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function media_directories_ui_preprocess_media_directories_add(&$variables) {
+  /** @var \Drupal\media\Entity\MediaType[] $types */
+  $types = \Drupal::entityTypeManager()->getStorage('media_type')->loadMultiple();
+
+  $variables['links'] = [
+    '#theme' => 'links',
+    '#links' => [],
+    '#attributes' => [
+      'class' => ['media-library-menu', 'js-media-library-menu'],
+    ],
+  ];
+
+  foreach ($types as $type) {
+    $variables['links']['#links'][$type->id()] = [
+      'title' => $type->label(),
+      'url' => Url::fromRoute('media_directories_ui.media.add', [], [
+        'query' => [
+          'media_type' => $type->id(),
+          'active_directory' => $variables['active_directory'],
+          'target_bundles' => $variables['target_bundles'],
+        ],
+        ]),
+      'attributes' => ['class' => ['use-ajax', 'media-library-menu__link']],
+    ];
+
+    if ($variables['selected_type'] === $type->id()) {
+      $variables['links']['#links'][$type->id()]['attributes']['class'][] = 'active';
+    }
+  }
+
+  $type = $types[$variables['selected_type']];
+
+  $form_state = new FormState();
+  $form_state->setValue('media_type', $type);
+
+  $source_field = $type->getSource()->getConfiguration()['source_field'];
+  $field_config = \Drupal::entityTypeManager()->getStorage('field_config')->load('media.' . $type->id() .'.' . $source_field);
+
+  if (in_array($field_config->getType(), ['file', 'image'])) {
+    $form = new FileUploadForm(\Drupal::entityTypeManager(), \Drupal::currentUser(), $type, $variables['active_directory']);
+    $variables['media_form'] = \Drupal::formBuilder()->getForm($form);
+  }
+  else {
+    //$build['media_' . $type->id()]['form'] = $this->formBuilder->buildForm(OEmbedForm::class, $form_state);
+  }
+
 }

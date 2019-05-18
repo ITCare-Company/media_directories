@@ -101,6 +101,21 @@ class FileUploadForm extends AddMediaFormBase {
   }
 
   /**
+   * Submit handler for the upload button, inside the managed_file element.
+   *
+   * @param array $form
+   *   The form render array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   */
+  public function uploadButtonSubmit(array $form, FormStateInterface $form_state) {
+    $files = $this->entityTypeManager
+      ->getStorage('file')
+      ->loadMultiple($form_state->getValue('upload', []));
+    // $this->processInputValues($files, $form, $form_state);
+  }
+
+  /**
    * {@inheritdoc}
    */
   protected function prepareMediaEntityForSave(MediaInterface $media) {

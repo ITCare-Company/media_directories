@@ -6,18 +6,9 @@ use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\HtmlCommand;
 use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Form\FormBuilder;
-use Drupal\Core\Form\FormState;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\media\MediaInterface;
-use Drupal\media_directories_ui\Form\FileUploadForm;
-use Drupal\media_directories_ui\Form\MediaUploadForm;
-use Drupal\media_directories_ui\Form\OEmbedForm;
-use Drupal\media_directories_ui\MediaDirectoriesUiBuilder;
-use Drupal\media_directories_ui\MediaDirectoriesUiState;
-use Drupal\media_library\MediaLibraryState;
-use Drupal\media_library\MediaLibraryUiBuilder;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\media_directories_ui\Ajax\RefreshDirectoryTree;
 use Drupal\media_directories_ui\Form\DirectoryDeleteForm;
@@ -240,54 +231,23 @@ class MediaDirectoriesController extends ControllerBase {
    */
   public function mediaAdd(Request $request) {
     $response = new AjaxResponse();
-    $active_directory = $request->get('active_directory');
+    $active_directory = (int) $request->get('active_directory', -1);
     $target_bundles = $request->get('target_bundles');
     /** @var \Drupal\media\Entity\MediaType[] $types */
     $types = $this->entityTypeManager()->getStorage('media_type')->loadMultiple();
+    $type_keys = array_keys($types);
+    $selected_type = $request->get('media_type', reset($type_keys));
 
     $build = [
       '#theme' => 'media_directories_add',
+      '#selected_type' => $selected_type,
+      '#active_directory' => $active_directory,
+      '#target_bundles' => $target_bundles,
     ];
 
-/*    $build['tabs'] = [
-      '#type' => 'vertical_tabs',
-    ];*/
-
-    foreach ($types as $type) {
-      $build['media_' . $type->id()] = [
-        '#type' => 'fieldset',
-        '#title' => $type->label(),
-        '#collapsible' => TRUE,
-        '#collapsed' => TRUE,
-        //'#group' => 'tabs',
-      ];
-
-      if ($type->id() !== 'file') {
-        continue;
-      }
-
-      $form_state = new FormState();
-      $form_state->setValue('media_type', $type);
-
-      $source_field = $type->getSource()->getConfiguration()['source_field'];
-      $field_config = $this->entityTypeManager->getStorage('field_config')->load('media.' . $type->id() .'.' . $source_field);
-
-
-      if (in_array($field_config->getType(), ['file', 'image'])) {
-        $form = new FileUploadForm($this->entityTypeManager(), $this->currentUser(), $type, $active_directory);
-        $build['media_' . $type->id()]['form'] = $this->formBuilder->getForm($form);
-      }
-      else {
-        //$build['media_' . $type->id()]['form'] = $this->formBuilder->buildForm(OEmbedForm::class, $form_state);
-      }
-    }
-
-    //$form = $this->formBuilder->getForm(MediaUploadForm::class, $active_directory, $target_bundles);
     $response->addCommand(new OpenModalDialogCommand($this->t('Add media'), $build, ['width' => '800']));
 
     return $response;
-
-
   }
 
   /**
