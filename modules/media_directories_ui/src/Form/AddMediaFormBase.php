@@ -2,24 +2,29 @@
 namespace Drupal\media_directories_ui\Form;
 
 use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\CloseDialogCommand;
 use Drupal\Core\Ajax\CloseModalDialogCommand;
-use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\Core\Url;
 use Drupal\file\Entity\File;
-use Drupal\media\Entity\MediaType;
 use Drupal\media\MediaInterface;
 use Drupal\media\MediaTypeInterface;
 use Drupal\media_directories_ui\Ajax\LoadDirectoryContent;
-use Drupal\media_library\Ajax\UpdateSelectionCommand;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class AddMediaFormBase extends FormBase {
+/**
+ * Class AddMediaFormBase
+ *
+ * Uses code and logic from core. We could try to integrate core directly,
+ * but it might be too unstable in this stage.
+ *
+ * @package Drupal\media_directories_ui\Form
+ */
+abstract class AddMediaFormBase extends FormBase {
 
   /**
    * Entity type manager service.
@@ -36,44 +41,79 @@ class AddMediaFormBase extends FormBase {
   protected $currentUser;
 
   /**
-   * @var \Drupal\media\Entity\MediaType
-   */
-  protected $mediaType;
-
-  /**
-   * The directory id to add media.
-   *
-   * @var int
-   */
-  protected $directoryId;
-
-  /**
    * MediaUploadForm constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
-   * @param \Drupal\media\Entity\MediaType $media_type
-   * @param int $directory_id
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, MediaType $media_type, $directory_id) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user) {
     $this->entityTypeManager = $entity_type_manager;
     $this->currentUser = $current_user;
-    $this->mediaType = $media_type;
-    $this->directoryId = $directory_id === -1 ?  NULL : $directory_id;
   }
 
   /**
-   * Returns a unique string identifying the form.
+   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
    *
-   * The returned ID should be a unique string that can be a valid PHP function
-   * name, since it's used in hook implementation names such as
-   * hook_form_FORM_ID_alter().
-   *
-   * @return string
-   *   The unique string identifying the form.
+   * @return \Drupal\Core\Form\FormBase|\Drupal\media_directories_ui\Form\AddMediaFormBase
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('entity_type.manager'),
+      $container->get('current_user')
+    );
+  }
+
+  /**
+   * {@inheritdoc}
    */
   public function getFormId() {
-    return 'media_directories_add_' . $this->mediaType->id() . '_form';
+    return 'media_directories_add_form';
+  }
+
+  /**
+   * Get the media type from the form state.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current form state.
+   *
+   * @return \Drupal\media\MediaTypeInterface
+   *   The media type.
+   *
+   * @throws \InvalidArgumentException
+   *   If the selected media type does not exist.
+   */
+  protected function getMediaType(FormStateInterface $form_state) {
+    if (!$form_state->get('media_type')) {
+      throw new \InvalidArgumentException("The media type does not exist.");
+    }
+
+    return $form_state->get('media_type');
+  }
+
+  /**
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *
+   * @return int|null
+   */
+  protected function getDirectory(FormStateInterface $form_state) {
+    $directory_id = (int) $form_state->get('active_directory');
+
+    if ($directory_id === -1) {
+      $directory_id = NULL;
+    }
+
+    return $directory_id;
+  }
+
+  /**
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *
+   * @return mixed
+   */
+  protected function getTargetBundles(FormStateInterface $form_state) {
+    $bundles = $form_state->get('target_bundles');
+
+    return $bundles;
   }
 
   /**
@@ -104,14 +144,8 @@ class AddMediaFormBase extends FormBase {
       'js-media-library-add-form',
     ];
 
-    $form['active_directory'] = [
-      '#type' => 'hidden',
-      '#value' => $this->directoryId,
-    ];
-
-    $storage = $form_state->getStorage();
     /** @var \Drupal\media\Entity\Media[] $added_media */
-    $added_media = isset($storage['media_entities']) ? $storage['media_entities'] : NULL;
+    $added_media = $form_state->get('media');
 
     if (empty($added_media)) {
       $form['#attributes']['class'][] = 'media-library-add-form--without-input';
@@ -171,16 +205,17 @@ class AddMediaFormBase extends FormBase {
     ];
 
     return $form;
-
   }
 
+  abstract protected function buildInputElement(array $form, FormStateInterface $form_state);
+
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    if (!$form_state->isValueEmpty('upload')) {
+    /*if (!$form_state->isValueEmpty('upload')) {
       $entities = $this->prepareEntities($form, $form_state);
-      $form_state->setValue('media_entities', $entities);
-      $form_state->setStorage(['media_entities' => $entities]);
+      $form_state->setValue('media', $entities);
+      $form_state->setStorage(['media' => $entities]);
       $form_state->setRebuild();
-    }
+    }*/
   }
 
   /**
@@ -192,12 +227,12 @@ class AddMediaFormBase extends FormBase {
    *   The current state of the form.
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $added_media = $form_state->get('media_entities');
+    $added_media = $form_state->get('media');
 
     foreach ($added_media as $delta => $media) {
       EntityFormDisplay::collectRenderDisplay($media, 'media_library')
         ->extractFormValues($media, $form['media'][$delta]['fields'], $form_state);
-      $this->prepareMediaEntityForSave($media);
+      //$this->prepareMediaEntityForSave($media);
       $media->save();
     }
   }
@@ -212,18 +247,19 @@ class AddMediaFormBase extends FormBase {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function prepareEntities(array $form, FormStateInterface $form_state) {
+  public function prepareEntities(array $form, FormStateInterface $form_state, $field_name) {
     $entities = [];
+    $media_type = $this->getMediaType($form_state);
 
-    foreach ($form_state->getValue('upload') as $fid) {
+    foreach ($form_state->getValue($field_name) as $fid) {
       $file = File::load($fid);
       $entities[] = $this->entityTypeManager->getStorage('media')->create([
-        'bundle' => $this->mediaType->id(),
-        $this->mediaType->getSource()->getConfiguration()['source_field'] => $file,
+        'bundle' => $media_type->id(),
+        $media_type->getSource()->getConfiguration()['source_field'] => $file,
         'uid' => $this->currentUser->id(),
         'status' => TRUE,
-        'type' => $this->mediaType->getSource()->getPluginId(),
-        'directory' => $this->directoryId,
+        'type' => $media_type->getSource()->getPluginId(),
+        'directory' => $this->getDirectory($form_state),
       ]);
     }
 
@@ -340,7 +376,7 @@ class AddMediaFormBase extends FormBase {
     // We hide the preview of the uploaded file in the image widget with CSS.
     // @todo Improve hiding file widget elements in
     //   https://www.drupal.org/project/drupal/issues/2987921
-    $source_field_name = $this->getSourceFieldName($this->mediaType);
+    $source_field_name = $this->getSourceFieldName($this->getMediaType($form_state));
     if (isset($element['fields'][$source_field_name])) {
       $element['fields'][$source_field_name]['#attributes']['class'][] = 'media-library-add-form__source-field';
     }
@@ -410,7 +446,8 @@ class AddMediaFormBase extends FormBase {
   public function updateFormCallback(array &$form, FormStateInterface $form_state) {
     $triggering_element = $form_state->getTriggeringElement();
     $wrapper_id = $triggering_element['#ajax']['wrapper'];
-    $added_media = $form_state->get('media_entities');
+    $added_media = $form_state->get('media');
+    $media_type = $this->getMediaType($form_state);
 
     $response = new AjaxResponse();
 
@@ -429,13 +466,12 @@ class AddMediaFormBase extends FormBase {
       // shift focus back to the first tabbable element (which should be the
       // source field).
       if (empty($added_media)) {
-        // TODO not yet working.
+        // TODO throws an ajax exception when trying to remove last item.
         $build = [
           '#theme' => 'media_directories_add',
-          '#selected_type' => $this->mediaType->id(),
-          '#active_directory' => $this->directoryId,
-          // TODO need to pass this information.
-          '#target_bundles' => [],
+          '#selected_type' => $media_type->id(),
+          '#active_directory' => $this->getDirectory($form_state),
+          '#target_bundles' => $this->getTargetBundles($form_state),
         ];
         $response->addCommand(new ReplaceCommand('#media-library-add-form-wrapper', $build));
         //$response->addCommand(new InvokeCommand('#media-library-add-form-wrapper :tabbable', 'focus'));
@@ -470,14 +506,14 @@ class AddMediaFormBase extends FormBase {
     $triggering_element = $form_state->getTriggeringElement();
     $delta = array_slice($triggering_element['#array_parents'], -2, 1)[0];
 
-    $added_media = $form_state->get('media_entities');
+    $added_media = $form_state->get('media');
     $removed_media = $added_media[$delta];
 
     // Update the list of added media items in the form state.
     unset($added_media[$delta]);
 
     // Update the media items in the form state.
-    $form_state->set('media_entities', $added_media)->setRebuild();
+    $form_state->set('media', $added_media)->setRebuild();
 
     // Show a message to the user to confirm the media is removed.
     $this->messenger()->addStatus($this->t('The media item %label has been removed.', ['%label' => $removed_media->label()]));
@@ -513,6 +549,58 @@ class AddMediaFormBase extends FormBase {
     $response->addCommand(new LoadDirectoryContent());
 
     return $response;
+  }
+
+  /**
+   * Creates media items from source field input values.
+   *
+   * @param mixed[] $source_field_values
+   *   The values for source fields of the media items.
+   * @param array $form
+   *   The complete form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current form state.
+   */
+  protected function processInputValues(array $source_field_values, array $form, FormStateInterface $form_state) {
+    $media_type = $this->getMediaType($form_state);
+    $media_storage = $this->entityTypeManager->getStorage('media');
+    $source_field_name = $this->getSourceFieldName($media_type);
+    $media = array_map(function ($source_field_value) use ($media_type, $media_storage, $source_field_name, $form_state) {
+      return $this->createMediaFromValue($media_type, $media_storage, $source_field_name, $source_field_value, $form_state);
+    }, $source_field_values);
+    // Re-key the media items before setting them in the form state.
+    $form_state->set('media', array_values($media));
+    // Save the selected items in the form state so they are remembered when an
+    // item is removed.
+    //$form_state->set('current_selection', array_filter(explode(',', $form_state->getValue('current_selection'))));
+    $form_state->setRebuild();
+  }
+
+  /**
+   * Creates a new, unsaved media item from a source field value.
+   *
+   * @param \Drupal\media\MediaTypeInterface $media_type
+   *   The media type of the media item.
+   * @param \Drupal\Core\Entity\EntityStorageInterface $media_storage
+   *   The media storage.
+   * @param string $source_field_name
+   *   The name of the media type's source field.
+   * @param mixed $source_field_value
+   *   The value for the source field of the media item.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *
+   * @return \Drupal\media\MediaInterface
+   *   An unsaved media entity.
+   */
+  protected function createMediaFromValue(MediaTypeInterface $media_type, EntityStorageInterface $media_storage, $source_field_name, $source_field_value, FormStateInterface $form_state) {
+    $media = $media_storage->create([
+      'bundle' => $media_type->id(),
+      $source_field_name => $source_field_value,
+      'directory' => $this->getDirectory($form_state),
+    ]);
+    $media->setName($media->getName());
+    return $media;
   }
 
 }

@@ -9,6 +9,7 @@ use Drupal\Core\Asset\AttachedAssetsInterface;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Url;
 use Drupal\media_directories_ui\Form\FileUploadForm;
+use Drupal\media_directories_ui\Form\OEmbedForm;
 
 /**
  * Implements hook_theme().
@@ -122,12 +123,18 @@ function media_directories_ui_preprocess_media_directories_add(&$variables) {
   $source_field = $type->getSource()->getConfiguration()['source_field'];
   $field_config = \Drupal::entityTypeManager()->getStorage('field_config')->load('media.' . $type->id() .'.' . $source_field);
 
+  $form_state = new FormState();
+  $form_state->set('media_type', $type);
+  $form_state->set('active_directory', $variables['active_directory']);
+  $form_state->set('target_bundles', $variables['target_bundles']);
+
   if (in_array($field_config->getType(), ['file', 'image'])) {
-    $form = new FileUploadForm(\Drupal::entityTypeManager(), \Drupal::currentUser(), $type, $variables['active_directory']);
-    $variables['media_form'] = \Drupal::formBuilder()->getForm($form);
+    //$form = new FileUploadForm(\Drupal::entityTypeManager(), \Drupal::currentUser(), $type, $variables['active_directory']);
+    //$variables['media_form'] = \Drupal::formBuilder()->getForm($form);
+    $variables['media_form'] = \Drupal::formBuilder()->buildForm(FileUploadForm::class, $form_state);
   }
   else {
-    //$build['media_' . $type->id()]['form'] = $this->formBuilder->buildForm(OEmbedForm::class, $form_state);
+    $variables['media_form'] = \Drupal::formBuilder()->buildForm(OEmbedForm::class, $form_state);
   }
 
 }

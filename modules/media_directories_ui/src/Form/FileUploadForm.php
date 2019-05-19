@@ -12,12 +12,13 @@ class FileUploadForm extends AddMediaFormBase {
 
   protected function buildInputElement(array $form, FormStateInterface $form_state) {
     $max_filesize = \Drupal\Component\Utility\Environment::getUploadMaxSize();
+    $media_type = $this->getMediaType($form_state);
 
     $process = (array) \Drupal::service('element_info')->getInfoProperty('managed_file', '#process', []);
 
 
-    $source_field = $this->mediaType->getSource()->getConfiguration()['source_field'];
-    $field_config = $this->entityTypeManager->getStorage('field_config')->load('media.' . $this->mediaType->id() .'.' . $source_field);
+    $source_field = $media_type->getSource()->getConfiguration()['source_field'];
+    $field_config = $this->entityTypeManager->getStorage('field_config')->load('media.' . $media_type->id() .'.' . $source_field);
 
     $form['container']['upload'] = [
       '#type' => 'managed_file',
@@ -112,7 +113,7 @@ class FileUploadForm extends AddMediaFormBase {
     $files = $this->entityTypeManager
       ->getStorage('file')
       ->loadMultiple($form_state->getValue('upload', []));
-    // $this->processInputValues($files, $form, $form_state);
+    $this->processInputValues($files, $form, $form_state);
   }
 
   /**
