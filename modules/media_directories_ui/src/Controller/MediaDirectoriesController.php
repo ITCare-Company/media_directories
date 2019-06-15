@@ -7,8 +7,9 @@ use Drupal\Core\Ajax\HtmlCommand;
 use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Form\FormBuilder;
+use Drupal\Core\Form\FormState;
 use Drupal\Core\Render\RendererInterface;
-use Drupal\media\MediaInterface;
+use Drupal\media_directories_ui\Form\MediaEditForm;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\media_directories_ui\Ajax\RefreshDirectoryTree;
 use Drupal\media_directories_ui\Form\DirectoryDeleteForm;
@@ -90,7 +91,7 @@ class MediaDirectoriesController extends ControllerBase {
           'selected' => TRUE,
         ],
         'a_attr' => [
-          'data-tid' => -1,
+          'data-tid' => MEDIA_DIRECTORY_ROOT,
         ],
         'children' => array_values($tree),
       ]
@@ -131,7 +132,7 @@ class MediaDirectoriesController extends ControllerBase {
    */
   public function directoryAdd(Request $request) {
     $directory_id = (int)$request->request->get('parent_id');
-    $directory_id = $directory_id === -1 ? 0 : $directory_id;
+    $directory_id = $directory_id === MEDIA_DIRECTORY_ROOT ? 0 : $directory_id;
     $name = $request->request->get('name');
     $directory = Term::create([
       'name' => $name,
@@ -188,7 +189,7 @@ class MediaDirectoriesController extends ControllerBase {
 
     /** @var Term $directory */
     $directory = $this->entityTypeManager()->getStorage('taxonomy_term')->load($move_directory_id);
-    $directory->get('parent')->setValue($to_directory_id === -1 ? NULL: $to_directory_id);
+    $directory->get('parent')->setValue($to_directory_id === MEDIA_DIRECTORY_ROOT ? NULL: $to_directory_id);
     $directory->save();
 
     return $response;
@@ -231,7 +232,7 @@ class MediaDirectoriesController extends ControllerBase {
    */
   public function mediaAdd(Request $request) {
     $response = new AjaxResponse();
-    $active_directory = (int) $request->get('active_directory', -1);
+    $active_directory = (int) $request->get('active_directory', MEDIA_DIRECTORY_ROOT);
     $target_bundles = $request->get('target_bundles');
     /** @var \Drupal\media\Entity\MediaType[] $types */
     $types = $this->entityTypeManager()->getStorage('media_type')->loadMultiple();
@@ -253,18 +254,25 @@ class MediaDirectoriesController extends ControllerBase {
   /**
    * Media entity edit form.
    *
-   * @param \Drupal\media\MediaInterface $media
+   * @param \Symfony\Component\HttpFoundation\Request $request
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Core\Form\EnforcedResponseException
+   * @throws \Drupal\Core\Form\FormAjaxException
    */
-  public function mediaEdit(MediaInterface $media) {
+  public function mediaEdit(Request $request) {
     $response = new AjaxResponse();
+    $media_items = $request->request->get('media_items', []);
+    $active_directory = (int) $request->request->get('active_directory', MEDIA_DIRECTORY_ROOT);
+    $media_entities = $this->entityTypeManager()->getStorage('media')->loadMultiple($media_items);
 
-    $context = [
-      'use_ajax' => TRUE,
-    ];
+    $form_state = new FormState();
+    $form_state->set('media', $media_entities);
+    $form_state->set('active_directory', $active_directory);
 
-    $media_form = $this->entityFormBuilder()->getForm($media, 'browser', ['media_directories' => $context]);
+    $media_form = $this->formBuilder()->buildForm(MediaEditForm::class, $form_state);
 
     $response->addCommand(new OpenModalDialogCommand($this->t('Edit media'), $media_form, ['width' => '800']));
 
@@ -290,7 +298,7 @@ class MediaDirectoriesController extends ControllerBase {
 
     foreach ($media_entities as $media_entity) {
       if ($media_entity->hasField('directory')) {
-        $media_entity->get('directory')->setValue($directory_id === -1 ? NULL: $directory_id);
+        $media_entity->get('directory')->setValue($directory_id === MEDIA_DIRECTORY_ROOT ? NULL: $directory_id);
         $media_entity->save();
       }
     }

@@ -59,7 +59,6 @@ function media_directories_ui_preprocess_views_view_unformatted__media_directory
     $row['attributes']->setAttribute('data-mid', $entity_id);
     $row['attributes']->addClass('media-item');
     $row['attributes']->addClass('media-type--' . $entity->bundle());
-    //$row['attributes']->setAttribute('data-edit-url', Url::fromRoute('media_directories.directory.edit_form', ['media' => $entity->id()])->toString());
   }
 }
 
@@ -129,8 +128,6 @@ function media_directories_ui_preprocess_media_directories_add(&$variables) {
   $form_state->set('target_bundles', $variables['target_bundles']);
 
   if (in_array($field_config->getType(), ['file', 'image'])) {
-    //$form = new FileUploadForm(\Drupal::entityTypeManager(), \Drupal::currentUser(), $type, $variables['active_directory']);
-    //$variables['media_form'] = \Drupal::formBuilder()->getForm($form);
     $variables['media_form'] = \Drupal::formBuilder()->buildForm(FileUploadForm::class, $form_state);
   }
   else {

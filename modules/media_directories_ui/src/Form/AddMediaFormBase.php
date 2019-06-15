@@ -41,7 +41,7 @@ abstract class AddMediaFormBase extends FormBase {
   protected $currentUser;
 
   /**
-   * MediaUploadForm constructor.
+   * AddMediaFormBase constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
@@ -98,7 +98,7 @@ abstract class AddMediaFormBase extends FormBase {
   protected function getDirectory(FormStateInterface $form_state) {
     $directory_id = (int) $form_state->get('active_directory');
 
-    if ($directory_id === -1) {
+    if ($directory_id === MEDIA_DIRECTORY_ROOT) {
       $directory_id = NULL;
     }
 

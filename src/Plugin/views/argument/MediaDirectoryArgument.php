@@ -54,7 +54,7 @@ class MediaDirectoryArgument extends ArgumentPluginBase {
       return !empty($this->definition['empty field name']) ? $this->definition['empty field name'] : $this->t('Uncategorized');
     }
 
-    if ($this->value === [-1]) {
+    if ($this->value === [MEDIA_DIRECTORY_ROOT]) {
       return !empty($this->definition['invalid input']) ? $this->definition['invalid input'] : $this->t('Invalid input');
     }
 
@@ -77,7 +77,7 @@ class MediaDirectoryArgument extends ArgumentPluginBase {
     $placeholder = $this->placeholder();
     $null_check = empty($this->options['not']) ? '' : " OR $this->tableAlias.$this->realField IS NULL";
 
-    if ($this->value === -1) {
+    if ($this->value === MEDIA_DIRECTORY_ROOT) {
       $this->query->addWhereExpression(0, "$this->tableAlias.$this->realField IS NULL");
     }
     else {

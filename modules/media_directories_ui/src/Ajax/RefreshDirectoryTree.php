@@ -19,7 +19,7 @@ class RefreshDirectoryTree implements CommandInterface {
    *
    * @param int $selected_directory
    */
-  public function __construct($selected_directory = -1) {
+  public function __construct($selected_directory = MEDIA_DIRECTORY_ROOT) {
     $this->selected_directory = $selected_directory;
   }
 

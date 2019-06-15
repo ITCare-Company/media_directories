@@ -20,7 +20,6 @@ that it forces library view, but we really don't need it, and working around of 
 
 ROADMAP
 =============
-- Edit button not yet working (need to migrate existing code).
 - Drag and Drop not yet working (need to migrate existing code).
 - CKEditor and field widget integration (need to migrate existing code).
 - Check if other custom media types are working or if they don't, find out how to make them work.

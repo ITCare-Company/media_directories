@@ -23,14 +23,22 @@
 
       this.buttons.media_edit.on('click', function (e) {
         e.preventDefault();
+        let mids = [];
 
         if ($(this).hasClass('is-disabled')) {
           return;
         }
 
-        let $selected_item = $('.media-item.selected');
+        $('.media-item.selected').map(function () {
+          mids.push($(this).data('mid'));
+        });
+
         let ajaxSettings = {
-          url: $selected_item.data('edit-url')
+          url: Drupal.MediaBrowser.getUrl('media.edit'),
+          submit: {
+            active_directory: Drupal.MediaBrowser.active_directory,
+            media_items: mids
+          }
         };
 
         Drupal.ajax(ajaxSettings).execute();
@@ -75,7 +83,7 @@
         this.buttons.submit.attr('disabled', 'disabled');
       }
       else {
-        this.buttons.media_edit.addClass('is-disabled');
+        this.buttons.media_edit.removeClass('is-disabled');
         this.buttons.media_delete.removeClass('is-disabled');
         this.buttons.submit.removeAttr('disabled');
       }

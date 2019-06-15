@@ -11,6 +11,13 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 
 /**
+ * Root directory value.
+ * It is hard to use 0, because it might be considered as empty value
+ * in various places (e.g views filter).
+ */
+const MEDIA_DIRECTORY_ROOT = -1;
+
+/**
  * Implements hook_help().
  */
 function media_directories_help($route_name) {

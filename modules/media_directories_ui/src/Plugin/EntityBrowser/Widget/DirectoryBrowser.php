@@ -139,7 +139,7 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
 
     $form['browser']['active_directory'] = [
       '#type' => 'hidden',
-      '#default_value' => -1,
+      '#default_value' => MEDIA_DIRECTORY_ROOT,
     ];
 
     if ($this->configuration['entity_browser_id'] === 'directory_browser') {
