@@ -52,6 +52,40 @@
       });
     });
 
+    $(document).once().each(function () {
+      $(this).on('dnd_stop.vakata', function (e, data) {
+        let type = 'media';
+
+        if ($(data.data.obj).hasClass('jstree-node')) {
+          type = 'directory';
+        }
+
+        if (!data.event.target.hasAttribute('data-tid')) {
+          return;
+        }
+
+        if (type === 'media') {
+          let media_items = [];
+
+          for (let i = 0; i < data.data.nodes.length; i++) {
+            media_items.push(data.data.nodes[i].id);
+          }
+
+          Drupal.MediaBrowser.moveMediaToDirectory(media_items, data.event.target.dataset.tid);
+        }
+        else {
+          let move_directory_id = $('#' + data.data.obj[0].id + '_anchor').data('tid');
+          let target_directory_id = data.event.target.dataset.tid;
+
+          // Do not try to move directory under itself.
+          if (parseInt(move_directory_id) !== parseInt(target_directory_id)) {
+            Drupal.MediaBrowser.moveDirectoryToDirectory(move_directory_id, target_directory_id)
+          }
+        }
+
+      });
+    });
+
   };
 
   /**
@@ -86,6 +120,7 @@
       };
 
       Drupal.ajax(ajaxSettings).execute();
+      Drupal.MediaBrowser.clearMediaSelection();
     }
     else {
       console.log('Parameters missing!');

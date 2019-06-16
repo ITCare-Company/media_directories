@@ -26,6 +26,8 @@
 }
 
 .media-item .media-thumbnail {
+  height: 96px;
+  width: 123px;
   border: 1px solid #ccc;
   transition: all .1s linear;
 }

@@ -44,14 +44,9 @@
           helper: 'clone',
           start: function (e) {
             let nodes = [];
-            let $drag_element = $(this);
-            $.each(Drupal.MediaBrowser.getSelectedElements(), function () {
-              // Do not include cloned element.
-              if ($(this).is($drag_element)) {
-                return true;
-              }
 
-              //nodes.push({ id : this.dataset.mid, element: $(this) });
+            $.each(Drupal.MediaBrowser.getSelectedElements(), function (key, value) {
+              nodes.push({ id : $(value).data('mid'), element: $(value) });
             });
 
             // If nothing is selected, then just use active item.

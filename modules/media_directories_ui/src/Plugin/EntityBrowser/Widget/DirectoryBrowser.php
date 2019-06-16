@@ -266,20 +266,4 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
 
   }
 
-  /**
-   * New media entity add form.
-   *
-   * @param array $form
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *
-   * @return \Drupal\Core\Ajax\AjaxResponse
-   */
-  public function mediaAdd(array &$form, FormStateInterface $form_state) {
-    $triggering_element = $form_state->getTriggeringElement();
-    $library_ui = \Drupal::service('media_directories_ui.ui_builder')->buildUi($triggering_element['#media_library_state']);
-    $dialog_options = MediaDirectoriesUiBuilder::dialogOptions();
-    return (new AjaxResponse())
-      ->addCommand(new OpenModalDialogCommand($dialog_options['title'], $library_ui, $dialog_options));
-  }
-
 }
