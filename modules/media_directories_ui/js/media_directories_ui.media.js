@@ -39,6 +39,7 @@
           Drupal.MediaBrowser.toolbar.selectionChanged();
         });
 
+        // Drag and Drop functionality.
         $(this).draggable({
           revert: true,
           helper: 'clone',

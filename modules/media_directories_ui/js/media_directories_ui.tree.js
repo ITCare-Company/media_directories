@@ -53,6 +53,7 @@
     });
 
     $(document).once().each(function () {
+      // Drag and Drop event bind.
       $(this).on('dnd_stop.vakata', function (e, data) {
         let type = 'media';
 
@@ -100,8 +101,13 @@
       }
     };
 
+    // Lock the UI.
+    Drupal.MediaBrowser.startLoader();
+
     Drupal.ajax(ajaxSettings).execute().done(function () {
       Drupal.MediaBrowser.media.init($('.browser--listing'));
+      // Unlock the UI.
+      Drupal.MediaBrowser.stopLoader();
     });
   };
 
@@ -120,6 +126,7 @@
       };
 
       Drupal.ajax(ajaxSettings).execute();
+      // User is moving media to new directory, we need to clean selection.
       Drupal.MediaBrowser.clearMediaSelection();
     }
     else {
@@ -221,6 +228,7 @@
 
   /**
    * Callback for context menu items.
+   *
    * @param node
    * @returns {{rename: {_disabled: boolean, action: rename.action, label: *},
    *   new_directory: {action: new_directory.action, label: *}, delete:

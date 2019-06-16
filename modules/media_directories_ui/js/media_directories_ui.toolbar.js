@@ -1,5 +1,10 @@
 (function ($, Drupal) {
 
+  /**
+   * Media Browser toolbar functionality.
+   *
+   * @type {{init: Drupal.MediaBrowser.toolbar.init, buttons: {submit: (*|jQuery|HTMLElement), media_edit: (*|jQuery|HTMLElement), media_delete: (*|jQuery|HTMLElement), media_add: (*|jQuery|HTMLElement)}, selectionChanged: Drupal.MediaBrowser.toolbar.selectionChanged}}
+   */
   Drupal.MediaBrowser.toolbar = {
     buttons: {
       media_add: $('#browser-add-media'),
@@ -8,6 +13,7 @@
       submit: $('#edit-submit')
     },
     init: function () {
+      // Add new media button.
       this.buttons.media_add.on('click', function (e) {
         e.preventDefault();
         let ajaxSettings = {
@@ -21,6 +27,7 @@
         Drupal.ajax(ajaxSettings).execute();
       });
 
+      // Edit media button.
       this.buttons.media_edit.on('click', function (e) {
         e.preventDefault();
         let mids = [];
@@ -44,6 +51,7 @@
         Drupal.ajax(ajaxSettings).execute();
       });
 
+      // Delete media button.
       this.buttons.media_delete.on('click', function (e) {
         e.preventDefault();
 
@@ -66,9 +74,12 @@
         Drupal.ajax(ajaxSettings).execute();
       });
 
+      // Set initial button states.
       this.selectionChanged();
-
     },
+    /**
+     * Set correct states for toolbar buttons.
+     */
     selectionChanged: function () {
       const $selected = Drupal.MediaBrowser.getSelectedElements();
 

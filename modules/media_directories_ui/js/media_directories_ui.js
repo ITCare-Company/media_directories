@@ -1,5 +1,10 @@
 (function ($, Drupal) {
 
+  /**
+   * Initialize Media Browser.
+   *
+   * @type {{attach: Drupal.behaviors.MediaDirectoriesUi.attach}}
+   */
   Drupal.behaviors.MediaDirectoriesUi = {
     attach: function (context) {
       Drupal.MediaBrowser.init();
