@@ -356,7 +356,7 @@ class MediaEditForm extends FormBase {
       $media->save();
     }
 
-    $response->addCommand(new RefreshDirectoryTree($form_state->get('active_directory')));
+    $response->addCommand(new LoadDirectoryContent());
     $response->addCommand(new CloseModalDialogCommand());
 
     return $response;

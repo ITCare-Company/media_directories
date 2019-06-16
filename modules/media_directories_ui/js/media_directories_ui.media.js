@@ -28,13 +28,15 @@
               $('input[type="checkbox"]', this).prop('checked', false);
             });
             // Clear selection from global storage.
-            Drupal.MediaBrowser.selectedMedia = [];
+            Drupal.MediaBrowser.clearMediaSelection();
           }
 
           $(this).toggleClass('selected');
           let checkbox = $(this).find('input[type="checkbox"]');
           checkbox.prop("checked", !checkbox.prop("checked"));
-          Drupal.MediaBrowser.selectedMedia.push($(this));
+          // Push media id to selection array.
+          Drupal.MediaBrowser.selectedMedia.push($(this).data('mid'));
+          Drupal.MediaBrowser.toolbar.selectionChanged();
         });
 
         $(this).draggable({
@@ -43,7 +45,7 @@
           start: function (e) {
             let nodes = [];
             let $drag_element = $(this);
-            $.each(Drupal.MediaBrowser.selectedMedia, function () {
+            $.each(Drupal.MediaBrowser.getSelectedElements(), function () {
               // Do not include cloned element.
               if ($(this).is($drag_element)) {
                 return true;
@@ -66,14 +68,6 @@
             return $.vakata.dnd.start(e, { 'jstree': true, 'nodes': nodes }, $html);
           }
         });
-      });
-
-      $browser_listing.on('click',function (e) {
-        if ($(e.target).is($(this)) || $(e.target).is($('.media-listing'))) {
-          $(this).find('.media-item').removeClass('selected');
-        }
-
-        Drupal.MediaBrowser.toolbar.selectionChanged();
       });
     }
   };

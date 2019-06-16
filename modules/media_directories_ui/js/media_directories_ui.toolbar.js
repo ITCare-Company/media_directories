@@ -29,7 +29,7 @@
           return;
         }
 
-        $('.media-item.selected').map(function () {
+        $.each(Drupal.MediaBrowser.getSelectedElements(), function () {
           mids.push($(this).data('mid'));
         });
 
@@ -52,7 +52,7 @@
         }
         let mids = [];
 
-        $('.media-item.selected').map(function () {
+        $.each(Drupal.MediaBrowser.getSelectedElements(), function () {
           mids.push($(this).data('mid'));
         });
 
@@ -70,7 +70,7 @@
 
     },
     selectionChanged: function () {
-      const $selected = $('.media-item.selected');
+      const $selected = Drupal.MediaBrowser.getSelectedElements();
 
       if ($selected.length === 1) {
         this.buttons.media_edit.removeClass('is-disabled');

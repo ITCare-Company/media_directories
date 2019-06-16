@@ -25,9 +25,16 @@
       }
     };
 
+    Drupal.MediaBrowser.startLoader();
+
     Drupal.ajax(ajaxSettings).execute().done(function () {
       Drupal.MediaBrowser.media.init($('.browser--listing'));
-    });
+      $.each(Drupal.MediaBrowser.getSelectedElements(), function () {
+        $(this).addClass('selected');
+        $('input[type="checkbox"]', this).prop('checked', true);
+      });
 
+      Drupal.MediaBrowser.stopLoader();
+    });
   }
 })(jQuery, Drupal);

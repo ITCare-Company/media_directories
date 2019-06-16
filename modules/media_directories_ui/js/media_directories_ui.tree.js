@@ -35,11 +35,15 @@
           let directory_id = data.node.a_attr["data-tid"];
           Drupal.MediaBrowser.loadDirectoryContent(directory_id);
           Drupal.MediaBrowser.active_directory = directory_id;
+          // Clear selection from global storage.
+          Drupal.MediaBrowser.selectedMedia = [];
         }
       });
 
       $(this).on('loaded.jstree', function () {
         Drupal.MediaBrowser.loadDirectoryContent(-1);
+        // Clear selection from global storage.
+        Drupal.MediaBrowser.selectedMedia = [];
       });
 
       $(this).on('rename_node.jstree', function (event, data) {
