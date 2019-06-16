@@ -86,7 +86,6 @@
 
       });
     });
-
   };
 
   /**
@@ -97,7 +96,7 @@
       url: Drupal.MediaBrowser.getUrl('directory.content'),
       submit: {
         directory_id: directory_id,
-        target_bundles: Drupal.MediaBrowser.target_bundles
+        target_bundles: Drupal.MediaBrowser.targetBundles
       }
     };
 
@@ -121,7 +120,7 @@
         submit: {
           directory_id: directory_id,
           media_items: media_items,
-          target_bundles: Drupal.MediaBrowser.target_bundles,
+          target_bundles: Drupal.MediaBrowser.targetBundles,
         }
       };
 
@@ -147,7 +146,7 @@
         submit: {
           directory_id: directory_id,
           move_directory_id: move_directory_id,
-          target_bundles: Drupal.MediaBrowser.target_bundles,
+          target_bundles: Drupal.MediaBrowser.targetBundles,
         }
       };
 
@@ -191,7 +190,7 @@
       url: Drupal.MediaBrowser.getUrl('directory.delete'),
       submit: {
         directory_id: directory_id,
-        target_bundles: Drupal.MediaBrowser.target_bundles
+        target_bundles: Drupal.MediaBrowser.targetBundles
       }
     };
 

@@ -1,28 +1,65 @@
 (function ($, Drupal) {
 
+  /**
+   * Media item functionality.
+   *
+   * @type {{init: Drupal.MediaBrowser.media.init, ctrlPressed: boolean}}
+   */
   Drupal.MediaBrowser.media = {
+    /**
+     * Holds Control key state.
+     */
     ctrlPressed: false,
-
+    /**
+     * Bind events to media items.
+     */
     init: function () {
       const $browser_listing = $('.browser--listing');
       const cardinality = Drupal.MediaBrowser.cardinality;
+      const remaining = Drupal.MediaBrowser.remainingItems;
 
       // Attach listener to the top document and current document to
       // register keypress inside iframe without focusing iframe first.
-      $(top.document, document).on('keydown', function (e) {
-        if (e.which === 17) {
-          Drupal.MediaBrowser.media.ctrlPressed = true;
-        }
+      $(top.document).once('media-browser').each(function () {
+        $(this).on('keydown', function (e) {
+          if (e.which === 17) {
+            Drupal.MediaBrowser.media.ctrlPressed = true;
+          }
+        }).on('keyup', function () {
+          Drupal.MediaBrowser.media.ctrlPressed = false;
+        });
+      });
+      $(document).once('media-browser').each(function () {
+        $(this).on('keydown', function (e) {
+          if (e.which === 17) {
+            Drupal.MediaBrowser.media.ctrlPressed = true;
+          }
+        }).on('keyup', function () {
+          Drupal.MediaBrowser.media.ctrlPressed = false;
+        });
       });
 
-      $(top.document, document).on('keyup', function () {
-        Drupal.MediaBrowser.media.ctrlPressed = false;
-      });
-
+      // Media item click actions.
       $browser_listing.find('.media-item').once().each(function () {
         $(this).on('click', function () {
-          // TODO handle fixed cardinality > 1.
-          if (cardinality === 1 || !Drupal.MediaBrowser.media.ctrlPressed) {
+          let media_id = $(this).data('mid');
+          let selected_items = Drupal.MediaBrowser.selectedMedia.length;
+
+          let selection_limit = cardinality !== -1 && remaining > 1 && selected_items >= remaining;
+          // Check if item which was clicked is in selection already.
+          let selected_toggle = Drupal.MediaBrowser.selectedMedia.indexOf(media_id) !== -1;
+
+          // Do not allow selecting more items if maximum has been selected.
+          // We skip this if only one item can be selected
+          // or control is not pressed and we are not toggling existing item.
+          if (selection_limit && Drupal.MediaBrowser.media.ctrlPressed && !selected_toggle) {
+            return;
+          }
+
+          // Clear current selection, if Control key is not pressed or
+          // only one item is available to choose.
+          if (!Drupal.MediaBrowser.media.ctrlPressed || remaining === 1) {
+            console.log('remaining');
             $browser_listing.find('.media-item').each(function () {
               $(this).removeClass('selected');
               $('input[type="checkbox"]', this).prop('checked', false);
@@ -31,11 +68,26 @@
             Drupal.MediaBrowser.clearMediaSelection();
           }
 
-          $(this).toggleClass('selected');
+          // If user can choose only one item and it is already selected,
+          // we need to exit here to unselect single item.
+          if (selected_toggle && remaining === 1) {
+            return;
+          }
+
           let checkbox = $(this).find('input[type="checkbox"]');
+
+          // Remove element from selection if we toggle it.
+          if (checkbox.prop('checked')) {
+            Drupal.MediaBrowser.selectedMedia.splice(Drupal.MediaBrowser.selectedMedia.indexOf(media_id), 1);
+          }
+          else {
+            // Push media id to selection array.
+            Drupal.MediaBrowser.selectedMedia.push($(this).data('mid'));
+          }
+          // Toggle media element checkbox state.
           checkbox.prop("checked", !checkbox.prop("checked"));
-          // Push media id to selection array.
-          Drupal.MediaBrowser.selectedMedia.push($(this).data('mid'));
+          $(this).toggleClass('selected');
+          // Notify toolbar items.
           Drupal.MediaBrowser.toolbar.selectionChanged();
         });
 

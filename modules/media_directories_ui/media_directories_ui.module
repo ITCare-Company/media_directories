@@ -97,6 +97,10 @@ function media_directories_ui_preprocess_media_directories_add(&$variables) {
   ];
 
   foreach ($types as $type) {
+    if (!in_array($type->id(), $variables['target_bundles'], TRUE)) {
+      continue;
+    }
+
     $variables['links']['#links'][$type->id()] = [
       'title' => $type->label(),
       'url' => Url::fromRoute('media_directories_ui.media.add', [], [
@@ -134,4 +138,23 @@ function media_directories_ui_preprocess_media_directories_add(&$variables) {
     $variables['media_form'] = \Drupal::formBuilder()->buildForm(OEmbedForm::class, $form_state);
   }
 
+}
+
+/**
+ * Implements hook_field_widget_WIDGET_TYPE_form_alter().
+ */
+function media_directories_ui_field_widget_entity_browser_entity_reference_form_alter(&$element, \Drupal\Core\Form\FormStateInterface $form_state, $context) {
+  if (isset($element['entity_browser']) && $element['entity_browser']['#entity_browser'] === 'media_browser') {
+    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $items */
+    $items = $context['items'];
+    $handler_settings = $items->getSetting('handler_settings');
+    $target_bundles = $handler_settings['target_bundles'];
+    // Add bundle validation constraint to entity browser.
+    $element['entity_browser']['#entity_browser_validators']['target_bundles'] = ['bundle' => $target_bundles];
+
+    $current_items = $element['current']['items'];
+    $cardinality = $element['entity_browser']['#cardinality'];
+
+    $element['entity_browser']['#widget_context']['remaining'] = $cardinality - count($current_items);
+  }
 }

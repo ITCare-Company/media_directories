@@ -17,6 +17,8 @@ We don't use separate library builder or state service, at least for now, in the
 it should use core classes instead of duplicating them. The main reason for this is
 that it forces library view, but we really don't need it, and working around of it at first was a bit difficult.
 
+To select multiple items, hold ctrl key while clicking.
+
 
 ROADMAP
 =============

@@ -113,10 +113,15 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
     ];
 
     $cardinality = (int) NestedArray::getValue($form_state->getStorage(), ['entity_browser', 'validators', 'cardinality', 'cardinality']);
+    $remaining = (int) NestedArray::getValue($form_state->getStorage(), ['entity_browser', 'widget_context', 'remaining']);
     $target_bundles = NestedArray::getValue($form_state->getStorage(), ['entity_browser', 'validators', 'target_bundles']);
 
     if ($cardinality) {
       $form['#attached']['drupalSettings']['media_directories']['cardinality'] = $cardinality;
+    }
+
+    if ($remaining) {
+      $form['#attached']['drupalSettings']['media_directories']['remaining'] = $remaining;
     }
 
     if ($target_bundles) {

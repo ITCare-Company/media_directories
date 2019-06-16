@@ -82,6 +82,8 @@
      */
     selectionChanged: function () {
       const $selected = Drupal.MediaBrowser.getSelectedElements();
+      const remaining = Drupal.MediaBrowser.remainingItems;
+      let status_text = null;
 
       if ($selected.length === 1) {
         this.buttons.media_edit.removeClass('is-disabled');
@@ -98,6 +100,19 @@
         this.buttons.media_delete.removeClass('is-disabled');
         this.buttons.submit.removeAttr('disabled');
       }
+
+      if (Drupal.MediaBrowser.cardinality === -1) {
+        status_text = Drupal.formatPlural($selected.length, '@count item selected', '@count items selected', {
+          '@count': $selected.length
+        });
+      }
+      else {
+        status_text = Drupal.formatPlural(remaining, '@selected of @count item selected', '@selected of @count items selected', {
+          '@selected': $selected.length
+        });
+      }
+
+      $('.browser--footer .browser-status').text(status_text)
     }
   };
 

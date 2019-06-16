@@ -6,6 +6,7 @@
     selectedMedia: [],
     targetBundles: [],
     cardinality: -1,
+    remainingItems: null,
     urls: {}
   };
 
@@ -27,6 +28,10 @@
 
       if ('cardinality' in drupalSettings.media_directories) {
         this.cardinality = drupalSettings.media_directories.cardinality;
+      }
+
+      if ('remaining' in drupalSettings.media_directories) {
+        this.remainingItems = drupalSettings.media_directories.remaining;
       }
 
     }
