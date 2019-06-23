@@ -1,0 +1,25 @@
+status: true
+dependencies:
+  module:
+    - views
+name: editor_browser
+label: 'Editor browser'
+display: iframe
+display_configuration:
+  width: 100%
+  height: '500'
+  link_text: 'Select media'
+  auto_open: true
+selection_display: no_display
+selection_display_configuration: {  }
+widget_selector: single
+widget_selector_configuration: {  }
+widgets:
+  5bc2a17c-b080-4a3b-867c-7953ae9b55c4:
+    settings:
+      submit_text: 'Select media'
+      auto_select: 0
+    uuid: 5bc2a17c-b080-4a3b-867c-7953ae9b55c4
+    weight: -10
+    label: 'Browser'
+    id: directory_browser
