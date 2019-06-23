@@ -165,7 +165,7 @@
    */
   Drupal.MediaBrowser.renameDirectory = function (directory_id, new_name) {
     let ajaxSettings = {
-      url: this.MediaBrowser.getUrl('directory.rename'),
+      url: Drupal.MediaBrowser.getUrl('directory.rename'),
       submit: {
         directory_id: directory_id,
         directory_new_name: new_name,

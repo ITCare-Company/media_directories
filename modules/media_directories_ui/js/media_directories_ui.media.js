@@ -59,7 +59,6 @@
           // Clear current selection, if Control key is not pressed or
           // only one item is available to choose.
           if (!Drupal.MediaBrowser.media.ctrlPressed || remaining === 1) {
-            console.log('remaining');
             $browser_listing.find('.media-item').each(function () {
               $(this).removeClass('selected');
               $('input[type="checkbox"]', this).prop('checked', false);

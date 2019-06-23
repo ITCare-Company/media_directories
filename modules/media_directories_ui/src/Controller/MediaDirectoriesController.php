@@ -155,6 +155,7 @@ class MediaDirectoriesController extends ControllerBase {
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
    *
+   * @return \Drupal\Core\Ajax\AjaxResponse
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function directoryRename(Request $request) {
@@ -163,6 +164,10 @@ class MediaDirectoriesController extends ControllerBase {
     $directory = Term::load($directory_id);
     $directory->setName($new_name);
     $directory->save();
+
+    $response = new AjaxResponse();
+
+    return $response;
   }
 
   /**
@@ -229,6 +234,8 @@ class MediaDirectoriesController extends ControllerBase {
    * @param \Symfony\Component\HttpFoundation\Request $request
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function mediaAdd(Request $request) {
     $response = new AjaxResponse();

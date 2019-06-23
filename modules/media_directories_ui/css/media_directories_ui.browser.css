@@ -52,6 +52,7 @@
 
 .browser--tree {
   width: 25%;
+  max-width: 350px;
   background: #fcfcfa;
   padding: 0;
   border-right: 1px solid #ccc;
@@ -59,6 +60,7 @@
 
 .browser--listing {
   width: 75%;
+  flex-grow: 1;
   padding: 1em;
   overflow: auto;
 }
@@ -80,7 +82,7 @@
 }
 
 .media-browser--full .browser--body {
-  height: calc(100% - 53px - 27px);
+  height: calc(100% - 53px - 47px);
 }
 
 .jstree-wholerow-ul {
