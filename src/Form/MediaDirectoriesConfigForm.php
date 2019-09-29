@@ -81,6 +81,13 @@ class MediaDirectoriesConfigForm extends ConfigFormBase {
       '#default_value' => $config->get('directory_taxonomy'),
     ];
 
+    $form['all_files_in_root'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Show all files in Root directory'),
+      '#description' => $this->t('By checking this option, Root directory will show all the files.'),
+      '#default_value' => $config->get('all_files_in_root'),
+    ];
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -90,6 +97,7 @@ class MediaDirectoriesConfigForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->config('media_directories.settings')
       ->set('directory_taxonomy', $form_state->getValue('directory_taxonomy'))
+      ->set('all_files_in_root', $form_state->getValue('all_files_in_root'))
       ->save();
 
     // Clear cache to change base field settings.

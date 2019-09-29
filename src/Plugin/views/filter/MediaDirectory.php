@@ -187,9 +187,10 @@ class MediaDirectory extends ManyToOne {
    */
   public function query() {
     $this->ensureMyTable();
+    $config = $this->configFactory->get('media_directories.settings');
 
     // If the value is 'All', then we show only elements with empty value.
-    if ($this->validated_exposed_input[0] === 'All') {
+    if ($this->validated_exposed_input[0] === 'All' && !$config->get('all_files_in_root')) {
       $this->query->addWhereExpression(0, "$this->tableAlias.$this->realField IS NULL");
     }
     else {

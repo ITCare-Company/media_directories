@@ -2,9 +2,11 @@
 
 namespace Drupal\media_directories\Plugin\views\argument;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\views\Plugin\views\argument\ArgumentPluginBase;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Media directory argument plugin.
@@ -14,6 +16,13 @@ use Drupal\views\Plugin\views\argument\ArgumentPluginBase;
  * @ViewsArgument("media_directory")
  */
 class MediaDirectoryArgument extends ArgumentPluginBase {
+
+  /**
+   * The configuration factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
 
   /**
    * The operator used for the query: or|and.
@@ -26,6 +35,30 @@ class MediaDirectoryArgument extends ArgumentPluginBase {
    * @var array
    */
   public $value;
+
+  /**
+   * Constructs a PluginBase object.
+   *
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin_id for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   */
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, ConfigFactoryInterface $configFactory) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+
+    $this->definition = $plugin_definition + $configuration;
+    $this->configFactory = $configFactory;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static($configuration, $plugin_id, $plugin_definition, $container->get('config.factory'));
+  }
 
   protected function defineOptions() {
     return parent::defineOptions();
@@ -72,12 +105,13 @@ class MediaDirectoryArgument extends ArgumentPluginBase {
 
   public function query($group_by = FALSE) {
     $this->ensureMyTable();
+    $config = $this->configFactory->get('media_directories.settings');
 
     $this->value = (int)$this->argument;
     $placeholder = $this->placeholder();
     $null_check = empty($this->options['not']) ? '' : " OR $this->tableAlias.$this->realField IS NULL";
 
-    if ($this->value === MEDIA_DIRECTORY_ROOT) {
+    if ($this->value === MEDIA_DIRECTORY_ROOT && !$config->get('all_files_in_root')) {
       $this->query->addWhereExpression(0, "$this->tableAlias.$this->realField IS NULL");
     }
     else {
