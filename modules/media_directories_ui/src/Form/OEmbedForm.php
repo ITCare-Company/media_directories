@@ -113,12 +113,13 @@ class OEmbedForm extends AddMediaFormBase {
         // posted to <current> instead of $form['#action'].
         // @todo Remove when https://www.drupal.org/project/drupal/issues/2504115
         //   is fixed.
-        /*'url' => Url::fromRoute('media_library.ui'),
+        'url' => Url::fromRoute('media_directories_ui.media.add'),
         'options' => [
-          'query' => $this->getMediaLibraryState($form_state)->all() + [
+          'query' => [
+              'media_type' => ($form_state->get('media_type') ? $form_state->get('media_type')->id() : $form_state->get('selected_type')),
               FormBuilderInterface::AJAX_FORM_REQUEST => TRUE,
             ],
-        ],*/
+        ],
       ],
       '#attributes' => [
         'class' => ['media-library-add-form-oembed-submit'],

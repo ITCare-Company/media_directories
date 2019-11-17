@@ -241,10 +241,17 @@ class MediaDirectoriesController extends ControllerBase {
     $response = new AjaxResponse();
     $active_directory = (int) $request->get('active_directory', MEDIA_DIRECTORY_ROOT);
     $target_bundles = $request->get('target_bundles');
-    /** @var \Drupal\media\Entity\MediaType[] $types */
-    $types = $this->entityTypeManager()->getStorage('media_type')->loadMultiple();
-    $type_keys = array_keys($types);
-    $selected_type = $request->get('media_type', reset($type_keys));
+    if ($target_bundles) {
+      // Here we land if no file is present.
+      $selected_type = reset($target_bundles);
+    }
+    else {
+      // Here we land when a file was just picked by the user.
+      /** @var \Drupal\media\Entity\MediaType[] $types */
+      $types = $this->entityTypeManager()->getStorage('media_type')->loadMultiple();
+      $type_keys = array_keys($types);
+      $selected_type = $request->get('media_type', reset($type_keys));
+    }
 
     $build = [
       '#theme' => 'media_directories_add',
