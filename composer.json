@@ -1,0 +1,9 @@
+{
+    "name": "drupal/media_directories",
+    "type": "drupal-module",
+    "description": "Add directory structure to Media entities.",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "drupal/core": "~8.7.0"
+    }
+}
