@@ -28,7 +28,7 @@ class FileUploadForm extends AddMediaFormBase {
         'file_validate_extensions' => [$field_config->getSetting('file_extensions')],
       ],
       '#multiple' => TRUE,
-      '#upload_location' => 'public://media-directories/',
+      '#upload_location' => $this->getUploadLocation($field_config->getSettings()),
       '#process' => array_merge(['::validateUploadElement'], $process, ['::processUploadElement']),
     ];
 

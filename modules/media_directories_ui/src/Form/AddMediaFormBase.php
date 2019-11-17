@@ -9,6 +9,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Utility\Token;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\file\Entity\File;
 use Drupal\media\MediaInterface;
@@ -59,7 +60,8 @@ abstract class AddMediaFormBase extends FormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('entity_type.manager'),
-      $container->get('current_user')
+      $container->get('current_user'),
+      $container->get('token')
     );
   }
 

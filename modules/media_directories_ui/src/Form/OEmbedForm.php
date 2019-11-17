@@ -5,6 +5,7 @@ namespace Drupal\media_directories_ui\Form;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\Core\Utility\Token;
 use Drupal\media\OEmbed\ResourceException;
 use Drupal\media\OEmbed\ResourceFetcherInterface;
 use Drupal\media\OEmbed\UrlResolverInterface;
@@ -33,13 +34,14 @@ class OEmbedForm extends AddMediaFormBase {
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
+   * @param \Drupal\Core\Utility\Token $token
    * @param \Drupal\media\OEmbed\UrlResolverInterface $url_resolver
    *   The oEmbed URL resolver service.
    * @param \Drupal\media\OEmbed\ResourceFetcherInterface $resource_fetcher
    *   The oEmbed resource fetcher service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, UrlResolverInterface $url_resolver, ResourceFetcherInterface $resource_fetcher) {
-    parent::__construct($entity_type_manager, $current_user);
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, Token $token, UrlResolverInterface $url_resolver, ResourceFetcherInterface $resource_fetcher) {
+    parent::__construct($entity_type_manager, $current_user, $token);
     $this->urlResolver = $url_resolver;
     $this->resourceFetcher = $resource_fetcher;
   }
@@ -51,6 +53,7 @@ class OEmbedForm extends AddMediaFormBase {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('current_user'),
+      $container->get('token'),
       $container->get('media.oembed.url_resolver'),
       $container->get('media.oembed.resource_fetcher')
     );
