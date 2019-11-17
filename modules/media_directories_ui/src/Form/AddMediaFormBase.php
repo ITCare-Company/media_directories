@@ -181,6 +181,11 @@ abstract class AddMediaFormBase extends FormBase {
     /** @var \Drupal\media\Entity\Media[] $added_media */
     $added_media = $form_state->get('media');
 
+    $form['active_directory'] = [
+      '#type' => 'hidden',
+      '#value' => $this->getDirectory($form_state),
+    ];
+
     if (empty($added_media)) {
       $form['#attributes']['class'][] = 'media-library-add-form--without-input';
       $form = $this->buildInputElement($form, $form_state);

@@ -243,7 +243,7 @@ class MediaDirectoriesController extends ControllerBase {
     $target_bundles = $request->get('target_bundles');
     if ($target_bundles) {
       // Here we land if no file is present.
-      $selected_type = reset($target_bundles);
+      $selected_type = $request->get('media_type', reset($target_bundles));
     }
     else {
       // Here we land when a file was just picked by the user.
