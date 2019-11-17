@@ -4,7 +4,7 @@ media_directories.settings:
   mapping:
     directory_taxonomy:
       type: string
-      label: 'Taxonomy',
+      label: 'Taxonomy'
     all_files_in_root:
       type: boolean
       label: 'Show all files in Root directory'
