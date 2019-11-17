@@ -274,7 +274,7 @@ display:
           empty: true
           tokenize: false
           content:
-            value: 'Kaust on tühi'
+            value: 'Folder is empty'
             format: full_html
           plugin_id: text
       relationships: {  }
