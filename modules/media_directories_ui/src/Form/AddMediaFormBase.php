@@ -1,6 +1,7 @@
 <?php
 namespace Drupal\media_directories_ui\Form;
 
+use Drupal\Component\Render\PlainTextOutput;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\CloseModalDialogCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
@@ -42,14 +43,22 @@ abstract class AddMediaFormBase extends FormBase {
   protected $currentUser;
 
   /**
+   * The token replacement instance.
+   *
+   * @var \Drupal\Core\Utility\Token
+   */
+  protected $token;
+
+  /**
    * AddMediaFormBase constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, Token $token) {
     $this->entityTypeManager = $entity_type_manager;
     $this->currentUser = $current_user;
+    $this->token = $token;
   }
 
   /**
@@ -117,6 +126,26 @@ abstract class AddMediaFormBase extends FormBase {
 
     return $bundles;
   }
+
+  /**
+   * Determines the URI for a file field.
+   *
+   * @param array $settings
+   *   The array of field settings.
+   *
+   * @return string
+   *   An un-sanitized file directory URI with tokens replaced. The result of
+   *   the token replacement is then converted to plain text and returned.
+   */
+  protected function getUploadLocation(array $settings) {
+    $destination = trim($settings['file_directory'], '/');
+
+     // Replace tokens. As the tokens might contain HTML we convert it to plain
+     // text.
+     $destination = PlainTextOutput::renderFromHtml($this->token->replace($destination, []));
+     return $settings['uri_scheme'] . '://' . $destination;
+ }
+
 
   /**
    * Form constructor.
