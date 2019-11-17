@@ -161,7 +161,10 @@ abstract class AddMediaFormBase extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form['#prefix'] = '<div id="media-library-add-form-wrapper" class="media-library-add-form-wrapper">';
     $form['#suffix'] = '</div>';
+    // For 8.7.
     $form['#attached']['library'][] = 'media_library/style';
+    // For 8.8, style moved to seven theme. It should work with 8.7.
+    $form['#attached']['library'][] = 'seven/media_library';
 
     // The form is posted via AJAX. When there are messages set during the
     // validation or submission of the form, the messages need to be shown to
