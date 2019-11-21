@@ -186,6 +186,20 @@ abstract class AddMediaFormBase extends FormBase {
       '#value' => $this->getDirectory($form_state),
     ];
 
+    $target_bundles = $this->getTargetBundles($form_state);
+
+    $form['target_bundles'] = [
+      '#tree' => TRUE,
+    ];
+
+    foreach ($target_bundles as $bundle) {
+      $form['target_bundles'][$bundle] = [
+        '#type' => 'hidden',
+        '#value' => $bundle,
+      ];
+    }
+
+
     if (empty($added_media)) {
       $form['#attributes']['class'][] = 'media-library-add-form--without-input';
       $form = $this->buildInputElement($form, $form_state);
