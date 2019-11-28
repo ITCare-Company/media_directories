@@ -178,7 +178,14 @@ class MediaDirectory extends ManyToOne {
     parent::exposedTranslate($form, $type);
 
     if (isset($form['#type']) && $form['#type'] === 'select') {
-      $form['#options']['All'] = $this->t('Root directory');
+      $config = $this->configFactory->get('media_directories.settings');
+
+      if ($config->get('all_files_in_root')) {
+        $form['#options']['All'] = $this->t('All directories');
+      }
+      else {
+        $form['#options']['All'] = $this->t('Root directory');
+      }
     }
   }
 
@@ -190,8 +197,14 @@ class MediaDirectory extends ManyToOne {
     $config = $this->configFactory->get('media_directories.settings');
 
     // If the value is 'All', then we show only elements with empty value.
-    if ($this->validated_exposed_input[0] === 'All' && !$config->get('all_files_in_root')) {
+    if ($this->validated_exposed_input[0] === 'All') {
       $this->query->addWhereExpression(0, "$this->tableAlias.$this->realField IS NULL");
+
+      if ($config->get('all_files_in_root')) {
+        // Show everything.
+        $this->query->setWhereGroup('OR', 0);
+        $this->query->addWhereExpression(0, "$this->tableAlias.$this->realField IS NOT NULL");
+      }
     }
     else {
       parent::query();
