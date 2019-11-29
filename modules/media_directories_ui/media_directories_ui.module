@@ -97,7 +97,7 @@ function media_directories_ui_preprocess_media_directories_add(&$variables) {
   ];
 
   foreach ($types as $type) {
-    if (!in_array($type->id(), $variables['target_bundles'], TRUE)) {
+    if (!is_array($variables['target_bundles']) || !in_array($type->id(), $variables['target_bundles'], TRUE)) {
       continue;
     }
 
