@@ -35,15 +35,18 @@
           let directory_id = data.node.a_attr["data-tid"];
           Drupal.MediaBrowser.loadDirectoryContent(directory_id);
           Drupal.MediaBrowser.active_directory = directory_id;
-          // Clear selection from global storage.
-          Drupal.MediaBrowser.selectedMedia = [];
+
+          if (drupalSettings.media_directories.selection_mode != 'keep') {
+            // Clear selection from global storage.
+            Drupal.MediaBrowser.clearMediaSelection();
+          }
         }
       });
 
       $(this).on('loaded.jstree', function () {
         Drupal.MediaBrowser.loadDirectoryContent(-1);
         // Clear selection from global storage.
-        Drupal.MediaBrowser.selectedMedia = [];
+        Drupal.MediaBrowser.clearMediaSelection();
       });
 
       $(this).on('rename_node.jstree', function (event, data) {
@@ -107,6 +110,16 @@
       Drupal.MediaBrowser.media.init($('.browser--listing'));
       // Unlock the UI.
       Drupal.MediaBrowser.stopLoader();
+
+      // Set previous selection, if there is any.
+      $.each(Drupal.MediaBrowser.getSelectedMids(), function (key, value) {
+        var $element = Drupal.MediaBrowser.getMediaElement(value);
+        if ($element.length > 0) {
+          $element.addClass('selected');
+          $('input[type="checkbox"]', $element).prop('checked', true);
+        }
+      });
+      Drupal.MediaBrowser.toolbar.selectionChanged();
     });
   };
 

@@ -97,8 +97,12 @@
           start: function (e) {
             let nodes = [];
 
-            $.each(Drupal.MediaBrowser.getSelectedElements(), function (key, value) {
-              nodes.push({ id : $(value).data('mid'), element: $(value) });
+            $.each(Drupal.MediaBrowser.getSelectedMids(), function (key, value) {
+              let $element = Drupal.MediaBrowser.getMediaElement(value);
+              if ($element.length == 0) {
+                $element = $('<div>' + Drupal.t('Placeholder') + '</div>');
+              }
+              nodes.push({ id : value, element: $element });
             });
 
             // If nothing is selected, then just use active item.

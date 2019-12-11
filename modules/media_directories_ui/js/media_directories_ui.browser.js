@@ -69,24 +69,49 @@
   };
 
   /**
-   * Get DOM elements which are selected.
+   * Get elements which are selected.
+   * State only stores media ID's, because DOM will change and
+   * we need to restore selection in some cases.
+   *
+   * @returns {Array}
+   */
+  Drupal.MediaBrowser.getSelectedMids = function () {
+    var mids = [];
+
+    $.each(Drupal.MediaBrowser.selectedMedia, function (key, value) {
+      mids.push(value);
+    });
+
+    return mids;
+  };
+
+  /**
+   * Get DOM elements which are selected and visible.
    * State only stores media ID's, because DOM will change and
    * we need to restore selection in some cases.
    *
    * @returns {Array}
    */
   Drupal.MediaBrowser.getSelectedElements = function () {
-    const $browser_listing = $('.browser--listing');
     let elements = [];
 
-    $.each(Drupal.MediaBrowser.selectedMedia, function (key, value) {
-      let media_element = $('[data-mid="' + value + '"]', $browser_listing);
+    $.each(Drupal.MediaBrowser.getSelectedMids(), function (key, value) {
+      let media_element = Drupal.MediaBrowser.getMediaElement(value);
       if (media_element.length > 0) {
         elements.push(media_element);
       }
     });
 
     return elements;
+  };
+
+  /**
+   * Get a DOM element by a media entity id.
+   *
+   * @returns {Array}
+   */
+  Drupal.MediaBrowser.getMediaElement = function (mid) {
+    return $('.browser--listing [data-mid="' + mid + '"]');
   };
 
   /**

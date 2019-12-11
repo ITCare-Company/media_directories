@@ -15,12 +15,18 @@ class RefreshDirectoryTree implements CommandInterface {
   protected $selected_directory;
 
   /**
+   * @var
+   */
+  protected $newly_selected_entity_ids;
+
+  /**
    * RefreshDirectoryTree constructor.
    *
    * @param int $selected_directory
    */
-  public function __construct($selected_directory = MEDIA_DIRECTORY_ROOT) {
+  public function __construct($selected_directory = MEDIA_DIRECTORY_ROOT, $newly_selected_entity_ids = []) {
     $this->selected_directory = $selected_directory;
+    $this->newly_selected_entity_ids = $newly_selected_entity_ids;
   }
 
   /**
@@ -30,7 +36,8 @@ class RefreshDirectoryTree implements CommandInterface {
     return [
       'command' => 'refreshDirectoryTree',
       'data' => [
-        'selected_directory' => $this->selected_directory,
+        'selected_directory' => (isset($this->selected_directory) ? $this->selected_directory : MEDIA_DIRECTORY_ROOT),
+        'newly_selected_entity_ids' => $this->newly_selected_entity_ids,
       ]
     ];
   }

@@ -31,11 +31,7 @@
     Drupal.ajax(ajaxSettings).execute().done(function () {
       // Bind events.
       Drupal.MediaBrowser.media.init($('.browser--listing'));
-      // Set previous selection, if there is any.
-      $.each(Drupal.MediaBrowser.getSelectedElements(), function () {
-        $(this).addClass('selected');
-        $('input[type="checkbox"]', this).prop('checked', true);
-      });
+
 
       // Release UI lock.
       Drupal.MediaBrowser.stopLoader();

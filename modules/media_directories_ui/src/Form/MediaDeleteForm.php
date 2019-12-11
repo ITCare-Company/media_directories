@@ -66,6 +66,8 @@ class MediaDeleteForm extends ConfirmFormBase {
       }
     }
 
+    $form['question']['#markup'] = '<h4>' . $this->getQuestion() . '</h4>';
+
     $form = parent::buildForm($form, $form_state);
 
     $form['#attached']['library'][] = 'core/drupal.dialog.ajax';

@@ -21,6 +21,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
  * Uses a view to provide entity listing in a browser's widget.
@@ -43,6 +44,14 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
   protected $currentUser;
 
   /**
+   * The active route match object.
+   *
+   * @var \Drupal\Core\Routing\RouteMatchInterface
+   */
+  protected $routeMatch;
+
+
+  /**
    * {@inheritdoc}
    */
   public function defaultConfiguration() {
@@ -61,7 +70,8 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
       $container->get('event_dispatcher'),
       $container->get('entity_type.manager'),
       $container->get('plugin.manager.entity_browser.widget_validation'),
-      $container->get('current_user')
+      $container->get('current_user'),
+      $container->get('current_route_match')
     );
   }
 
@@ -82,10 +92,13 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
    *   The Widget Validation Manager service.
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The current user.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The active route match object.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EventDispatcherInterface $event_dispatcher, EntityTypeManagerInterface $entity_type_manager, WidgetValidationManager $validation_manager, AccountInterface $current_user) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EventDispatcherInterface $event_dispatcher, EntityTypeManagerInterface $entity_type_manager, WidgetValidationManager $validation_manager, AccountInterface $current_user, RouteMatchInterface $route_match) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $event_dispatcher, $entity_type_manager, $validation_manager);
     $this->currentUser = $current_user;
+    $this->routeMatch = $route_match;
   }
 
   /**
@@ -111,6 +124,15 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
       'media.move' => Url::fromRoute('media_directories_ui.media.move')->toString(),
       'media.delete' => Url::fromRoute('media_directories_ui.media.delete')->toString(),
     ];
+
+    // Decide the selection mode.
+    $route_parameter_entity_browser_id = $this->routeMatch->getParameter('entity_browser_id');
+    $selection_mode = 'reset';
+    if ($route_parameter_entity_browser_id == 'directory_browser') {
+      // We are on the media overview page.
+      $selection_mode = 'keep';
+    }
+    $form['#attached']['drupalSettings']['media_directories']['selection_mode'] = $selection_mode;
 
     $cardinality = (int) NestedArray::getValue($form_state->getStorage(), ['entity_browser', 'validators', 'cardinality', 'cardinality']);
     $remaining = (int) NestedArray::getValue($form_state->getStorage(), ['entity_browser', 'widget_context', 'remaining']);

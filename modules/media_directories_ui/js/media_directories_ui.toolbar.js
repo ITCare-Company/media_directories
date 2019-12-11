@@ -36,8 +36,8 @@
           return;
         }
 
-        $.each(Drupal.MediaBrowser.getSelectedElements(), function () {
-          mids.push($(this).data('mid'));
+        $.each(Drupal.MediaBrowser.getSelectedMids(), function (key, value) {
+          mids.push(value);
         });
 
         let ajaxSettings = {
@@ -60,8 +60,8 @@
         }
         let mids = [];
 
-        $.each(Drupal.MediaBrowser.getSelectedElements(), function () {
-          mids.push($(this).data('mid'));
+        $.each(Drupal.MediaBrowser.getSelectedMids(), function (key, value) {
+          mids.push(value);
         });
 
         let ajaxSettings = {
@@ -81,16 +81,16 @@
      * Set correct states for toolbar buttons.
      */
     selectionChanged: function () {
-      const $selected = Drupal.MediaBrowser.getSelectedElements();
+      const selected = Drupal.MediaBrowser.getSelectedMids();
       const remaining = Drupal.MediaBrowser.remainingItems;
       let status_text = null;
 
-      if ($selected.length === 1) {
+      if (selected.length === 1) {
         this.buttons.media_edit.removeClass('is-disabled');
         this.buttons.media_delete.removeClass('is-disabled');
         this.buttons.submit.removeAttr('disabled');
       }
-      else if ($selected.length === 0) {
+      else if (selected.length === 0) {
         this.buttons.media_edit.addClass('is-disabled');
         this.buttons.media_delete.addClass('is-disabled');
         this.buttons.submit.attr('disabled', 'disabled');
@@ -102,13 +102,13 @@
       }
 
       if (Drupal.MediaBrowser.cardinality === -1) {
-        status_text = Drupal.formatPlural($selected.length, '@count item selected', '@count items selected', {
-          '@count': $selected.length
+        status_text = Drupal.formatPlural(selected.length, '@count item selected', '@count items selected', {
+          '@count': selected.length
         });
       }
       else {
         status_text = Drupal.formatPlural(remaining, '@selected of @count item selected', '@selected of @count items selected', {
-          '@selected': $selected.length
+          '@selected': selected.length
         });
       }
 

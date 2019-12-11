@@ -2,6 +2,11 @@
   Drupal.AjaxCommands.prototype.refreshDirectoryTree = function (ajax, response, status) {
     const $jsTree = $(Drupal.MediaBrowser.treeSelector);
     let selected_directory = parseInt(response.data.selected_directory);
+    if (response.data.newly_selected_entity_ids.length > 0) {
+      $.each(response.data.newly_selected_entity_ids, function (key, value) {
+        Drupal.MediaBrowser.selectedMedia.push(value);
+      });
+    }
 
     $jsTree.one('refresh.jstree', function() {
       let node_id = selected_directory === -1 ? 'dir-root' : 'dir-' + selected_directory;

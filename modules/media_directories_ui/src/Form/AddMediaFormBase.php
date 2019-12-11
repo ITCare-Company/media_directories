@@ -15,7 +15,7 @@ use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\file\Entity\File;
 use Drupal\media\MediaInterface;
 use Drupal\media\MediaTypeInterface;
-use Drupal\media_directories_ui\Ajax\LoadDirectoryContent;
+use Drupal\media_directories_ui\Ajax\RefreshDirectoryTree;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -282,12 +282,26 @@ abstract class AddMediaFormBase extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $added_media = $form_state->get('media');
 
+    $tmp_tid_mids = [];
     foreach ($added_media as $delta => $media) {
       EntityFormDisplay::collectRenderDisplay($media, 'media_library')
         ->extractFormValues($media, $form['media'][$delta]['fields'], $form_state);
       //$this->prepareMediaEntityForSave($media);
       $media->save();
+      $tmp_tid_mids[(isset($media->get('directory')->target_id) ? $media->get('directory')->target_id : MEDIA_DIRECTORY_ROOT)][] = $media->id();
     }
+
+    // Support multi value fields.
+    $tid_holding_most_mids  = -1;
+    foreach ($tmp_tid_mids as $tid => $mids) {
+      if (!isset($tmp_tid_mids[$tid_holding_most_mids]) ||
+        (count($tmp_tid_mids[$tid_holding_most_mids]) < count($tmp_tid_mids[$tid]))) {
+        $tid_holding_most_mids = $tid;
+      }
+    }
+
+    $form_state->setValue('newly_added_media_ids', $tmp_tid_mids[$tid_holding_most_mids]);
+    $form_state->setValue('most_choosen_directory_tid', $tid_holding_most_mids);
   }
 
   /**
@@ -599,7 +613,7 @@ abstract class AddMediaFormBase extends FormBase {
     $response = new AjaxResponse();
     //$response->addCommand(new UpdateSelectionCommand($media_ids));
     $response->addCommand(new CloseModalDialogCommand());
-    $response->addCommand(new LoadDirectoryContent());
+    $response->addCommand(new RefreshDirectoryTree($form_state->getValue('most_choosen_directory_tid'), $form_state->getValue('newly_added_media_ids')));
 
     return $response;
   }
