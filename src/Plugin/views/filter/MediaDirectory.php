@@ -93,16 +93,20 @@ class MediaDirectory extends ManyToOne {
   protected function valueForm(&$form, FormStateInterface $form_state) {
     $config = $this->configFactory->get('media_directories.settings');
     $vid = $config->get('directory_taxonomy');
-    $vocabulary = $this->vocabularyStorage->load($vid);
 
-    if (empty($vocabulary)) {
+    if (empty($vid)) {
       $settings_url = Url::fromRoute('media_directories.config_form');
       $form['markup'] = [
         '#markup' => '<div class="js-form-item form-item">' . $this->t('Vocabulary is not selected. Please select it in the <a href="@url">settings</a>.', ['@url' => $settings_url->toString()]) . '</div>',
       ];
+      $form['value'] = [
+        '#type' => 'hidden',
+        '#default_value' => MEDIA_DIRECTORY_ROOT,
+      ];
       return;
     }
 
+    $vocabulary = $this->vocabularyStorage->load($vid);
     $tree = $this->termStorage->loadTree($vocabulary->id(), 0, NULL, TRUE);
     $options = [];
 

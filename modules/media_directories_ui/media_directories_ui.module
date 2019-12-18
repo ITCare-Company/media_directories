@@ -172,6 +172,11 @@ function media_directories_ui_form_entity_browser_directory_browser_form_alter(&
   if (!_media_directories_ui_library_file_exists('jstree')) {
     \Drupal::messenger()->addError(t('The <a href=":url">jsTree library</a> should be installed at <strong>/libraries/jstree/dist/jstree.min.js</strong>, or any path supported by libraries.module if installed.', [':url' => 'https://github.com/vakata/jstree']));
   }
+
+  if(!_media_directories_ui_vocabulary_set()) {
+    $settings_url = Url::fromRoute('media_directories.config_form');
+    \Drupal::messenger()->addError(t('Vocabulary is not selected. Please select it in the <a href="@url">settings</a>.', ['@url' => $settings_url->toString()]));
+  }
 }
 
 /**
@@ -180,6 +185,11 @@ function media_directories_ui_form_entity_browser_directory_browser_form_alter(&
 function media_directories_ui_form_entity_browser_media_browser_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
   if (!_media_directories_ui_library_file_exists('jstree')) {
     \Drupal::messenger()->addError(t('The <a href=":url">jsTree library</a> should be installed at <strong>/libraries/jstree/dist/jstree.min.js</strong>, or any path supported by libraries.module if installed.', [':url' => 'https://github.com/vakata/jstree']));
+  }
+
+  if(!_media_directories_ui_vocabulary_set()) {
+    $settings_url = Url::fromRoute('media_directories.config_form');
+    \Drupal::messenger()->addError(t('Vocabulary is not selected. Please select it in the <a href="@url">settings</a>.', ['@url' => $settings_url->toString()]));
   }
 }
 
@@ -216,6 +226,19 @@ function _media_directories_ui_library_file_exists($library_name) {
   $library = $library_discovery->getLibraryByName('media_directories_ui', $library_name);
   if ($library && file_exists($library['js'][0]['data'])) {
     // File is in place.
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+/**
+ *  Helper function to see if vocabulary is setup.
+ */
+function _media_directories_ui_vocabulary_set() {
+  $vid = \Drupal::config('media_directories.settings')->get('directory_taxonomy');
+  if (!empty($vid)) {
+    // Vocabulary is set.
     return TRUE;
   }
 
