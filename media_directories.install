@@ -47,19 +47,24 @@ function media_directories_install() {
   ];
   // Alter Media library view configuration.
   $view = View::load('media_library');
-  $default_display = &$view->getDisplay('default');
-  $widget_display = &$view->getDisplay('widget');
-  $widget_table_display = &$view->getDisplay('widget_table');
-  $default_display['display_options']['filters'] = array_merge(['directory' => $filter], $default_display['display_options']['filters']);
-  $widget_display['display_options']['filters'] = array_merge(['directory' => $filter], $widget_display['display_options']['filters']);
-  $widget_table_display['display_options']['filters'] = array_merge(['directory' => $filter], $widget_table_display['display_options']['filters']);
-  $view->save();
 
-  unset($default_display);
+  if ($view !== NULL) {
+    $default_display = &$view->getDisplay('default');
+    $widget_display = &$view->getDisplay('widget');
+    $widget_table_display = &$view->getDisplay('widget_table');
+    $default_display['display_options']['filters'] = array_merge(['directory' => $filter], $default_display['display_options']['filters']);
+    $widget_display['display_options']['filters'] = array_merge(['directory' => $filter], $widget_display['display_options']['filters']);
+    $widget_table_display['display_options']['filters'] = array_merge(['directory' => $filter], $widget_table_display['display_options']['filters']);
+    $view->save();
+
+    unset($default_display);
+  }
 
   // Alter default Media view configuration.
   $view_table = View::load('media');
-  $default_display = &$view_table->getDisplay('default');
-  $default_display['display_options']['filters'] = array_merge(['directory' => $filter], $default_display['display_options']['filters']);
-  $view_table->save();
+  if ($view_table !== NULL) {
+    $default_display = &$view_table->getDisplay('default');
+    $default_display['display_options']['filters'] = array_merge(['directory' => $filter], $default_display['display_options']['filters']);
+    $view_table->save();
+  }
 }
