@@ -8,10 +8,10 @@ use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
-use Drupal\content_translation\ContentTranslationManagerInterface;
 use Drupal\entity_browser\Plugin\views\field\SelectForm;
 use Drupal\entity_browser\WidgetBase;
 use Drupal\Core\Url;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\entity_browser\WidgetValidationManager;
 use Drupal\media_directories_ui\Controller\MediaDirectoriesController;
 use Drupal\media_directories_ui\MediaDirectoriesUiBuilder;
@@ -52,11 +52,11 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
   protected $routeMatch;
 
   /**
-   * The content translation manager.
+   * The module handler.
    *
-   * @var \Drupal\content_translation\ContentTranslationManagerInterface
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
    */
-  protected $contentTranslationManager;
+  protected $moduleHandler;
 
   /**
    * {@inheritdoc}
@@ -79,7 +79,7 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
       $container->get('plugin.manager.entity_browser.widget_validation'),
       $container->get('current_user'),
       $container->get('current_route_match'),
-      $container->get('content_translation.manager')
+      $container->get('module_handler')
     );
   }
 
@@ -102,14 +102,14 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
    *   The current user.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The active route match object.
-   * @param \Drupal\content_translation\ContentTranslationManagerInterface $content_translation_manager
-   *   The content translation manager.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EventDispatcherInterface $event_dispatcher, EntityTypeManagerInterface $entity_type_manager, WidgetValidationManager $validation_manager, AccountInterface $current_user, RouteMatchInterface $route_match, ContentTranslationManagerInterface $content_translation_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EventDispatcherInterface $event_dispatcher, EntityTypeManagerInterface $entity_type_manager, WidgetValidationManager $validation_manager, AccountInterface $current_user, RouteMatchInterface $route_match, ModuleHandlerInterface $module_handler) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $event_dispatcher, $entity_type_manager, $validation_manager);
     $this->currentUser = $current_user;
     $this->routeMatch = $route_match;
-    $this->contentTranslationManager = $content_translation_manager;
+    $this->moduleHandler = $module_handler;
   }
 
   /**
@@ -173,7 +173,14 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
 
     // Check wheater medias are translatable and pass on as javascript settings.
     foreach ($enabled_bundles as $type) {
-      $media_translation_enabled = $this->contentTranslationManager->isEnabled('media', $type);
+      $media_translation_enabled = FALSE;
+      if ($this->moduleHandler->moduleExists('content_translation')) {
+        // I found no way to inject an optional service into this plugin.
+        // @see https://symfony.com/doc/current/service_container/optional_dependencies.html
+        // @see https://orkjern.com/services-with-optional-dependencies-drupal-8
+        // @see https://www.md-systems.ch/en/blog/techblog/2016/12/17/how-to-safely-inject-additional-services-into-an-overridden-service
+        $media_translation_enabled = \Drupal::service('content_translation.manager')->isEnabled('media', $type);
+      }
       $form['#attached']['drupalSettings']['media_directories']['media_translation_enabled'][$type] = $media_translation_enabled;
     }
 

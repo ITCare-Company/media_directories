@@ -81,7 +81,10 @@ function media_directories_ui_preprocess_views_view_unformatted__media_directory
  * Implements hook_preprocess_HOOK().
  */
 function media_directories_ui_preprocess_media_directories_browser(&$variables) {
-  $variables['media_translation_enabled'] = \Drupal::service('content_translation.manager')->isEnabled('media');
+  $variables['media_translation_enabled'] = FALSE;
+  if (\Drupal::service('module_handler')->moduleExists('content_translation')) {
+    $variables['media_translation_enabled'] = \Drupal::service('content_translation.manager')->isEnabled('media');
+  }
 }
 
 /**
