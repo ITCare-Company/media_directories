@@ -157,6 +157,7 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
       $form['#attached']['drupalSettings']['media_directories']['remaining'] = $remaining;
     }
 
+    $enabled_bundles = [];
     if ($target_bundles) {
       $enabled_bundles = $target_bundles['bundle'];
     }
