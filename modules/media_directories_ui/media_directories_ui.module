@@ -80,6 +80,13 @@ function media_directories_ui_preprocess_views_view_unformatted__media_directory
 /**
  * Implements hook_preprocess_HOOK().
  */
+function media_directories_ui_preprocess_media_directories_browser(&$variables) {
+  $variables['media_translation_enabled'] = \Drupal::service('content_translation.manager')->isEnabled('media');
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
 function media_directories_ui_preprocess_views_view_fields__media_directory_browser(&$variables) {
   foreach ($variables['fields'] as $name => &$field) {
     /** @var \Drupal\media\Entity\Media $entity */

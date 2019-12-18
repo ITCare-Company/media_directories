@@ -8,6 +8,7 @@ use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
+use Drupal\content_translation\ContentTranslationManagerInterface;
 use Drupal\entity_browser\Plugin\views\field\SelectForm;
 use Drupal\entity_browser\WidgetBase;
 use Drupal\Core\Url;
@@ -50,6 +51,12 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
    */
   protected $routeMatch;
 
+  /**
+   * The content translation manager.
+   *
+   * @var \Drupal\content_translation\ContentTranslationManagerInterface
+   */
+  protected $contentTranslationManager;
 
   /**
    * {@inheritdoc}
@@ -71,7 +78,8 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
       $container->get('entity_type.manager'),
       $container->get('plugin.manager.entity_browser.widget_validation'),
       $container->get('current_user'),
-      $container->get('current_route_match')
+      $container->get('current_route_match'),
+      $container->get('content_translation.manager')
     );
   }
 
@@ -94,11 +102,14 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
    *   The current user.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The active route match object.
+   * @param \Drupal\content_translation\ContentTranslationManagerInterface $content_translation_manager
+   *   The content translation manager.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EventDispatcherInterface $event_dispatcher, EntityTypeManagerInterface $entity_type_manager, WidgetValidationManager $validation_manager, AccountInterface $current_user, RouteMatchInterface $route_match) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EventDispatcherInterface $event_dispatcher, EntityTypeManagerInterface $entity_type_manager, WidgetValidationManager $validation_manager, AccountInterface $current_user, RouteMatchInterface $route_match, ContentTranslationManagerInterface $content_translation_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $event_dispatcher, $entity_type_manager, $validation_manager);
     $this->currentUser = $current_user;
     $this->routeMatch = $route_match;
+    $this->contentTranslationManager = $content_translation_manager;
   }
 
   /**
@@ -159,6 +170,12 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
     }
 
     $form['#attached']['drupalSettings']['media_directories']['target_bundles'] = $enabled_bundles;
+
+    // Check wheater medias are translatable and pass on as javascript settings.
+    foreach ($enabled_bundles as $type) {
+      $media_translation_enabled = $this->contentTranslationManager->isEnabled('media', $type);
+      $form['#attached']['drupalSettings']['media_directories']['media_translation_enabled'][$type] = $media_translation_enabled;
+    }
 
     $form['browser'] = [
       '#theme' => 'media_directories_browser',

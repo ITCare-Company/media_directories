@@ -1,4 +1,4 @@
-(function ($, Drupal) {
+(function ($, Drupal, drupalSettings) {
 
   /**
    * Media Browser toolbar functionality.
@@ -9,6 +9,7 @@
     buttons: {
       media_add: $('#browser-add-media'),
       media_edit: $('#browser-edit-media'),
+      media_translate: $('#browser-translate-media'),
       media_delete: $('#browser-delete-media'),
       submit: $('#edit-submit')
     },
@@ -51,6 +52,18 @@
         Drupal.ajax(ajaxSettings).execute();
       });
 
+      // Translate media button.
+      this.buttons.media_translate.on('click', function (e) {
+        e.preventDefault();
+
+        if ($(this).hasClass('is-disabled')) {
+          return;
+        }
+
+        let mids = Drupal.MediaBrowser.getSelectedMids();
+        window.open('/media/' + mids[0] + '/edit/translations');
+      });
+
       // Delete media button.
       this.buttons.media_delete.on('click', function (e) {
         e.preventDefault();
@@ -87,16 +100,31 @@
 
       if (selected.length === 1) {
         this.buttons.media_edit.removeClass('is-disabled');
+        let $element = Drupal.MediaBrowser.getSelectedElements();
+        if ($element.length > 0) {
+          $element = $element[0];
+          let show_translation_button = false;
+          $.each(drupalSettings.media_directories.media_translation_enabled, function(type, status) {
+            if ($element.hasClass('media-type--' + type)){
+              show_translation_button = true;
+            }
+          });
+          if (show_translation_button) {
+            this.buttons.media_translate.removeClass('is-disabled');
+          }
+        }
         this.buttons.media_delete.removeClass('is-disabled');
         this.buttons.submit.removeAttr('disabled');
       }
       else if (selected.length === 0) {
         this.buttons.media_edit.addClass('is-disabled');
+        this.buttons.media_translate.addClass('is-disabled');
         this.buttons.media_delete.addClass('is-disabled');
         this.buttons.submit.attr('disabled', 'disabled');
       }
       else {
         this.buttons.media_edit.removeClass('is-disabled');
+        this.buttons.media_translate.addClass('is-disabled');
         this.buttons.media_delete.removeClass('is-disabled');
         this.buttons.submit.removeAttr('disabled');
       }
@@ -116,4 +144,4 @@
     }
   };
 
-})(jQuery, Drupal);
+})(jQuery, Drupal, drupalSettings);

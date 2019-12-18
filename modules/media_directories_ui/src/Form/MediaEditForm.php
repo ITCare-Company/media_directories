@@ -275,6 +275,21 @@ class MediaEditForm extends FormBase {
     }
     $form_display->buildForm($media, $element['fields'], $form_state);
 
+    // Make the language field un-editable.
+    if (isset($element['fields']['langcode'])) {
+      $languages = $media->getTranslationLanguages();
+      $translations = [];
+      foreach ($languages as $langcode => $language) {
+        $translations[$langcode] = $media->id();
+      }
+      // We allow altering the (source-)language.
+      // Media library dialogs actually just hide the field ..
+      if (count($translations) > 1) {
+        $element['fields']['langcode']['#disabled'] = TRUE;
+        $element['fields']['langcode']['#suffix'] = '<div>' . $this->t('In this dialog you are only allowed to change the source language of medias having no translation yet.') . '</div>';
+      }
+    }
+
     // We hide the preview of the uploaded file in the image widget with CSS.
     // @todo Improve hiding file widget elements in
     //   https://www.drupal.org/project/drupal/issues/2987921
