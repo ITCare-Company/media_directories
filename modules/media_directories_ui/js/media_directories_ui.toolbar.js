@@ -95,7 +95,7 @@
      */
     selectionChanged: function () {
       const selected = Drupal.MediaBrowser.getSelectedMids();
-      const remaining = Drupal.MediaBrowser.remainingItems;
+      const remaining = Drupal.MediaBrowser.remainingItems || 1;
       let status_text = null;
 
       if (selected.length === 1) {
