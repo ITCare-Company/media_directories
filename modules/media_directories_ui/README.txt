@@ -7,7 +7,10 @@ REQUIREMENTS
 ============
 - Drupal Core 8.7+
 - Entity browser
-- jstree library
+- jsTree library
+  o Download jsTree from https://github.com/vakata/jstree
+  o Extract it as is, rename "jstree-X.Y.Z" to "jstree", so the assets are at:
+    /libraries/jstree/dist/jstree.min.js
 
 
 NOTES
