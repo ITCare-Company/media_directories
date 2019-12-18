@@ -7,6 +7,30 @@
 
 use Drupal\views\Entity\View;
 
+
+/**
+ * Implements hook_uninstall().
+ */
+function media_directories_ui_uninstall() {
+
+  // Remove the view.
+  \Drupal::configFactory()->getEditable('views.view.media_directory_browser')->delete();
+
+  // Remove the entity browsers.
+  \Drupal::configFactory()->getEditable('entity_browser.browser.directory_browser')->delete();
+  \Drupal::configFactory()->getEditable('entity_browser.browser.media_browser')->delete();
+
+  // Remove the image style.
+  \Drupal::configFactory()->getEditable('image.style.browser_thumbnail')->delete();
+
+  // Remove the styles directory and generated images.
+  $browser_thumbnail_dir_uri = file_default_scheme() . '://styles/browser_thumbnail';
+  file_unmanaged_delete_recursive($browser_thumbnail_dir_uri);
+  if (file_prepare_directory($browser_thumbnail_dir_uri)) {
+    \Drupal::service('file_system')->rmdir($browser_thumbnail_dir_uri);
+  }
+}
+
 /**
  * Implements hook_requirements().
  */
