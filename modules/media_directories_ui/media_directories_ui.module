@@ -5,9 +5,12 @@
  * Main module file.
  */
 
+use Drupal\block\Entity\Block;
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Asset\AttachedAssetsInterface;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Url;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\media_directories_ui\Form\FileUploadForm;
 use Drupal\media_directories_ui\Form\OEmbedForm;
 
@@ -61,6 +64,20 @@ function media_directories_ui_library_info_alter(&$libraries, $extension) {
     // Use Libraries API's path.
     $libraries['jstree']['js'] = ['/' . libraries_get_path('jstree') . '/jstree.min.js' => ['weight' => -4]];
   }
+}
+
+/**
+ * Implements hook_block_access().
+ */
+function media_directories_ui_block_access(Block $block, $operation, AccountInterface $account) {
+
+  if ($operation == 'view' && $block->getPluginId() == 'page_title_block') {
+    // Hide the page title block when showing the modal dialogs to ensure the "Select media" button is visible.
+    $entity_browser_id = \Drupal::routeMatch()->getParameter('entity_browser_id');
+    return AccessResult::forbiddenIf(in_array($entity_browser_id, ['media_browser', 'editor_browser']))->addCacheableDependency($block);
+  }
+
+  return AccessResult::neutral();
 }
 
 /**
