@@ -37,9 +37,12 @@
           Drupal.MediaBrowser.active_directory = directory_id;
 
           if (drupalSettings.media_directories.selection_mode != 'keep') {
-            // Clear selection from global storage.
-            Drupal.MediaBrowser.clearMediaSelection();
+            if (!Drupal.MediaBrowser.keepSelectionOnChange) {
+              // Clear selection from global storage.
+              Drupal.MediaBrowser.clearMediaSelection();
+            }
           }
+          Drupal.MediaBrowser.keepSelectionOnChange = false;
         }
       });
 

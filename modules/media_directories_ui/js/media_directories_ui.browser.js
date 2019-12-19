@@ -7,7 +7,8 @@
     targetBundles: [],
     cardinality: -1,
     remainingItems: null,
-    urls: {}
+    urls: {},
+    keepSelectionOnChange: false
   };
 
   /**
