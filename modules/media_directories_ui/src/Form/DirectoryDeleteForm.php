@@ -78,22 +78,29 @@ class DirectoryDeleteForm extends ConfirmFormBase {
       ];
     }
 
-    $form = parent::buildForm($form, $form_state);
-    $form['#attached']['library'][] = 'core/drupal.dialog.ajax';
-    $form['actions']['submit']['#ajax'] = [
-      'callback' => [$this, 'submitModalAjax'],
-      'event' => 'click',
-    ];
+    if ($this->directory->access('delete')) {
+      $form['question']['#markup'] = '<h4>' . $this->getQuestion() . '</h4>';
 
-    $form['actions']['cancel'] = [
-      '#type' => 'button',
-      '#value' => $this->t('Cancel'),
-      '#button_type' => 'secondary',
-      '#ajax' => [
-        'callback' => [$this, 'closeModalAjax'],
+      $form = parent::buildForm($form, $form_state);
+      $form['#attached']['library'][] = 'core/drupal.dialog.ajax';
+      $form['actions']['submit']['#ajax'] = [
+        'callback' => [$this, 'submitModalAjax'],
         'event' => 'click',
-      ],
-    ];
+      ];
+
+      $form['actions']['cancel'] = [
+        '#type' => 'button',
+        '#value' => $this->t('Cancel'),
+        '#button_type' => 'secondary',
+        '#ajax' => [
+          'callback' => [$this, 'closeModalAjax'],
+          'event' => 'click',
+        ],
+      ];
+    }
+    else {
+      $form['permission_info']['#markup'] = $this->t('No permission found to delete this directory.');
+    }
 
     return $form;
   }
@@ -101,33 +108,35 @@ class DirectoryDeleteForm extends ConfirmFormBase {
   public function submitModalAjax(array &$form, FormStateInterface $form_state) {
     $response = new AjaxResponse();
 
-    $query = $this->entityTypeManager->getStorage('media')->getQuery();
-    $query->condition('directory', $this->directory->id());
-    $media_ids = $query->execute();
+    if ($this->directory->access('delete')) {
+      $query = $this->entityTypeManager->getStorage('media')->getQuery();
+      $query->condition('directory', $this->directory->id());
+      $media_ids = $query->execute();
 
-    // If directory has any media items, move them into root (remove value).
-    if (!empty($media_ids)) {
-      /** @var \Drupal\media\Entity\Media[] $media_items */
-      $media_items = $this->entityTypeManager->getStorage('media')->loadMultiple($media_ids);
+      // If directory has any media items, move them into root (remove value).
+      if (!empty($media_ids)) {
+        /** @var \Drupal\media\Entity\Media[] $media_items */
+        $media_items = $this->entityTypeManager->getStorage('media')->loadMultiple($media_ids);
 
-      foreach ($media_items as $media_item) {
-        $media_item->get('directory')->setValue(NULL);
-        $media_item->save();
+        foreach ($media_items as $media_item) {
+          $media_item->get('directory')->setValue(NULL);
+          $media_item->save();
+        }
       }
+
+      $parent_id = (int) $this->directory->get('parent')->target_id;
+
+      // We use -1 as root folder tid.
+      if ($parent_id === 0) {
+        $parent_id = -1;
+      }
+
+      $this->directory->delete();
+
+      $response->addCommand(new CloseModalDialogCommand());
+      $response->addCommand(new RefreshDirectoryTree($parent_id));
+      //$response->addCommand(new AjaxLoadDirectory());
     }
-
-    $parent_id = (int) $this->directory->get('parent')->target_id;
-
-    // We use -1 as root folder tid.
-    if ($parent_id === 0) {
-      $parent_id = -1;
-    }
-
-    $this->directory->delete();
-
-    $response->addCommand(new CloseModalDialogCommand());
-    $response->addCommand(new RefreshDirectoryTree($parent_id));
-    //$response->addCommand(new AjaxLoadDirectory());
 
     return $response;
   }

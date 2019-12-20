@@ -6,6 +6,7 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\OpenModalDialogCommand;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Drupal\entity_browser\Plugin\views\field\SelectForm;
@@ -17,6 +18,7 @@ use Drupal\media_directories_ui\Controller\MediaDirectoriesController;
 use Drupal\media_directories_ui\MediaDirectoriesUiBuilder;
 use Drupal\media_directories_ui\MediaDirectoriesUiState;
 use Drupal\media_library\MediaLibraryState;
+use Drupal\taxonomy\Entity\Term;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -59,6 +61,13 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
   protected $moduleHandler;
 
   /**
+   * The vocabulary id to use.
+   *
+   * @var string
+   */
+  protected $vocabulary_id;
+
+  /**
    * {@inheritdoc}
    */
   public function defaultConfiguration() {
@@ -79,7 +88,8 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
       $container->get('plugin.manager.entity_browser.widget_validation'),
       $container->get('current_user'),
       $container->get('current_route_match'),
-      $container->get('module_handler')
+      $container->get('module_handler'),
+      $container->get('config.factory')
     );
   }
 
@@ -104,12 +114,17 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
    *   The active route match object.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EventDispatcherInterface $event_dispatcher, EntityTypeManagerInterface $entity_type_manager, WidgetValidationManager $validation_manager, AccountInterface $current_user, RouteMatchInterface $route_match, ModuleHandlerInterface $module_handler) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EventDispatcherInterface $event_dispatcher, EntityTypeManagerInterface $entity_type_manager, WidgetValidationManager $validation_manager, AccountInterface $current_user, RouteMatchInterface $route_match, ModuleHandlerInterface $module_handler, ConfigFactoryInterface $config_factory) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $event_dispatcher, $entity_type_manager, $validation_manager);
     $this->currentUser = $current_user;
     $this->routeMatch = $route_match;
     $this->moduleHandler = $module_handler;
+
+    $config = $config_factory->get('media_directories.settings');
+    $this->vocabulary_id = $config->get('directory_taxonomy');
   }
 
   /**
@@ -135,6 +150,23 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
       'media.move' => Url::fromRoute('media_directories_ui.media.move')->toString(),
       'media.delete' => Url::fromRoute('media_directories_ui.media.delete')->toString(),
     ];
+
+    // Pass taxonomy permissions.
+    $vocabulary_permissions = [
+      'create' => FALSE,
+      'update' => FALSE,
+      'delete' => FALSE,
+    ];
+    if (isset($this->vocabulary_id)) {
+      $directory = Term::create([
+        'name' => 'will not be saved',
+        'vid' => $this->vocabulary_id,
+      ]);
+      $vocabulary_permissions['create'] = $directory->access('create');
+      $vocabulary_permissions['update'] = $directory->access('update');
+      $vocabulary_permissions['delete'] = $directory->access('delete');
+    }
+    $form['#attached']['drupalSettings']['media_directories']['vocabulary_permissions'] = $vocabulary_permissions;
 
     // Decide the selection mode.
     $route_parameter_entity_browser_id = $this->routeMatch->getParameter('entity_browser_id');

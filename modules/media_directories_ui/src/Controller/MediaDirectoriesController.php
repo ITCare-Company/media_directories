@@ -5,6 +5,7 @@ namespace Drupal\media_directories_ui\Controller;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\HtmlCommand;
 use Drupal\Core\Ajax\OpenModalDialogCommand;
+use Drupal\Core\Ajax\PrependCommand;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Form\FormBuilder;
 use Drupal\Core\Form\FormState;
@@ -139,13 +140,17 @@ class MediaDirectoriesController extends ControllerBase {
       'vid' => $this->vocabulary_id,
       'parent' => [$directory_id],
     ]);
-    $directory->save();
 
-    $data = [
-      'id' => 'dir-' . $directory->id(),
-      'a_attr' => (object)['data-tid' => $directory->id()],
-      'text' => $directory->getName(),
-    ];
+    $data = [];
+    if ($directory->access('create')) {
+      $directory->save();
+
+      $data = [
+        'id' => 'dir-' . $directory->id(),
+        'a_attr' => (object)['data-tid' => $directory->id()],
+        'text' => $directory->getName(),
+      ];
+    }
 
     return new JsonResponse($data);
   }
@@ -162,10 +167,17 @@ class MediaDirectoriesController extends ControllerBase {
     $directory_id = (int)$request->request->get('directory_id');
     $new_name = $request->request->get('directory_new_name');
     $directory = Term::load($directory_id);
-    $directory->setName($new_name);
-    $directory->save();
 
     $response = new AjaxResponse();
+
+    if ($directory->access('update')) {
+      $directory->setName($new_name);
+      $directory->save();
+    }
+    else {
+      $this->messenger()->addError($this->t('No permission found to rename this directory.'));
+      $this->addMessagesToResponse($response);
+    }
 
     return $response;
   }
@@ -194,8 +206,14 @@ class MediaDirectoriesController extends ControllerBase {
 
     /** @var Term $directory */
     $directory = $this->entityTypeManager()->getStorage('taxonomy_term')->load($move_directory_id);
-    $directory->get('parent')->setValue($to_directory_id === MEDIA_DIRECTORY_ROOT ? NULL: $to_directory_id);
-    $directory->save();
+    if ($directory->access('update')) {
+      $directory->get('parent')->setValue($to_directory_id === MEDIA_DIRECTORY_ROOT ? NULL: $to_directory_id);
+      $directory->save();
+    }
+    else {
+      $this->messenger()->addError($this->t('No permission found to move this directory.'));
+      $this->addMessagesToResponse($response);
+    }
 
     return $response;
   }
@@ -218,12 +236,18 @@ class MediaDirectoriesController extends ControllerBase {
       return $response;
     }
 
-    $context = [
-      'directory' => $directory,
-      'target_bundles' => $target_bundles,
-    ];
-    $form = $this->formBuilder->getForm(DirectoryDeleteForm::class, $context);
-    $response->addCommand(new OpenModalDialogCommand($this->t('Delete directory @name', ['@name' => $directory->getName()]), $form, ['width' => '500']));
+    if ($directory->access('delete')) {
+      $context = [
+        'directory' => $directory,
+        'target_bundles' => $target_bundles,
+      ];
+      $form = $this->formBuilder->getForm(DirectoryDeleteForm::class, $context);
+      $response->addCommand(new OpenModalDialogCommand($this->t('Delete directory @name', ['@name' => $directory->getName()]), $form, ['width' => '500']));
+    }
+    else {
+      $this->messenger()->addError($this->t('No permission found to delete this directory.'));
+      $this->addMessagesToResponse($response);
+    }
 
     return $response;
   }
@@ -243,6 +267,14 @@ class MediaDirectoriesController extends ControllerBase {
     $target_bundles = $request->get('target_bundles');
     if ($target_bundles) {
       // Here we land if no file is present.
+
+      // Only list media types where the user has permission for.
+      foreach ($target_bundles as $delta => $bundle) {
+        if (!$this->entityTypeManager()->getAccessControlHandler('media')->createAccess($bundle)) {
+          unset($target_bundles[$delta]);
+        }
+      }
+
       $selected_type = $request->get('media_type', reset($target_bundles));
     }
     else {
@@ -253,14 +285,21 @@ class MediaDirectoriesController extends ControllerBase {
       $selected_type = $request->get('media_type', reset($type_keys));
     }
 
-    $build = [
-      '#theme' => 'media_directories_add',
-      '#selected_type' => $selected_type,
-      '#active_directory' => $active_directory,
-      '#target_bundles' => $target_bundles,
-    ];
+    if (count($target_bundles) > 0) {
+      $build = [
+        '#theme' => 'media_directories_add',
+        '#selected_type' => $selected_type,
+        '#active_directory' => $active_directory,
+        '#target_bundles' => $target_bundles,
+      ];
 
-    $response->addCommand(new OpenModalDialogCommand($this->t('Add media'), $build, ['width' => '800']));
+      $response->addCommand(new OpenModalDialogCommand($this->t('Add media'), $build, ['width' => '800']));
+    }
+    else {
+      $this->messenger()->addError($this->t('No permission found for the creation of any media type.'));
+      $this->addMessagesToResponse($response);
+    }
+
 
     return $response;
   }
@@ -282,13 +321,29 @@ class MediaDirectoriesController extends ControllerBase {
     $active_directory = (int) $request->request->get('active_directory', MEDIA_DIRECTORY_ROOT);
     $media_entities = $this->entityTypeManager()->getStorage('media')->loadMultiple($media_items);
 
-    $form_state = new FormState();
-    $form_state->set('media', $media_entities);
-    $form_state->set('active_directory', $active_directory);
+    foreach ($media_entities as $mid => $media_entity) {
+      if (!$media_entity->access('update')) {
+        $this->messenger()->addError($this->t('Media %media_label of type %media_type cannot be edited due to lack of permissions.', [
+          '%media_label' => $media_entity->label(),
+          '%media_type' => $media_entity->bundle(),
+        ]));
+        unset($media_entities[$mid]);
+      }
+    }
 
-    $media_form = $this->formBuilder()->buildForm(MediaEditForm::class, $form_state);
+    if (count($media_entities) > 0) {
+      $form_state = new FormState();
+      $form_state->set('media', $media_entities);
+      $form_state->set('active_directory', $active_directory);
 
-    $response->addCommand(new OpenModalDialogCommand($this->t('Edit media'), $media_form, ['width' => '800']));
+      $media_form = $this->formBuilder()->buildForm(MediaEditForm::class, $form_state);
+
+      $this->addMessagesToForm($media_form);
+      $response->addCommand(new OpenModalDialogCommand($this->t('Edit media'), $media_form, ['width' => '800']));
+    }
+    else {
+      $this->addMessagesToResponse($response);
+    }
 
     return $response;
   }
@@ -312,11 +367,20 @@ class MediaDirectoriesController extends ControllerBase {
 
     foreach ($media_entities as $media_entity) {
       if ($media_entity->hasField('directory')) {
-        $media_entity->get('directory')->setValue($directory_id === MEDIA_DIRECTORY_ROOT ? NULL: $directory_id);
-        $media_entity->save();
+        if ($media_entity->access('update')) {
+          $media_entity->get('directory')->setValue($directory_id === MEDIA_DIRECTORY_ROOT ? NULL: $directory_id);
+          $media_entity->save();
+        }
+        else {
+          $this->messenger()->addError($this->t('Media %media_label of type %media_type cannot be moved due to lack of permissions.', [
+            '%media_label' => $media_entity->label(),
+            '%media_type' => $media_entity->bundle(),
+          ]));
+        }
       }
     }
 
+    $this->addMessagesToResponse($response);
     $response->addCommand(new LoadDirectoryContent());
 
     return $response;
@@ -341,12 +405,28 @@ class MediaDirectoriesController extends ControllerBase {
 
     $media_entities = $this->entityTypeManager()->getStorage('media')->loadMultiple($media_items);
 
-    $context = [
-      'media_items' => $media_entities,
-    ];
+    foreach ($media_entities as $mid => $media_entity) {
+      if (!$media_entity->access('delete')) {
+        $this->messenger()->addError($this->t('Media %media_label of type %media_type cannot be deleted due to lack of permissions.', [
+          '%media_label' => $media_entity->label(),
+          '%media_type' => $media_entity->bundle(),
+        ]));
+        unset($media_entities[$mid]);
+      }
+    }
 
-    $form = $this->formBuilder->getForm(MediaDeleteForm::class, $context);
-    $response->addCommand(new OpenModalDialogCommand($this->t('Delete media'), $form, ['width' => '500']));
+    if (count($media_entities) > 0) {
+      $context = [
+        'media_items' => $media_entities,
+      ];
+
+      $form = $this->formBuilder->getForm(MediaDeleteForm::class, $context);
+      $this->addMessagesToForm($form);
+      $response->addCommand(new OpenModalDialogCommand($this->t('Delete media'), $form, ['width' => '500']));
+    }
+    else {
+      $this->addMessagesToResponse($response);
+    }
 
     return $response;
   }
@@ -389,6 +469,32 @@ class MediaDirectoriesController extends ControllerBase {
     }
 
     $tree[$object->tid]->children = array_values($tree[$object->tid]->children);
+  }
+
+ /**
+   * Adds a PrependCommad to an ajax response rendering the current status messages.
+   *
+   * @param \Drupal\Core\Ajax\AjaxResponse $response
+   * @param string $selector
+   */
+  protected function addMessagesToResponse($response, $selector = '.entity-browser-form') {
+    $status_messages = ['#type' => 'status_messages'];
+    $messages = $this->renderer->renderRoot($status_messages);
+    if (!empty($messages)) {
+      $response->addCommand(new PrependCommand($selector, $messages));
+    }
+  }
+
+   /**
+   * Adds the current status messages on top of a form.
+   *
+   * @param \Drupal\Core\Form\FormBase $form
+   */
+  protected function addMessagesToForm($form) {
+    $form['messages']['status'] = [
+      '#type' => 'status_messages',
+      '#weight' => -100,
+    ];
   }
 
 }

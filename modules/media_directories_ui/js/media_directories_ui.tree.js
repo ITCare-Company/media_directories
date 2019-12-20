@@ -255,12 +255,13 @@
     // Elements with children cannot be deleted!
     let has_children = node.children.length > 0;
 
-    return {
-      new_directory: {
+    let menu_items = {};
+    if (drupalSettings.media_directories.vocabulary_permissions['create']) {
+      menu_items.new_directory = {
         label: Drupal.t('New folder'),
         action: function (data) {
           let inst = $.jstree.reference(data.reference),
-            obj = inst.get_node(data.reference);
+          obj = inst.get_node(data.reference);
           $.post({
             url: Drupal.MediaBrowser.getUrl('directory.add'),
             data: {
@@ -269,35 +270,43 @@
               name: Drupal.t('New folder')
             },
             success: function (data) {
-              inst.create_node(obj, data, "last", function (new_node) {
-                try {
-                  inst.edit(new_node);
-                }
-                catch (ex) {
-                  setTimeout(function () { inst.edit(new_node); },0);
-                }
-              });
+              if (data.hasOwnProperty('id')) {
+                inst.create_node(obj, data, "last", function (new_node) {
+                  try {
+                    inst.edit(new_node);
+                  }
+                  catch (ex) {
+                    setTimeout(function () { inst.edit(new_node); },0);
+                  }
+                });
+              }
             }
           });
         }
-      },
-      rename: {
+      };
+    }
+    if (drupalSettings.media_directories.vocabulary_permissions['update']) {
+      menu_items.rename = {
         label: Drupal.t('Rename'),
         _disabled: is_root,
         action: function (data) {
           let inst = $.jstree.reference(data.reference),
-            obj = inst.get_node(data.reference);
+          obj = inst.get_node(data.reference);
           inst.edit(obj);
         }
-      },
-      delete: {
+      };
+    }
+    if (drupalSettings.media_directories.vocabulary_permissions['delete']) {
+      menu_items.delete = {
         label: Drupal.t('Delete'),
         _disabled: is_root || has_children,
         action: function (node) {
           Drupal.MediaBrowser.deleteDirectory($(node.reference).data('tid'));
         },
-      }
-    };
+      };
+    }
+
+    return menu_items;
   }
 
 })(jQuery, Drupal, drupalSettings);
