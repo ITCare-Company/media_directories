@@ -95,7 +95,7 @@
      */
     selectionChanged: function () {
       const selected = Drupal.MediaBrowser.getSelectedMids();
-      const remaining = Drupal.MediaBrowser.remainingItems || 1;
+      const remaining = Drupal.MediaBrowser.remainingItems;
       let status_text = null;
 
       if (selected.length === 1) {
@@ -130,12 +130,10 @@
       }
 
       if (Drupal.MediaBrowser.cardinality === -1) {
-        status_text = Drupal.formatPlural(selected.length, '@count item selected', '@count items selected', {
-          '@count': selected.length
-        });
+        status_text = Drupal.formatPlural(selected.length, '1 item selected', '@count items selected');
       }
       else {
-        status_text = Drupal.formatPlural(remaining, '@selected of @count item selected', '@selected of @count items selected', {
+        status_text = Drupal.formatPlural(remaining, '@selected of 1 remaining item selected', '@selected of @count remaining items selected', {
           '@selected': selected.length
         });
       }
