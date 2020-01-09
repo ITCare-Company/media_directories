@@ -1,0 +1,29 @@
+langcode: en
+status: true
+dependencies:
+  content:
+    - 'file:file:30994a16-6659-4f9e-9292-9d50244e5d04'
+  config:
+    - core.entity_view_mode.media.full
+    - entity_browser.browser.media_directories_editor_browser
+    - media.type.image
+    - media.type.remote_video
+  module:
+    - entity_embed
+    - media
+    - media_directories_editor
+label: Media
+id: media_directories
+type_id: entity
+type_settings:
+  entity_type: media
+  bundles:
+    - image
+    - remote_video
+  display_plugins:
+    - 'view_mode:media.full'
+    - 'entity_reference:media_directories_image_dimensions'
+  entity_browser: media_directories_editor_browser
+  entity_browser_settings:
+    display_review: false
+icon_uuid: 30994a16-6659-4f9e-9292-9d50244e5d04

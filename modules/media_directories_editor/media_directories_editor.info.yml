@@ -3,7 +3,7 @@ descripion: 'Integrate UI with CKEditor.'
 type: module
 core: 8.x
 
-dependences:
+dependencies:
   - media_directories:media_directories_ui
   - embed:embed
   - entity_embed:entity_embed

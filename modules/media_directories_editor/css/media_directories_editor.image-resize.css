@@ -1,0 +1,23 @@
+.media-directories-editor--dimensions .fieldset-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.media-directories-editor--dimensions .description {
+  width: 100%;
+}
+
+.media-directories-editor--controls {
+  display: flex;
+  align-items: flex-end;
+  padding-left: 1em;
+  margin: 0.75em 0;
+}
+
+.media-directories-editor--controls a {
+  display: inline-block;
+}
+
+.media-directories-editor--dimensions .form-item {
+  padding-right: 1em;
+}
