@@ -54,6 +54,7 @@ abstract class AddMediaFormBase extends FormBase {
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
+   * @param \Drupal\Core\Utility\Token $token
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, Token $token) {
     $this->entityTypeManager = $entity_type_manager;

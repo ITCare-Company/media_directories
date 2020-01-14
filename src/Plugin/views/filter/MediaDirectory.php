@@ -3,6 +3,7 @@
 namespace Drupal\media_directories\Plugin\views\filter;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\taxonomy\Entity\Term;
@@ -51,6 +52,14 @@ class MediaDirectory extends ManyToOne {
   protected $configFactory;
 
   /**
+   * The entity repository.
+   *
+   * @var \Drupal\Core\Entity\EntityRepositoryInterface
+   */
+  protected $entityRepository;
+
+
+  /**
    * Constructs a MediaDirectory object.
    *
    * @param array $configuration
@@ -65,12 +74,15 @@ class MediaDirectory extends ManyToOne {
    *   The term storage.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory object.
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   *   The entity repository.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, VocabularyStorageInterface $vocabulary_storage, TermStorageInterface $term_storage, ConfigFactoryInterface $configFactory) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, VocabularyStorageInterface $vocabulary_storage, TermStorageInterface $term_storage, ConfigFactoryInterface $configFactory, EntityRepositoryInterface $entity_repository) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->vocabularyStorage = $vocabulary_storage;
     $this->termStorage = $term_storage;
     $this->configFactory = $configFactory;
+    $this->entityRepository = $entity_repository;
   }
 
   /**
@@ -83,7 +95,8 @@ class MediaDirectory extends ManyToOne {
       $plugin_definition,
       $container->get('entity_type.manager')->getStorage('taxonomy_vocabulary'),
       $container->get('entity_type.manager')->getStorage('taxonomy_term'),
-      $container->get('config.factory')
+      $container->get('config.factory'),
+      $container->get('entity.repository')
     );
   }
 
@@ -113,7 +126,7 @@ class MediaDirectory extends ManyToOne {
     if ($tree) {
       foreach ($tree as $term) {
         $choice = new \stdClass();
-        $choice->option = [$term->id() => str_repeat('−', $term->depth + 1) . ' ' . \Drupal::service('entity.repository')->getTranslationFromContext($term)->label()];
+        $choice->option = [$term->id() => str_repeat('−', $term->depth + 1) . ' ' . $this->entityRepository->getTranslationFromContext($term)->label()];
         $options[] = $choice;
       }
     }
@@ -307,7 +320,7 @@ class MediaDirectory extends ManyToOne {
       $this->value = array_filter($this->value);
       $terms = Term::loadMultiple($this->value);
       foreach ($terms as $term) {
-        $this->valueOptions[$term->id()] = \Drupal::service('entity.repository')->getTranslationFromContext($term)->label();
+        $this->valueOptions[$term->id()] = $this->entityRepository->getTranslationFromContext($term)->label();
       }
     }
     return parent::adminSummary();

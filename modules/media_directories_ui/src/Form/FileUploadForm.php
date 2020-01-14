@@ -2,20 +2,58 @@
 
 namespace Drupal\media_directories_ui\Form;
 
-use Drupal\Component\Render\PlainTextOutput;
-use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Url;
+use Drupal\Core\Render\ElementInfoManagerInterface;
+use Drupal\Component\Utility\Environment;
+use Drupal\Core\Utility\Token;
 use Drupal\media\MediaInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class FileUploadForm extends AddMediaFormBase {
 
+  /**
+   * The element info discovery service.
+   *
+   * @var \Drupal\Core\Render\ElementInfoManagerInterface
+   */
+  protected $elementInfo;
+
+  /**
+   * AddMediaFormBase constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Session\AccountProxyInterface $current_user
+   * @param \Drupal\Core\Utility\Token $token
+   * @param \Drupal\Core\Render\ElementInfoManagerInterface $element_info
+   */
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, Token $token, ElementInfoManagerInterface $element_info) {
+    parent::__construct($entity_type_manager, $current_user, $token);
+    $this->elementInfo = $element_info;
+  }
+
+  /**
+   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   *
+   * @return \Drupal\Core\Form\FormBase|\Drupal\media_directories_ui\Form\AddMediaFormBase
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('entity_type.manager'),
+      $container->get('current_user'),
+      $container->get('token'),
+      $container->get('element_info')
+    );
+  }
+
   protected function buildInputElement(array $form, FormStateInterface $form_state) {
-    $max_filesize = \Drupal\Component\Utility\Environment::getUploadMaxSize();
+    $max_filesize = Environment::getUploadMaxSize();
     $media_type = $this->getMediaType($form_state);
 
-    $process = (array) \Drupal::service('element_info')->getInfoProperty('managed_file', '#process', []);
+    $process = (array) $this->elementInfo->getInfoProperty('managed_file', '#process', []);
 
 
     $source_field = $media_type->getSource()->getConfiguration()['source_field'];
