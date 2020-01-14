@@ -1,5 +1,4 @@
 (function ($, Drupal, drupalSettings) {
-
   /**
    * Media Browser toolbar functionality.
    *
@@ -13,25 +12,25 @@
       media_delete: $('#browser-delete-media'),
       submit: $('#edit-submit')
     },
-    init: function () {
+    init: function init() {
+
       // Add new media button.
       this.buttons.media_add.on('click', function (e) {
         e.preventDefault();
-        let ajaxSettings = {
+        var ajaxSettings = {
           url: Drupal.MediaBrowser.getUrl('media.add'),
           submit: {
             active_directory: Drupal.MediaBrowser.active_directory,
-            target_bundles: Drupal.MediaBrowser.targetBundles,
+            target_bundles: Drupal.MediaBrowser.targetBundles
           }
         };
-
         Drupal.ajax(ajaxSettings).execute();
       });
 
       // Edit media button.
       this.buttons.media_edit.on('click', function (e) {
         e.preventDefault();
-        let mids = [];
+        var mids = [];
 
         if ($(this).hasClass('is-disabled')) {
           return;
@@ -40,15 +39,13 @@
         $.each(Drupal.MediaBrowser.getSelectedMids(), function (key, value) {
           mids.push(value);
         });
-
-        let ajaxSettings = {
+        var ajaxSettings = {
           url: Drupal.MediaBrowser.getUrl('media.edit'),
           submit: {
             active_directory: Drupal.MediaBrowser.active_directory,
             media_items: mids
           }
         };
-
         Drupal.ajax(ajaxSettings).execute();
       });
 
@@ -60,7 +57,7 @@
           return;
         }
 
-        let mids = Drupal.MediaBrowser.getSelectedMids();
+        var mids = Drupal.MediaBrowser.getSelectedMids();
         window.open('/media/' + mids[0] + '/edit/translations');
       });
 
@@ -71,16 +68,16 @@
         if ($(this).hasClass('is-disabled')) {
           return;
         }
-        let mids = [];
 
+        var mids = [];
         $.each(Drupal.MediaBrowser.getSelectedMids(), function (key, value) {
           mids.push(value);
         });
 
-        let ajaxSettings = {
+        var ajaxSettings = {
           url: Drupal.MediaBrowser.getUrl('media.delete'),
           submit: {
-            media_items: mids,
+            media_items: mids
           }
         };
 
@@ -90,39 +87,41 @@
       // Set initial button states.
       this.selectionChanged();
     },
+
     /**
      * Set correct states for toolbar buttons.
      */
-    selectionChanged: function () {
-      const selected = Drupal.MediaBrowser.getSelectedMids();
-      const remaining = Drupal.MediaBrowser.remainingItems;
-      let status_text = null;
+    selectionChanged: function selectionChanged() {
+      var selected = Drupal.MediaBrowser.getSelectedMids();
+      var remaining = Drupal.MediaBrowser.remainingItems;
+      var status_text = null;
 
       if (selected.length === 1) {
         this.buttons.media_edit.removeClass('is-disabled');
-        let $element = Drupal.MediaBrowser.getSelectedElements();
+        var $element = Drupal.MediaBrowser.getSelectedElements();
+
         if ($element.length > 0) {
           $element = $element[0];
-          let show_translation_button = false;
-          $.each(drupalSettings.media_directories.media_translation_enabled, function(type, status) {
-            if ($element.hasClass('media-type--' + type)){
+          var show_translation_button = false;
+          $.each(drupalSettings.media_directories.media_translation_enabled, function (type, status) {
+            if ($element.hasClass('media-type--' + type)) {
               show_translation_button = true;
             }
           });
+
           if (show_translation_button) {
             this.buttons.media_translate.removeClass('is-disabled');
           }
         }
+
         this.buttons.media_delete.removeClass('is-disabled');
         this.buttons.submit.removeAttr('disabled');
-      }
-      else if (selected.length === 0) {
+      } else if (selected.length === 0) {
         this.buttons.media_edit.addClass('is-disabled');
         this.buttons.media_translate.addClass('is-disabled');
         this.buttons.media_delete.addClass('is-disabled');
         this.buttons.submit.attr('disabled', 'disabled');
-      }
-      else {
+      } else {
         this.buttons.media_edit.removeClass('is-disabled');
         this.buttons.media_translate.addClass('is-disabled');
         this.buttons.media_delete.removeClass('is-disabled');
@@ -131,15 +130,13 @@
 
       if (Drupal.MediaBrowser.cardinality === -1) {
         status_text = Drupal.formatPlural(selected.length, '1 item selected', '@count items selected');
-      }
-      else {
+      } else {
         status_text = Drupal.formatPlural(remaining, '@selected of 1 remaining item selected', '@selected of @count remaining items selected', {
           '@selected': selected.length
         });
       }
 
-      $('.browser--footer .browser-status').text(status_text)
+      $('.browser--footer .browser-status').text(status_text);
     }
   };
-
 })(jQuery, Drupal, drupalSettings);

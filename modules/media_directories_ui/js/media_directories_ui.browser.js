@@ -34,7 +34,6 @@
       if ('remaining' in drupalSettings.media_directories) {
         this.remainingItems = drupalSettings.media_directories.remaining;
       }
-
     }
 
     Drupal.MediaBrowser.toolbar.init();
@@ -78,11 +77,9 @@
    */
   Drupal.MediaBrowser.getSelectedMids = function () {
     var mids = [];
-
     $.each(Drupal.MediaBrowser.selectedMedia, function (key, value) {
       mids.push(value);
     });
-
     return mids;
   };
 
@@ -94,15 +91,14 @@
    * @returns {Array}
    */
   Drupal.MediaBrowser.getSelectedElements = function () {
-    let elements = [];
-
+    var elements = [];
     $.each(Drupal.MediaBrowser.getSelectedMids(), function (key, value) {
-      let media_element = Drupal.MediaBrowser.getMediaElement(value);
-      if (media_element.length > 0) {
-        elements.push(media_element);
+      var $media_element = Drupal.MediaBrowser.getMediaElement(value);
+
+      if ($media_element.length > 0) {
+        elements.push($media_element);
       }
     });
-
     return elements;
   };
 
@@ -119,7 +115,7 @@
    * Start blocking user gestures and show that something is in progress.
    */
   Drupal.MediaBrowser.startLoader = function () {
-    let $browser = $('.browser');
+    var $browser = $('.browser');
     $browser.css('opacity', '0.5');
     $browser.css('pointer-events', 'none');
   };
@@ -128,9 +124,8 @@
    * Unlock the UI so user can start interacting again.
    */
   Drupal.MediaBrowser.stopLoader = function () {
-    let $browser = $('.browser');
+    var $browser = $('.browser');
     $browser.css('opacity', '1');
     $browser.css('pointer-events', 'auto');
-  }
-
+  };
 })(jQuery, Drupal, drupalSettings);

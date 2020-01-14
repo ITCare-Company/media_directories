@@ -1,22 +1,23 @@
 (function ($, Drupal) {
-
   /**
    * Media item functionality.
    *
    * @type {{init: Drupal.MediaBrowser.media.init, ctrlPressed: boolean}}
    */
   Drupal.MediaBrowser.media = {
+
     /**
      * Holds Control key state.
      */
     ctrlPressed: false,
+
     /**
      * Bind events to media items.
      */
-    init: function () {
-      const $browser_listing = $('.browser--listing');
-      const cardinality = Drupal.MediaBrowser.cardinality;
-      const remaining = Drupal.MediaBrowser.remainingItems;
+    init: function init() {
+      var $browser_listing = $('.browser--listing');
+      var cardinality = Drupal.MediaBrowser.cardinality;
+      var remaining = Drupal.MediaBrowser.remainingItems;
 
       // Attach listener to the top document and current document to
       // register keypress inside iframe without focusing iframe first.
@@ -29,6 +30,7 @@
           Drupal.MediaBrowser.media.ctrlPressed = false;
         });
       });
+
       $(document).once('media-browser').each(function () {
         $(this).on('keydown', function (e) {
           if (e.which === 17) {
@@ -42,12 +44,12 @@
       // Media item click actions.
       $browser_listing.find('.media-item').once().each(function () {
         $(this).on('click', function () {
-          let media_id = $(this).data('mid');
-          let selected_items = Drupal.MediaBrowser.selectedMedia.length;
+          var media_id = $(this).data('mid');
+          var selected_items = Drupal.MediaBrowser.selectedMedia.length;
+          var selection_limit = cardinality !== -1 && remaining > 1 && selected_items >= remaining;
 
-          let selection_limit = cardinality !== -1 && remaining > 1 && selected_items >= remaining;
           // Check if item which was clicked is in selection already.
-          let selected_toggle = Drupal.MediaBrowser.selectedMedia.indexOf(media_id) !== -1;
+          var selected_toggle = Drupal.MediaBrowser.selectedMedia.indexOf(media_id) !== -1;
 
           // Do not allow selecting more items if maximum has been selected.
           // We skip this if only one item can be selected
@@ -63,6 +65,7 @@
               $(this).removeClass('selected');
               $('input[type="checkbox"]', this).prop('checked', false);
             });
+
             // Clear selection from global storage.
             Drupal.MediaBrowser.clearMediaSelection();
           }
@@ -73,19 +76,20 @@
             return;
           }
 
-          let checkbox = $(this).find('input[type="checkbox"]');
+          var $checkbox = $(this).find('input[type="checkbox"]');
 
           // Remove element from selection if we toggle it.
-          if (checkbox.prop('checked')) {
+          if ($checkbox.prop('checked')) {
             Drupal.MediaBrowser.selectedMedia.splice(Drupal.MediaBrowser.selectedMedia.indexOf(media_id), 1);
-          }
-          else {
+          } else {
             // Push media id to selection array.
             Drupal.MediaBrowser.selectedMedia.push($(this).data('mid'));
           }
+
           // Toggle media element checkbox state.
-          checkbox.prop("checked", !checkbox.prop("checked"));
+          $checkbox.prop("checked", !$checkbox.prop("checked"));
           $(this).toggleClass('selected');
+
           // Notify toolbar items.
           Drupal.MediaBrowser.toolbar.selectionChanged();
         });
@@ -94,33 +98,40 @@
         $(this).draggable({
           revert: true,
           helper: 'clone',
-          start: function (e) {
-            let nodes = [];
-
+          start: function start(e) {
+            var nodes = [];
             $.each(Drupal.MediaBrowser.getSelectedMids(), function (key, value) {
-              let $element = Drupal.MediaBrowser.getMediaElement(value);
+              var $element = Drupal.MediaBrowser.getMediaElement(value);
+
               if ($element.length == 0) {
                 $element = $('<div>' + Drupal.t('Placeholder') + '</div>');
               }
-              nodes.push({ id : value, element: $element });
+
+              nodes.push({
+                id: value,
+                element: $element
+              });
             });
 
             // If nothing is selected, then just use active item.
             if (nodes.length === 0) {
-              nodes.push({ id : this.dataset.mid, element: $(this) });
+              nodes.push({
+                id: this.dataset.mid,
+                element: $(this)
+              });
             }
 
-            let $html = $('<div id="jstree-dnd" class="jstree-default"></div>');
-
+            var $html = $('<div id="jstree-dnd" class="jstree-default"></div>');
             $html.append('<i class="fas fa-arrows-alt"></i>');
             $html.append('<span class="jstree-items-count">' + Drupal.formatPlural(nodes.length, '1 item', '@count items') + '</span>');
             $html.append(nodes[0].element[0].outerHTML);
-
-            return $.vakata.dnd.start(e, { 'jstree': true, 'nodes': nodes }, $html);
+            return $.vakata.dnd.start(e, {
+              'jstree': true,
+              'nodes': nodes
+            }, $html);
           }
         });
       });
     }
   };
-
 })(jQuery, Drupal);
