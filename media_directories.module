@@ -23,8 +23,12 @@ const MEDIA_DIRECTORY_ROOT = -1;
 function media_directories_help($route_name) {
   switch ($route_name) {
     case 'help.page.media_directories':
-      $settings_url = Url::fromRoute('media_directories.config_form');
-      return '<p>' . t('Create taxonomy to hold directory structure and select it in the <a href="@url">settings</a>.', ['@url' => $settings_url]) . '</p>';
+      $vocabulary_add_url = Url::fromRoute('entity.taxonomy_vocabulary.add_form')->toString();
+      $settings_url = Url::fromRoute('media_directories.config_form')->toString();
+      return '<p>' . t('Create taxonomy <a href=":create_vocabulary_url">vocabulary</a> to hold directory structure and select it in the <a href=":media_directors_setting_url">settings</a>.', [
+        ':create_vocabulary_url' => $vocabulary_add_url,
+        ':media_directors_setting_url' => $settings_url,
+      ]) . '</p>';
   }
 }
 
