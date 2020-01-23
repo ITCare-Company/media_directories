@@ -6,7 +6,7 @@
     selectedMedia: [],
     targetBundles: [],
     cardinality: -1,
-    remainingItems: 1,
+    remainingItems: 25,
     urls: {},
     keepSelectionOnChange: false
   };
