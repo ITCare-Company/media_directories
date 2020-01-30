@@ -174,6 +174,10 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
 
     $cardinality = (int) NestedArray::getValue($form_state->getStorage(), ['entity_browser', 'validators', 'cardinality', 'cardinality']);
     $remaining = (int) NestedArray::getValue($form_state->getStorage(), ['entity_browser', 'widget_context', 'remaining']);
+    if ($route_parameter_entity_browser_id == 'media_directories_editor_browser') {
+      // Allow only one item to be selected in the editor.
+      $remaining = 1;
+    }
     $target_bundles = NestedArray::getValue($form_state->getStorage(), ['entity_browser', 'validators', 'target_bundles']);
 
     if ($cardinality) {
