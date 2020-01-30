@@ -284,12 +284,14 @@ class MediaEditForm extends FormBase {
     }
 
     // We hide the preview of the uploaded file in the image widget with CSS.
+    // But provide a link to the full media edit page.
     // @todo Improve hiding file widget elements in
     //   https://www.drupal.org/project/drupal/issues/2987921
     $bundle = $this->entityTypeManager->getStorage('media_type')->load($media->bundle());
     $source_field_name = $this->getSourceFieldName($bundle);
     if (isset($element['fields'][$source_field_name])) {
       $element['fields'][$source_field_name]['#attributes']['class'][] = 'media-library-add-form__source-field';
+      $element['fields'][$source_field_name]['#prefix'] = '<a href="/media/' . $media->id() . '/edit" target="_blank">' . $this->t('Edit in new tab (fe. for changing the image)') . '</a>';
     }
     // The revision log field is currently not configurable from the form
     // display, so hide it by changing the access.
