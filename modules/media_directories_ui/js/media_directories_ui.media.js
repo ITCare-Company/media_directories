@@ -42,7 +42,14 @@
       });
 
       // Media item click actions.
-      $browser_listing.find('.media-item').once().each(function () {
+      var $items = $browser_listing.find('.media-item');
+      if ($items.length == 0 && Drupal.MediaBrowser.searchString != '') {
+        $('.view-empty').once().append('<a id="media-browser-clear-search-string">' + Drupal.t('Clear filter') + '</a>');
+        $('#media-browser-clear-search-string').on('click', function () {
+          Drupal.MediaBrowser.toolbar.filterMediaBrowserByName('');
+        });
+      }
+      $items.once().each(function () {
         $(this).on('click', function () {
           var media_id = $(this).data('mid');
           var selected_items = Drupal.MediaBrowser.selectedMedia.length;
@@ -67,7 +74,7 @@
             });
 
             // Clear selection from global storage.
-            Drupal.MediaBrowser.clearMediaSelection();
+            Drupal.MediaBrowser.clearMediaSelection(false);
           }
 
           // If user can choose only one item and it is already selected,

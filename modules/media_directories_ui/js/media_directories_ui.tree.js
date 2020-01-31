@@ -33,25 +33,58 @@
     $(Drupal.MediaBrowser.treeSelector).once().each(function () {
       $(this).on('changed.jstree', function (e, data) {
         if (data.action === 'select_node') {
-          var directory_id = data.node.a_attr["data-tid"];
-          Drupal.MediaBrowser.loadDirectoryContent(directory_id);
-          Drupal.MediaBrowser.active_directory = directory_id;
-
+          var doLoadContent = false;
           if (drupalSettings.media_directories.selection_mode != 'keep') {
-            if (!Drupal.MediaBrowser.keepSelectionOnChange) {
-              // Clear selection from global storage.
-              Drupal.MediaBrowser.clearMediaSelection();
+            if (Drupal.MediaBrowser.getSelectedMids().length > 0) {
+              var $warningDialog = $('<div>' + Drupal.theme('mediaDirectoriesDeSelectionWarningChangeDirectoryModal') + '</div>').appendTo('body');
+              Drupal.dialog($warningDialog, {
+                title: Drupal.t('Clear selection?'),
+                buttons: [{
+                  text: Drupal.t('Cancel'),
+                  click: function click() {
+                    $(this).dialog('close');
+                  }
+                }, {
+                  text: Drupal.t('OK'),
+                  click: function click() {
+                    var directory_id = data.node.a_attr["data-tid"];
+                    Drupal.MediaBrowser.loadDirectoryContent(directory_id);
+                    Drupal.MediaBrowser.active_directory = directory_id;
+
+                    if (drupalSettings.media_directories.selection_mode != 'keep') {
+                      if (!Drupal.MediaBrowser.keepSelectionOnChange) {
+                        // Clear selection from global storage.
+                        Drupal.MediaBrowser.clearMediaSelection();
+                      }
+                    }
+
+                    Drupal.MediaBrowser.keepSelectionOnChange = false;
+                    $(this).dialog('close');
+                  }
+                }]
+              }).showModal();
+            }
+            else {
+              doLoadContent = true;
             }
           }
+          else {
+            doLoadContent = true;
+          }
 
-          Drupal.MediaBrowser.keepSelectionOnChange = false;
+          if (doLoadContent) {
+            var directory_id = data.node.a_attr["data-tid"];
+            Drupal.MediaBrowser.loadDirectoryContent(directory_id);
+            Drupal.MediaBrowser.active_directory = directory_id;
+            Drupal.MediaBrowser.keepSelectionOnChange = false;
+          }
         }
       });
       $(this).on('loaded.jstree', function () {
         Drupal.MediaBrowser.loadDirectoryContent(-1);
 
         // Clear selection from global storage.
-        Drupal.MediaBrowser.clearMediaSelection();
+        Drupal.MediaBrowser.clearMediaSelection(false);
       });
       $(this).on('rename_node.jstree', function (event, data) {
         var directory_id = $('#' + data.node.a_attr['id']).data('tid');
@@ -97,17 +130,22 @@
    * Load directory content.
    */
   Drupal.MediaBrowser.loadDirectoryContent = function (directory_id) {
+    var arguments = {
+      directory_id: directory_id,
+      media_name: Drupal.MediaBrowser.name
+    };
+    if (Drupal.MediaBrowser.searchString) {
+      arguments['media_name'] = Drupal.MediaBrowser.searchString;
+    }
     var ajaxSettings = {
       url: Drupal.MediaBrowser.getUrl('directory.content'),
-      submit: {
-        directory_id: directory_id,
-        target_bundles: Drupal.MediaBrowser.targetBundles
-      }
+      submit: arguments
     };
 
     // Lock the UI.
     Drupal.MediaBrowser.startLoader();
     Drupal.ajax(ajaxSettings).execute().done(function () {
+      Drupal.MediaBrowser.activeDirectory = directory_id;
       Drupal.MediaBrowser.media.init($('.browser--listing'));
 
       // Unlock the UI.

@@ -36,6 +36,7 @@ media-ui.browser:
     - core/jquery.once
     - core/drupalSettings
     - core/drupal.ajax
+    - core/drupal.debounce
     - core/drupal.dialog.ajax
     - core/jquery.form
     - core/jquery.ui.draggable

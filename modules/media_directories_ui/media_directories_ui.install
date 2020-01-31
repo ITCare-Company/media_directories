@@ -83,3 +83,29 @@ function media_directories_ui_update_8001() {
 
   $view->save();
 }
+
+/**
+ * Extend the media_directory_browser view with the media name argument.
+ */
+function media_directories_ui_update_8002() {
+  $view = View::load('media_directory_browser');
+
+  $argument = [
+    'id' => 'media_name',
+    'table' => 'media_field_data',
+    'field' => 'media_name',
+    'relationship' => 'none',
+    'group_type' => 'group',
+    'title_enable' => FALSE,
+    'default_argument_type' => 'fixed',
+    'default_argument_skip_url' => FALSE,
+    'specify_validation' => FALSE,
+    'entity_type' => 'media',
+    'plugin_id' => 'media_directory_ui_string_contains',
+  ];
+
+  $default_display = &$view->getDisplay('default');
+  $default_display['display_options']['arguments']['media_name'] = $argument;
+
+  $view->save();
+}

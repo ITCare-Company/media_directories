@@ -5,6 +5,7 @@
     activeDirectory: -1,
     selectedMedia: [],
     targetBundles: [],
+    searchString: null,
     cardinality: -1,
     remainingItems: 25,
     urls: {},
@@ -61,11 +62,24 @@
    * Some of the actions will change list of media items
    * so we might need to clear selected items.
    */
-  Drupal.MediaBrowser.clearMediaSelection = function () {
+  Drupal.MediaBrowser.clearMediaSelection = function (resetSearch) {
+
+    if (resetSearch == undefined) {
+      resetSearch = true;
+    }
+
     // Clear selection from global storage.
     Drupal.MediaBrowser.selectedMedia = [];
+    // Reset also the search string.
+    if (resetSearch) {
+      Drupal.MediaBrowser.searchString = null;
+      Drupal.MediaBrowser.toolbar.inputs.media_name_filter.val('');
+    }
     // Notify toolbar of these changes.
     Drupal.MediaBrowser.toolbar.selectionChanged();
+
+    // Remove the selected class from all items.
+    $('.media-listing .media-item').removeClass('selected');
   };
 
   /**

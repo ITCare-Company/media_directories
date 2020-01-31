@@ -1,4 +1,4 @@
-(function ($, Drupal, drupalSettings) {
+(function ($, Drupal, drupalSettings, debounce) {
   /**
    * Media Browser toolbar functionality.
    *
@@ -12,7 +12,46 @@
       media_delete: $('#browser-delete-media'),
       submit: $('#edit-submit')
     },
+    inputs: {
+      media_name_filter: $('#browser-filter-name'),
+    },
+    moveFocusFromNameFilter: false,
     init: function init() {
+
+      // Filter input
+      Drupal.MediaBrowser.searchString = this.inputs.media_name_filter.val();
+      this.inputs.media_name_filter.on('focus', function (e) {
+        // Closing the dialog re-focuses the input, so make sure to skip that.
+        if (Drupal.MediaBrowser.toolbar.moveFocusFromNameFilter) {
+          Drupal.MediaBrowser.toolbar.moveFocusFromNameFilter = false;
+          $('#edit-submit').focus();
+        }
+        else {
+          if (drupalSettings.media_directories.selection_mode != 'keep') {
+            if (Drupal.MediaBrowser.getSelectedMids().length > 0) {
+              var $warningDialog = $('<div>' + Drupal.theme('mediaDirectoriesDeSelectionWarningSearchModal') + '</div>').appendTo('body');
+              Drupal.dialog($warningDialog, {
+                title: Drupal.t('Clear selection?'),
+                buttons: [{
+                  text: Drupal.t('Cancel'),
+                  click: function click() {
+                    Drupal.MediaBrowser.toolbar.moveFocusFromNameFilter = true;
+                    $(this).dialog('close');
+                  }
+                }, {
+                  text: Drupal.t('OK'),
+                  click: function click() {
+                    Drupal.MediaBrowser.clearMediaSelection(false);
+                    Drupal.MediaBrowser.toolbar.selectionChanged();
+                    $(this).dialog('close');
+                  }
+                }]
+              }).showModal();
+            }
+          }
+        }
+      });
+      this.inputs.media_name_filter.on('keyup', debounce(Drupal.MediaBrowser.toolbar.filterMediaBrowserByName, 400));
 
       // Add new media button.
       this.buttons.media_add.on('click', function (e) {
@@ -137,6 +176,25 @@
       }
 
       $('.browser--footer .browser-status').text(status_text);
+    },
+
+    /**
+     * Filter media items in current folder by name.
+     */
+    filterMediaBrowserByName: function filterMediaBrowserByName(searchTerm) {
+      if (searchTerm !== undefined && typeof searchTerm === 'string') {
+        Drupal.MediaBrowser.toolbar.inputs.media_name_filter.val(searchTerm);
+      }
+      Drupal.MediaBrowser.searchString = Drupal.MediaBrowser.toolbar.inputs.media_name_filter.val();
+      Drupal.MediaBrowser.loadDirectoryContent(Drupal.MediaBrowser.activeDirectory);
     }
   };
-})(jQuery, Drupal, drupalSettings);
+
+  Drupal.theme.mediaDirectoriesDeSelectionWarningSearchModal = function () {
+    return '<p>' + Drupal.t('Your current selection will be cleared when you start searching.') + '</p><small class="description">' + Drupal.t('Media directories browser is in reset selection mode, as the entity browser does not support the selection of in-existent  items.') + '</small>';
+  };
+
+  Drupal.theme.mediaDirectoriesDeSelectionWarningChangeDirectoryModal = function () {
+    return '<p>' + Drupal.t('Your current selection will be cleared when change the directory.') + '</p><small class="description">' + Drupal.t('Media directories browser is in reset selection mode, as the entity browser does not support the selection of in-existent  items.') + '</small>';
+  };
+})(jQuery, Drupal, drupalSettings, Drupal.debounce);
