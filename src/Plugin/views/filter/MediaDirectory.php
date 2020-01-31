@@ -110,7 +110,7 @@ class MediaDirectory extends ManyToOne {
     if (empty($vid)) {
       $settings_url = Url::fromRoute('media_directories.config_form');
       $form['markup'] = [
-        '#markup' => '<div class="js-form-item form-item">' . $this->t('Vocabulary is not selected. Please select it in the <a href="@url">settings</a>.', ['@url' => $settings_url->toString()]) . '</div>',
+        '#markup' => '<div class="js-form-item form-item">' . $this->t('Vocabulary is not selected. Please select it in the <a href=":url">settings</a>.', [':url' => $settings_url->toString()]) . '</div>',
       ];
       $form['value'] = [
         '#type' => 'hidden',

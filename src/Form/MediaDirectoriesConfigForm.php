@@ -6,6 +6,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -73,10 +74,13 @@ class MediaDirectoriesConfigForm extends ConfigFormBase {
       $options[$vocabulary->id()] = $vocabulary->label();
     }
 
+    $vocabulary_add_url = Url::fromRoute('entity.taxonomy_vocabulary.add_form')->toString();
     $form['directory_taxonomy'] = [
       '#type' => 'select',
       '#title' => $this->t('Taxonomy'),
-      '#description' => $this->t('Select taxonomy for directory structure.'),
+      '#description' => $this->t('Select taxonomy for directory structure or  <a href=":create_vocabulary_url">create a new one</a>.', [
+        ':create_vocabulary_url' => $vocabulary_add_url,
+      ]),
       '#options' => $options,
       '#default_value' => $config->get('directory_taxonomy'),
     ];

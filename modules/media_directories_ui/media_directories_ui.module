@@ -192,7 +192,7 @@ function media_directories_ui_form_entity_browser_directory_browser_form_alter(&
 
   if(!_media_directories_ui_vocabulary_set()) {
     $settings_url = Url::fromRoute('media_directories.config_form');
-    \Drupal::messenger()->addError(t('Vocabulary is not selected. Please select it in the <a href="@url">settings</a>.', ['@url' => $settings_url->toString()]));
+    \Drupal::messenger()->addError(t('Vocabulary is not selected. Please select it in the <a href=":url">settings</a>.', [':url' => $settings_url->toString()]));
   }
 }
 
@@ -206,7 +206,7 @@ function media_directories_ui_form_entity_browser_media_browser_form_alter(&$for
 
   if(!_media_directories_ui_vocabulary_set()) {
     $settings_url = Url::fromRoute('media_directories.config_form');
-    \Drupal::messenger()->addError(t('Vocabulary is not selected. Please select it in the <a href="@url">settings</a>.', ['@url' => $settings_url->toString()]));
+    \Drupal::messenger()->addError(t('Vocabulary is not selected. Please select it in the <a href=":url">settings</a>.', [':url' => $settings_url->toString()]));
   }
 }
 
