@@ -23,4 +23,4 @@ widgets:
     uuid: 5bc2a17c-b080-4a3b-867c-7953ae9b55c4
     weight: -10
     label: 'Directory browser'
-    id: directory_browser
+    id: media_directories_browser_widget

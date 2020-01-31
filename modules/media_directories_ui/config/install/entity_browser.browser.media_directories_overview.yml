@@ -2,7 +2,7 @@ status: true
 dependencies:
   module:
     - views
-name: directory_browser
+name: media_directories_overview
 label: 'Directory browser'
 display: standalone
 display_configuration:
@@ -19,4 +19,4 @@ widgets:
     uuid: 35012080-4c05-4d06-aa7b-0a179e04a611
     weight: 1
     label: Browser
-    id: directory_browser
+    id: media_directories_browser_widget

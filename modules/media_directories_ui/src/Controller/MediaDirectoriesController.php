@@ -147,7 +147,7 @@ class MediaDirectoriesController extends ControllerBase {
     $media_name_search = $request->request->get('media_name');
 
     $bundles = $target_bundles ? implode('+', $target_bundles) : 'all';
-    $view = views_embed_view('media_directory_browser', 'media_browser', $directory_id, $bundles, $media_name_search);
+    $view = views_embed_view('media_directories_base', 'media_browser', $directory_id, $bundles, $media_name_search);
 
     $response->addCommand(new HtmlCommand('.browser--listing', $view));
 

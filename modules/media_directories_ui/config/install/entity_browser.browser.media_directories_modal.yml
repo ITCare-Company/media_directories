@@ -2,8 +2,8 @@ status: true
 dependencies:
   module:
     - views
-name: media_browser
-label: 'Media browser'
+name: media_directories_modal
+label: 'Media field browser'
 display: modal
 display_configuration:
   width: ''
@@ -22,4 +22,4 @@ widgets:
     uuid: 24011187-a4c0-42f1-a71a-eec339d3721f
     weight: -10
     label: Browser
-    id: directory_browser
+    id: media_directories_browser_widget

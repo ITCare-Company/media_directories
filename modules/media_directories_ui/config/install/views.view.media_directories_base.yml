@@ -8,8 +8,8 @@ dependencies:
     - media
     - user
     - media_directories_ui
-id: media_directory_browser
-label: 'Media Directories browser'
+id: media_directories_base
+label: 'Media directories browser'
 module: views
 description: ''
 tag: ''

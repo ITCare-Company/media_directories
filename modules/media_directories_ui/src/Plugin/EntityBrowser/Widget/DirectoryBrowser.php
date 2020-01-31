@@ -25,7 +25,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
  * Uses a view to provide entity listing in a browser's widget.
  *
  * @EntityBrowserWidget(
- *   id = "directory_browser",
+ *   id = "media_directories_browser_widget",
  *   label = @Translation("Directory browser"),
  *   provider = "views",
  *   description = @Translation("Classical directory browsing."),
@@ -168,7 +168,7 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
     // Decide the selection mode.
     $route_parameter_entity_browser_id = $this->routeMatch->getParameter('entity_browser_id');
     $selection_mode = 'reset';
-    if ($route_parameter_entity_browser_id == 'directory_browser') {
+    if ($route_parameter_entity_browser_id == 'media_directories_overview') {
       // We are on the media overview page.
       $selection_mode = 'keep';
     }
@@ -232,7 +232,7 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
       '#default_value' => MEDIA_DIRECTORY_ROOT,
     ];
 
-    if ($this->configuration['entity_browser_id'] === 'directory_browser') {
+    if ($this->configuration['entity_browser_id'] === 'media_directories_overview') {
       $form['actions']['#access'] = FALSE;
       $form['browser']['#attributes']['class'][] = 'media-browser--full';
     }

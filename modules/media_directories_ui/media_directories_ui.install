@@ -14,11 +14,11 @@ use Drupal\views\Entity\View;
 function media_directories_ui_uninstall() {
 
   // Remove the view.
-  \Drupal::configFactory()->getEditable('views.view.media_directory_browser')->delete();
+  \Drupal::configFactory()->getEditable('views.view.media_directories_base')->delete();
 
   // Remove the entity browsers.
-  \Drupal::configFactory()->getEditable('entity_browser.browser.directory_browser')->delete();
-  \Drupal::configFactory()->getEditable('entity_browser.browser.media_browser')->delete();
+  \Drupal::configFactory()->getEditable('entity_browser.browser.media_directories_overview')->delete();
+  \Drupal::configFactory()->getEditable('entity_browser.browser.media_directories_modal')->delete();
 
   // Remove the image style.
   \Drupal::configFactory()->getEditable('image.style.browser_thumbnail')->delete();
@@ -108,4 +108,48 @@ function media_directories_ui_update_8002() {
   $default_display['display_options']['arguments']['media_name'] = $argument;
 
   $view->save();
+}
+
+/**
+ * Rename the media_directories view and entity browsers (to avoid conflicts with other modules).
+ */
+function media_directories_ui_update_8003() {
+
+  // Rename the view (config entity) and replace its id.
+  // $view->createDuplicate()>set('id',  would also be an option
+  $config_factory = \Drupal::configFactory();
+  $config_factory->rename('views.view.media_directory_browser', 'views.view.media_directories_base');
+  $config = $config_factory->getEditable('views.view.media_directories_base');
+  $config->set('id', 'media_directories_base');
+  $config->save();
+
+  // Rename aund update the entity browsers
+  $config_factory->rename('entity_browser.browser.directory_browser', 'entity_browser.browser.media_directories_overview');
+  $config = $config_factory->getEditable('entity_browser.browser.media_directories_overview');
+  $config->set('name', 'media_directories_overview');
+  $config->set('widgets.35012080-4c05-4d06-aa7b-0a179e04a611.id', 'media_directories_browser_widget');
+  $config->save();
+  $config_factory->rename('entity_browser.browser.media_browser', 'entity_browser.browser.media_directories_modal');
+  $config = $config_factory->getEditable('entity_browser.browser.media_directories_modal');
+  $config->set('name', 'media_directories_modal');
+  $config->set('widgets.24011187-a4c0-42f1-a71a-eec339d3721f.id', 'media_directories_browser_widget');
+  $config->save();
+
+  // Update all form displays to use the refer the new entity browser id.
+  foreach ($config_factory->listAll('core.entity_form_display.') as $config_name) {
+    $config = $config_factory->getEditable($config_name);
+
+    foreach ($config->get('content') as $field_name => $config_field) {
+      if ($config_field['type'] == 'entity_browser_entity_reference' &&
+        $config_field['settings']['entity_browser'] == 'media_browser') {
+        $config_dependencies = $config->get('dependencies.config');
+        $config_dependencies_new = array_diff($config_dependencies, ['entity_browser.browser.media_browser']);
+        $config_dependencies_new[] = 'entity_browser.browser.media_directories_modal';
+        $config->set('dependencies.config', $config_dependencies_new);
+        $config_field['settings']['entity_browser'] = 'media_directories_modal';
+        $config->set('content.' . $field_name, $config_field);
+        $config->save();
+      }
+    }
+  }
 }
