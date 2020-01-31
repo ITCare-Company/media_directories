@@ -294,6 +294,17 @@
       };
     }
 
+    if (drupalSettings.media_directories.term_translation_enabled &&
+        drupalSettings.media_directories.vocabulary_permissions['translate']) {
+      menu_items.show_translations = {
+        label: Drupal.t('Show translations in new tab'),
+        _disabled: is_root,
+        action: function action(data) {
+          window.open('/taxonomy/term/' +$(data.reference).data('tid') + '/translations');
+        }
+      };
+    }
+
     if (drupalSettings.media_directories.vocabulary_permissions['delete']) {
       menu_items.delete = {
         label: Drupal.t('Delete'),

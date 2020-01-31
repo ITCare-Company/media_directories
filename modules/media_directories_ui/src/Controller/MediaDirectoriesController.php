@@ -7,8 +7,10 @@ use Drupal\Core\Ajax\HtmlCommand;
 use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Ajax\PrependCommand;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormBuilder;
 use Drupal\Core\Form\FormState;
+use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\media_directories_ui\Form\MediaEditForm;
 use Drupal\taxonomy\Entity\Term;
@@ -37,6 +39,20 @@ class MediaDirectoriesController extends ControllerBase {
   protected $renderer;
 
   /**
+   * The module handler.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  protected $moduleHandler;
+
+  /**
+   * Language manager.
+   *
+   * @var \Drupal\Core\Language\LanguageManagerInterface
+   */
+  protected $languageManager;
+
+  /**
    * The vocabulary id to use.
    *
    * @var string
@@ -44,17 +60,29 @@ class MediaDirectoriesController extends ControllerBase {
   protected $vocabulary_id;
 
   /**
+   * Indicator if content translation is enabled.
+   *
+   * @var bool
+   */
+  protected $content_translation_enabled;
+
+  /**
    * MediaDirectoriesController constructor.
    *
    * @param \Drupal\Core\Form\FormBuilder $formBuilder
    * @param \Drupal\Core\Render\RendererInterface $renderer
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
    */
-  public function __construct(FormBuilder $formBuilder, RendererInterface $renderer) {
+  public function __construct(FormBuilder $formBuilder, RendererInterface $renderer, ModuleHandlerInterface $module_handler, LanguageManagerInterface $language_manager) {
     $this->formBuilder = $formBuilder;
     $this->renderer = $renderer;
+    $this->moduleHandler = $module_handler;
+    $this->languageManager = $language_manager;
 
     $config = $this->config('media_directories.settings');
     $this->vocabulary_id = $config->get('directory_taxonomy');
+    $this->content_translation_enabled = $this->moduleHandler->moduleExists('content_translation');
   }
 
   /**
@@ -63,7 +91,9 @@ class MediaDirectoriesController extends ControllerBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('form_builder'),
-      $container->get('renderer')
+      $container->get('renderer'),
+      $container->get('module_handler'),
+      $container->get('language_manager')
     );
   }
 
@@ -135,10 +165,12 @@ class MediaDirectoriesController extends ControllerBase {
     $directory_id = (int)$request->request->get('parent_id');
     $directory_id = $directory_id === MEDIA_DIRECTORY_ROOT ? 0 : $directory_id;
     $name = $request->request->get('name');
+    $current_language = $this->languageManager->getCurrentLanguage();
     $directory = Term::create([
       'name' => $name,
       'vid' => $this->vocabulary_id,
       'parent' => [$directory_id],
+      'langcode' => $current_language->getId(),
     ]);
 
     $data = [];
@@ -446,6 +478,14 @@ class MediaDirectoriesController extends ControllerBase {
     $tree[$object->tid] = $object;
     $tree[$object->tid]->children = [];
     $tree[$object->tid]->text = $object->name;
+    if ($this->content_translation_enabled) {
+      $current_language = $this->languageManager->getCurrentLanguage();
+      $term = Term::load($object->tid);
+      if ($term && $term->hasTranslation($current_language->getId())) {
+        $term = $term->getTranslation($current_language->getId());
+        $tree[$object->tid]->text = $term->label();
+      }
+    }
     $tree[$object->tid]->a_attr = [
       'data-tid' => $object->tid,
     ];

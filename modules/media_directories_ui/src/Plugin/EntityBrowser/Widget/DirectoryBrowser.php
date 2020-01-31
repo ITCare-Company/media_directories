@@ -150,6 +150,7 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
     $vocabulary_permissions = [
       'create' => FALSE,
       'update' => FALSE,
+      'translate' => FALSE,
       'delete' => FALSE,
     ];
     if (isset($this->vocabulary_id)) {
@@ -159,6 +160,7 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
       ]);
       $vocabulary_permissions['create'] = $directory->access('create');
       $vocabulary_permissions['update'] = $directory->access('update');
+      $vocabulary_permissions['translate'] = $directory->access('translate');
       $vocabulary_permissions['delete'] = $directory->access('delete');
     }
     $form['#attached']['drupalSettings']['media_directories']['vocabulary_permissions'] = $vocabulary_permissions;
@@ -215,6 +217,11 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
       }
       $form['#attached']['drupalSettings']['media_directories']['media_translation_enabled'][$type] = $media_translation_enabled;
     }
+    $term_translation_enabled = FALSE;
+    if ($this->moduleHandler->moduleExists('content_translation')) {
+      $term_translation_enabled = \Drupal::service('content_translation.manager')->isEnabled('taxonomy_term', $this->vocabulary_id);
+    }
+    $form['#attached']['drupalSettings']['media_directories']['term_translation_enabled'] = $term_translation_enabled;
 
     $form['browser'] = [
       '#theme' => 'media_directories_browser',
