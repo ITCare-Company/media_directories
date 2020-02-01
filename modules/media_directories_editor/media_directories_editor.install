@@ -5,24 +5,6 @@
  * Install and database hook implementations.
  */
 
- use \Drupal\Core\Config\ExtensionInstallStorage;
-
-
- /**
-  * Implements hook_install().
-  */
- function media_directories_editor_install() {
-   if (!\Drupal::isConfigSyncing()) {
-     // Add an icon for Media if we aren't installing from configuration.
-     // Read more about this implementation: https://www.drupal.org/node/2696593
-     $data = file_get_contents(dirname(__FILE__) . '/images/folder.png');
-     $file = file_save_data($data, 'public://media_directories_embed_icon.png', FILE_EXISTS_REPLACE);
-     // Set file uuid same as default config.
-     $uuid = (new ExtensionInstallStorage(\Drupal::service('config.storage')))->read('embed.button.media_directories')['icon_uuid'];
-     $file->set('uuid', $uuid);
-     $file->save();
-   }
- }
 
 /**
  * Implements hook_uninstall().
@@ -42,7 +24,7 @@ function media_directories_editor_uninstall() {
 function media_directories_editor_update_8001() {
 
   // Update the entity browser
-  $config = $config_factory->getEditable('entity_browser.browser.media_directories_editor_browser');
+  $config = \Drupal::configFactory()->getEditable('entity_browser.browser.media_directories_editor_browser');
   $config->set('widgets.5bc2a17c-b080-4a3b-867c-7953ae9b55c4.id', 'media_directories_browser_widget');
   $config->save();
 }
