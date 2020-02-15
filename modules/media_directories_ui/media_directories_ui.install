@@ -140,7 +140,7 @@ function media_directories_ui_update_8003() {
     $config = $config_factory->getEditable($config_name);
 
     foreach ($config->get('content') as $field_name => $config_field) {
-      if ($config_field['type'] == 'entity_browser_entity_reference' &&
+      if (isset($config_field['type']) && $config_field['type'] == 'entity_browser_entity_reference' &&
         $config_field['settings']['entity_browser'] == 'media_browser') {
         $config_dependencies = $config->get('dependencies.config');
         $config_dependencies_new = array_diff($config_dependencies, ['entity_browser.browser.media_browser']);
