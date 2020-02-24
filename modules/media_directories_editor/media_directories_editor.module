@@ -5,6 +5,31 @@
 
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
+
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Adding settings to the media_directories config form here.
+ *
+ */
+function media_directories_editor_form_media_directories_config_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  $form['media_directories_editor'] = [
+    '#type' => 'details',
+    '#title' => t('Editor Settings'),
+    '#description' => t('Here you\'ll find settings regarding the CKEditor integration.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  ];
+  $form['media_directories_editor']['directories_button'] = [
+    '#type' => 'fieldset',
+    '#title' => t('Directories button'),
+    '#description' => t('The desired text formats should be given the editor button. You can edit them <a href=":url">here</a>. <em>Make sure to also enable the embed media filter!</em>', [
+      ':url' => Url::fromRoute('filter.admin_overview')->toString(),
+    ]),
+  ];
+}
 
 /**
  * Implements hook_form_FORM_ID_alter()
