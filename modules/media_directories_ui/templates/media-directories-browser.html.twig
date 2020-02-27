@@ -4,12 +4,12 @@
     {{ browser.active_directory }}
     <div class="browser--header">
       <div class="browser-toolbar">
-        <div class="browser-toolbar__item"><a href="" class="button" id="browser-add-media"><i class="fas fa-upload"></i> {{ "Add media"|t }}</a></div>
-        <div class="browser-toolbar__item"><a href="" class="button is-disabled" id="browser-edit-media">{{ "Quickedit media(s)"|t }}</a></div>
+        <div class="browser-toolbar__item"><a href="" class="button button--small" id="browser-add-media"><i class="fas fa-upload"></i> {{ "Add media"|t }}</a></div>
+        <div class="browser-toolbar__item"><a href="" class="button button--small is-disabled" id="browser-edit-media">{{ "Quickedit media(s)"|t }}</a></div>
         {% if media_translation_enabled %}
-          <div class="browser-toolbar__item"><a href="" class="button is-disabled" id="browser-translate-media">{{ "Show translations in new tab"|t }}</a></div>
+          <div class="browser-toolbar__item"><a href="" class="button button--small is-disabled" id="browser-translate-media">{{ "Show translations in new tab"|t }}</a></div>
         {% endif %}
-        <div class="browser-toolbar__item"><a href="" class="button is-disabled" id="browser-delete-media">{{ "Delete media"|t }}</a></div>
+        <div class="browser-toolbar__item"><a href="" class="button button--small is-disabled" id="browser-delete-media">{{ "Delete media"|t }}</a></div>
         <div class="browser-toolbar__item-right"><input type="text" id="browser-filter-name"  placeholder="{{ 'Filter current directory'|t }}"/></div>
       </div>
     </div>

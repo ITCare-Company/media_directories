@@ -75,10 +75,12 @@
 
 .browser-toolbar__item {
   margin-right: 1em;
+  align-self: center;
 }
 
 .browser-toolbar__item-right {
   margin-left: auto;
+  align-self: center;
 }
 
 .media-browser--full .browser {
