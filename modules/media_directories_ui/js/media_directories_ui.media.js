@@ -43,7 +43,7 @@
 
       // Media item click actions.
       var $items = $browser_listing.find('.media-item');
-      if ($items.length == 0 && Drupal.MediaBrowser.searchString != '') {
+      if ($items.length == 0 && Drupal.MediaBrowser.searchString !== '') {
         $('.view-empty').once().append('<a id="media-browser-clear-search-string">' + Drupal.t('Clear filter') + '</a>');
         $('#media-browser-clear-search-string').on('click', function () {
           Drupal.MediaBrowser.toolbar.filterMediaBrowserByName('');
