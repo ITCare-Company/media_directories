@@ -195,6 +195,6 @@
   };
 
   Drupal.theme.mediaDirectoriesDeSelectionWarningChangeDirectoryModal = function () {
-    return '<p>' + Drupal.t('Your current selection will be cleared when change the directory.') + '</p><small class="description">' + Drupal.t('Media directories browser is in reset selection mode, as the entity browser does not support the selection of in-existent  items.') + '</small>';
+    return '<p>' + Drupal.t('Your current selection will be cleared when you change the directory.') + '</p><small class="description">' + Drupal.t('Media directories browser is in reset selection mode, as the entity browser does not support the selection of in-existent  items.') + '</small>';
   };
 })(jQuery, Drupal, drupalSettings, Drupal.debounce);

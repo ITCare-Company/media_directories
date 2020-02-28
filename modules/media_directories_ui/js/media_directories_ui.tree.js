@@ -35,7 +35,7 @@
         if (data.action === 'select_node') {
           var doLoadContent = false;
           if (drupalSettings.media_directories.selection_mode != 'keep') {
-            if (Drupal.MediaBrowser.getSelectedMids().length > 0) {
+            if (!Drupal.MediaBrowser.keepSelectionOnChange && Drupal.MediaBrowser.getSelectedMids().length > 0) {
               var $warningDialog = $('<div>' + Drupal.theme('mediaDirectoriesDeSelectionWarningChangeDirectoryModal') + '</div>').appendTo('body');
               Drupal.dialog($warningDialog, {
                 title: Drupal.t('Clear selection?'),
