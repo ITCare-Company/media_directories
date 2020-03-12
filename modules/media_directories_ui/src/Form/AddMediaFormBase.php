@@ -534,13 +534,14 @@ abstract class AddMediaFormBase extends FormBase {
       // shift focus back to the first tabbable element (which should be the
       // source field).
       if (empty($added_media)) {
-        // TODO throws an ajax exception when trying to remove last item.
         $build = [
           '#theme' => 'media_directories_add',
           '#selected_type' => $media_type->id(),
           '#active_directory' => $this->getDirectory($form_state),
           '#target_bundles' => $this->getTargetBundles($form_state),
+          '#media_library_form_rebuild' => TRUE,
         ];
+        $form_state->setRebuild();
         $response->addCommand(new ReplaceCommand('#media-library-add-form-wrapper', $build));
         //$response->addCommand(new InvokeCommand('#media-library-add-form-wrapper :tabbable', 'focus'));
       }

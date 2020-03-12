@@ -31,6 +31,7 @@ function media_directories_ui_theme($existing, $type, $theme, $path) {
         'selected_type' => NULL,
         'active_directory' => NULL,
         'target_bundles' => NULL,
+        'media_library_form_rebuild' => FALSE,
       ],
     ],
     'views_view_unformatted__media_directories_base' => [
@@ -184,6 +185,10 @@ function media_directories_ui_preprocess_media_directories_add(&$variables) {
   $form_state->set('media_type', $type);
   $form_state->set('active_directory', $variables['active_directory']);
   $form_state->set('target_bundles', $variables['target_bundles']);
+
+  if ($variables['media_library_form_rebuild']) {
+    $form_state->setUserInput([]);
+  }
 
   if (in_array($field_config->getType(), ['file', 'image'])) {
     $variables['media_form'] = \Drupal::formBuilder()->buildForm(FileUploadForm::class, $form_state);
