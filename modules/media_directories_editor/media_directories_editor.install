@@ -5,6 +5,38 @@
  * Install and database hook implementations.
  */
 
+use Drupal\media\Entity\MediaType;
+use Drupal\Core\Entity\Entity\EntityViewMode;
+
+/**
+ * Implements hook_install().
+ */
+function media_directories_editor_install() {
+  $config = \Drupal::configFactory()->getEditable('embed.button.media_directories');
+
+  // Add the standard media types for the embed button, if available.
+  $media_types_to_add = ['image', 'remote_video'];
+  $media_types = MediaType::loadMultiple();
+  foreach ($media_types_to_add as $delta => $type) {
+    if (!isset($media_types['image'])) {
+      unset($media_types_to_add[$delta]);
+    }
+  }
+
+  if (count($media_types_to_add) > 0) {
+    $config->set('type_settings.bundles', $media_types_to_add);
+  }
+
+  // Add the standard media entity view mode, if available.
+  $media_full_view_mode = EntityViewMode::load('media.full');
+  if ($media_full_view_mode) {
+    $display_plugins = $config->get('type_settings.display_plugins');
+    $display_plugins[] = 'view_mode:' . $media_full_view_mode->id();
+    $config->set('type_settings.display_plugins', $display_plugins);
+  }
+
+  $config->save();
+}
 
 /**
  * Implements hook_uninstall().
