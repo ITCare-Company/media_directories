@@ -74,7 +74,8 @@
                     url: Drupal.MediaBrowser.getUrl('media.add'),
                     submit: {
                       active_directory: Drupal.MediaBrowser.active_directory,
-                      target_bundles: Drupal.MediaBrowser.targetBundles
+                      target_bundles: Drupal.MediaBrowser.targetBundles,
+                      selection_mode: drupalSettings.media_directories.selection_mode
                     }
                   };
                   Drupal.ajax(ajaxSettings).execute();
@@ -95,7 +96,8 @@
             url: Drupal.MediaBrowser.getUrl('media.add'),
             submit: {
               active_directory: Drupal.MediaBrowser.active_directory,
-              target_bundles: Drupal.MediaBrowser.targetBundles
+              target_bundles: Drupal.MediaBrowser.targetBundles,
+              selection_mode: drupalSettings.media_directories.selection_mode
             }
           };
           Drupal.ajax(ajaxSettings).execute();

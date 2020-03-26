@@ -136,6 +136,7 @@ class FileUploadForm extends AddMediaFormBase {
               'media_type' => ($form_state->get('media_type') ? $form_state->get('media_type')->id() : $form_state->get('selected_type')),
               'target_bundles' => $this->getTargetBundles($form_state),
               'active_directory' => $this->getDirectory($form_state),
+              'selection_mode' => $this->getSelectionMode($form_state),
               FormBuilderInterface::AJAX_FORM_REQUEST => TRUE,
             ],
         ],

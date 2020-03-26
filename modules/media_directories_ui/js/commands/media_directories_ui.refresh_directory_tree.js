@@ -1,11 +1,13 @@
-(function ($, Drupal) {
+(function ($, Drupal, drupalSettings) {
   Drupal.AjaxCommands.prototype.refreshDirectoryTree = function (ajax, response, status) {
     var $jsTree = $(Drupal.MediaBrowser.treeSelector);
     var selected_directory = parseInt(response.data.selected_directory);
 
     if (response.data.newly_selected_entity_ids.length > 0) {
-      // Clear selection from global storage.
-      Drupal.MediaBrowser.clearMediaSelection();
+      if (drupalSettings.media_directories.selection_mode != 'keep') {
+        // Clear selection from global storage.
+        Drupal.MediaBrowser.clearMediaSelection();
+      }
       // And persist storage for next jstree.change event, to keep the newly added items.
       Drupal.MediaBrowser.keepSelectionOnChange = true;
       $.each(response.data.newly_selected_entity_ids, function (key, value) {
@@ -22,4 +24,4 @@
 
     $jsTree.jstree(true).refresh(false, true);
   };
-})(jQuery, Drupal);
+})(jQuery, Drupal, drupalSettings);

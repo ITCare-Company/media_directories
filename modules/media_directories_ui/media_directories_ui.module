@@ -31,6 +31,7 @@ function media_directories_ui_theme($existing, $type, $theme, $path) {
         'selected_type' => NULL,
         'active_directory' => NULL,
         'target_bundles' => NULL,
+        'selection_mode' => NULL,
         'media_library_form_rebuild' => FALSE,
       ],
     ],
@@ -163,6 +164,7 @@ function media_directories_ui_preprocess_media_directories_add(&$variables) {
           'media_type' => $type->id(),
           'active_directory' => $variables['active_directory'],
           'target_bundles' => $variables['target_bundles'],
+          'selection_mode' => $variables['selection_mode'],
         ],
         ]),
       'attributes' => ['class' => ['use-ajax', 'media-library-menu__link']],
@@ -185,6 +187,7 @@ function media_directories_ui_preprocess_media_directories_add(&$variables) {
   $form_state->set('media_type', $type);
   $form_state->set('active_directory', $variables['active_directory']);
   $form_state->set('target_bundles', $variables['target_bundles']);
+  $form_state->set('selection_mode', $variables['selection_mode']);
 
   if ($variables['media_library_form_rebuild']) {
     $form_state->setUserInput([]);

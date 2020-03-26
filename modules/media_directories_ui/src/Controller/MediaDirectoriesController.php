@@ -319,11 +319,13 @@ class MediaDirectoriesController extends ControllerBase {
     }
 
     if (count($target_bundles) > 0) {
+      $selection_mode = $request->get('selection_mode');
       $build = [
         '#theme' => 'media_directories_add',
         '#selected_type' => $selected_type,
         '#active_directory' => $active_directory,
         '#target_bundles' => $target_bundles,
+        '#selection_mode' => $selection_mode,
       ];
 
       $response->addCommand(new OpenModalDialogCommand($this->t('Add media'), $build, ['width' => '800']));

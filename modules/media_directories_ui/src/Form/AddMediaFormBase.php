@@ -4,6 +4,7 @@ namespace Drupal\media_directories_ui\Form;
 use Drupal\Component\Render\PlainTextOutput;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\CloseModalDialogCommand;
+use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -129,6 +130,17 @@ abstract class AddMediaFormBase extends FormBase {
   }
 
   /**
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *
+   * @return mixed
+   */
+  protected function getSelectionMode(FormStateInterface $form_state) {
+    $selection_mode = $form_state->get('selection_mode');
+
+    return $selection_mode;
+  }
+
+  /**
    * Determines the URI for a file field.
    *
    * @param array $settings
@@ -199,6 +211,11 @@ abstract class AddMediaFormBase extends FormBase {
         '#value' => $bundle,
       ];
     }
+
+    $form['selection_mode'] = [
+      '#type' => 'hidden',
+      '#value' => $this->getSelectionMode($form_state),
+    ];
 
 
     if (empty($added_media)) {
@@ -283,16 +300,18 @@ abstract class AddMediaFormBase extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $added_media = $form_state->get('media');
 
+    // Support multi value fields.
     $tmp_tid_mids = [];
+    $all_mids = [];
     foreach ($added_media as $delta => $media) {
       EntityFormDisplay::collectRenderDisplay($media, 'media_library')
         ->extractFormValues($media, $form['media'][$delta]['fields'], $form_state);
       //$this->prepareMediaEntityForSave($media);
       $media->save();
       $tmp_tid_mids[(isset($media->get('directory')->target_id) ? $media->get('directory')->target_id : MEDIA_DIRECTORY_ROOT)][] = $media->id();
+      $all_mids[] = $media->id();
     }
 
-    // Support multi value fields.
     $tid_holding_most_mids  = -1;
     foreach ($tmp_tid_mids as $tid => $mids) {
       if (!isset($tmp_tid_mids[$tid_holding_most_mids]) ||
@@ -301,7 +320,16 @@ abstract class AddMediaFormBase extends FormBase {
       }
     }
 
-    $form_state->setValue('newly_added_media_ids', $tmp_tid_mids[$tid_holding_most_mids]);
+    if ($form_state->get('selection_mode') != 'keep') {
+      if (count($tmp_tid_mids[$tid_holding_most_mids]) < count($all_mids)) {
+        $this->messenger()->addStatus($this->t('You uploaded medias to different folders. Only medias in the current folder (having the most uploaded media count) are selected. '));
+      }
+      $form_state->setValue('newly_added_media_ids', $tmp_tid_mids[$tid_holding_most_mids]);
+    }
+    else {
+      $form_state->setValue('newly_added_media_ids', $all_mids);
+    }
+
     $form_state->setValue('most_choosen_directory_tid', $tid_holding_most_mids);
   }
 
@@ -616,6 +644,12 @@ abstract class AddMediaFormBase extends FormBase {
     //$response->addCommand(new UpdateSelectionCommand($media_ids));
     $response->addCommand(new CloseModalDialogCommand());
     $response->addCommand(new RefreshDirectoryTree($form_state->getValue('most_choosen_directory_tid'), $form_state->getValue('newly_added_media_ids')));
+
+    $status_messages = ['#type' => 'status_messages'];
+    $messages = \Drupal::service('renderer')->renderRoot($status_messages);
+    if (!empty($messages)) {
+      $response->addCommand(new OpenModalDialogCommand('', $messages));
+    }
 
     return $response;
   }
