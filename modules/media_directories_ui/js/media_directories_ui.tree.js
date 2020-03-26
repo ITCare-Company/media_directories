@@ -132,6 +132,7 @@
   Drupal.MediaBrowser.loadDirectoryContent = function (directory_id) {
     var arguments = {
       directory_id: directory_id,
+      target_bundles: Drupal.MediaBrowser.targetBundles,
       media_name: Drupal.MediaBrowser.name
     };
     if (Drupal.MediaBrowser.searchString) {
