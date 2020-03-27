@@ -8,6 +8,7 @@
 use Drupal\block\Entity\Block;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Asset\AttachedAssetsInterface;
+use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Url;
 use Drupal\Core\Session\AccountInterface;
@@ -247,6 +248,106 @@ function media_directories_ui_field_widget_entity_browser_entity_reference_form_
 
     $element['entity_browser']['#widget_context']['remaining'] = $cardinality - count($current_items);
   }
+}
+
+/**
+ * Implements hook_menu_local_tasks_alter().
+ */
+function media_directories_ui_menu_local_tasks_alter(&$data, $route_name, RefinableCacheableDependencyInterface $cacheability) {
+  $config = \Drupal::config('media_directories_ui.settings');
+  $hide_media_library_media_tab = $config->get('hide_media_library_media_tab');
+  $hide_media_library_files_tab = $config->get('hide_media_library_files_tab');
+
+  if ($hide_media_library_media_tab) {
+    unset($data['tabs'][0]['entity.media.collection']);
+  }
+
+  if ($hide_media_library_files_tab) {
+    unset($data['tabs'][0]['views_view:view.files.page_1']);
+  }
+}
+
+/**
+ * Implements hook_menu_links_discovered_alter().
+ */
+function media_directories_ui_menu_links_discovered_alter(&$links) {
+  $config = \Drupal::config('media_directories_ui.settings');
+  $hide_admin_toolbar_links = $config->get('hide_admin_toolbar_links');
+
+  if ($hide_admin_toolbar_links) {
+    $hide_media_library_files_tab = $config->get('hide_media_library_files_tab');
+    if ($hide_media_library_files_tab) {
+      unset($links['admin_toolbar_tools.extra_links:view.files']);
+    }
+    $hide_media_library_media_tab = $config->get('hide_media_library_media_tab');
+    if ($hide_media_library_media_tab) {
+      unset($links['admin_toolbar_tools.extra_links:media_page']); 
+    }
+
+    unset($links['admin_toolbar_tools.extra_links:add_media']); 
+    foreach (array_keys($links) as $key) {
+      if (isset($links[$key]['parent']) && $links[$key]['parent'] === 'admin_toolbar_tools.extra_links:add_media') {
+        unset($links[$key]);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Adding settings to the media_directories config form here.
+ *
+ */
+function media_directories_ui_form_media_directories_config_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  $config = \Drupal::config('media_directories_ui.settings');
+
+  $form['media_directories_ui'] = [
+    '#type' => 'details',
+    '#title' => t('Media browser UI'),
+    '#description' => t('Change media browser UI settings.'),
+    '#collapsible' => TRUE,
+    '#open' => TRUE,
+    '#tree' => TRUE,
+  ];
+
+  $form['media_directories_ui']['hide_media_library_media_tab'] = [
+    '#type' => 'checkbox',
+    '#title' => t('Hide Media tab'),
+    '#description' => t('If checked, the <em>Media</em> tab will be hidden.'),
+    '#default_value' => $config->get('hide_media_library_media_tab'),
+  ];
+
+  $form['media_directories_ui']['hide_media_library_files_tab'] = [
+    '#type' => 'checkbox',
+    '#title' => t('Hide Files tab'),
+    '#description' => t('If checked, the <em>Files</em> tab will be hidden.'),
+    '#default_value' => $config->get('hide_media_library_files_tab'),
+  ];
+
+  if (\Drupal::service('module_handler')->moduleExists('admin_toolbar_tools')) {
+    $form['media_directories_ui']['hide_admin_toolbar_links'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Hide admin_toolbar_tools links'),
+      '#description' => t('If checked, the <em>Add Media</em> menu links of admin_toolbar_tools will be hidden and also it\'s <em>Media</em> and <em>Files</em> links depending on the tab settings.'),
+      '#default_value' => $config->get('hide_admin_toolbar_links'),
+    ];
+ }
+  array_unshift($form['#submit'], 'media_directories_ui_config_form_submit');
+}
+
+/**
+ * Submit handler for saving Media Directories UI configuration.
+ *
+ * @param $form
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ */
+function media_directories_ui_config_form_submit(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
+  \Drupal::configFactory()->getEditable('media_directories_ui.settings')
+    ->set('hide_media_library_media_tab', $form_state->getValue(['media_directories_ui', 'hide_media_library_media_tab']))
+    ->set('hide_media_library_files_tab', $form_state->getValue(['media_directories_ui', 'hide_media_library_files_tab']))
+    ->set('hide_admin_toolbar_links', $form_state->getValue(['media_directories_ui', 'hide_admin_toolbar_links']))
+    ->save();
 }
 
 /**
