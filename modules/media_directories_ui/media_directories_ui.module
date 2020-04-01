@@ -311,6 +311,14 @@ function media_directories_ui_form_media_directories_config_form_alter(&$form, \
     '#tree' => TRUE,
   ];
 
+  $form['media_directories_ui']['quick_edit_form_mode'] = [
+    '#type' => 'fieldset',
+    '#title' => t('Quick Edit Form Mode'),
+    '#description' => t('The media form mode <strong>media_library</strong> is used to display media in the quick edit dialog. You can edit the form display <a href=":url">in the media types field UI</a>. <em>Be aware that the media\'s source field will always be hidden!</em>', [
+      ':url' => Url::fromRoute('entity.media_type.collection')->toString(),
+    ]),
+  ];
+
   $form['media_directories_ui']['hide_media_library_media_tab'] = [
     '#type' => 'checkbox',
     '#title' => t('Hide Media tab'),
