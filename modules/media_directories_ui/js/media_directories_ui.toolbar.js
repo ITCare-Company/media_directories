@@ -107,20 +107,16 @@
       // Edit media button.
       this.buttons.media_edit.on('click', function (e) {
         e.preventDefault();
-        var mids = [];
 
         if ($(this).hasClass('is-disabled')) {
           return;
         }
 
-        $.each(Drupal.MediaBrowser.getSelectedMids(), function (key, value) {
-          mids.push(value);
-        });
         var ajaxSettings = {
           url: Drupal.MediaBrowser.getUrl('media.edit'),
           submit: {
             active_directory: Drupal.MediaBrowser.active_directory,
-            media_items: mids
+            media_items: Drupal.MediaBrowser.getSelectedMids()
           }
         };
         Drupal.ajax(ajaxSettings).execute();
