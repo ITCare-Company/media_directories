@@ -354,6 +354,16 @@ class MediaDirectoriesController extends ControllerBase {
     $response = new AjaxResponse();
     $media_items = $request->request->get('media_items', []);
     $active_directory = (int) $request->request->get('active_directory', MEDIA_DIRECTORY_ROOT);
+    if (count($media_items) == 0) {
+      // We're probably in the AJAX Form-Callback of the MediaEditForm (inheriting AddMediaFormBase)
+      $media_items = $request->request->get('media', []);
+      $media_ids = [] ;
+      foreach ($media_items as $mid => $data) {
+        // The nested array needs to be removed as nothing will not be loaded like this.
+        $media_ids[$mid] = $mid;
+      }
+      $media_items = $media_ids;
+    }
     $media_entities = $this->entityTypeManager()->getStorage('media')->loadMultiple($media_items);
 
     foreach ($media_entities as $mid => $media_entity) {

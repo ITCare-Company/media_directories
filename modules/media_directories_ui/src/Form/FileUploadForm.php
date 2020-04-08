@@ -6,6 +6,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\Core\Theme\ThemeManagerInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Render\ElementInfoManagerInterface;
 use Drupal\Component\Utility\Environment;
@@ -28,10 +29,11 @@ class FileUploadForm extends AddMediaFormBase {
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
    * @param \Drupal\Core\Utility\Token $token
+   * @param \Drupal\Core\Theme\ThemeManagerInterface $theme_manager
    * @param \Drupal\Core\Render\ElementInfoManagerInterface $element_info
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, Token $token, ElementInfoManagerInterface $element_info) {
-    parent::__construct($entity_type_manager, $current_user, $token);
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, Token $token, ThemeManagerInterface $theme_manager, ElementInfoManagerInterface $element_info) {
+    parent::__construct($entity_type_manager, $current_user, $token, $theme_manager);
     $this->elementInfo = $element_info;
   }
 
@@ -45,6 +47,7 @@ class FileUploadForm extends AddMediaFormBase {
       $container->get('entity_type.manager'),
       $container->get('current_user'),
       $container->get('token'),
+      $container->get('theme.manager'),
       $container->get('element_info')
     );
   }

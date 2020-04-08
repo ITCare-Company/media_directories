@@ -75,3 +75,9 @@ media-ui:
     - media_directories_ui/media-ui.media
     - media_directories_ui/commands.load-directory-content
     - media_directories_ui/commands.refresh-directory-tree
+
+# AddMedia- and EditMediaForm helper.
+media-library.quick-edit-dialog:
+  css:
+    theme:
+      css/media_directories_ui.dialog.css: {}

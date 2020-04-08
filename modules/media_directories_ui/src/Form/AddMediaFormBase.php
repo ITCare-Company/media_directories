@@ -13,6 +13,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Utility\Token;
 use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\Core\Theme\ThemeManagerInterface;
 use Drupal\file\Entity\File;
 use Drupal\media\MediaInterface;
 use Drupal\media\MediaTypeInterface;
@@ -51,16 +52,25 @@ abstract class AddMediaFormBase extends FormBase {
   protected $token;
 
   /**
+   * The theme manager.
+   *
+   * @var \Drupal\Core\Theme\ThemeManagerInterface
+   */
+  protected $themeManager;
+
+  /**
    * AddMediaFormBase constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
    * @param \Drupal\Core\Utility\Token $token
+   * @param \Drupal\Core\Theme\ThemeManagerInterface $theme_manager
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, Token $token) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, Token $token, ThemeManagerInterface $theme_manager) {
     $this->entityTypeManager = $entity_type_manager;
     $this->currentUser = $current_user;
     $this->token = $token;
+    $this->themeManager = $theme_manager;
   }
 
   /**
@@ -72,7 +82,8 @@ abstract class AddMediaFormBase extends FormBase {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('current_user'),
-      $container->get('token')
+      $container->get('token'),
+      $container->get('theme.manager')
     );
   }
 
@@ -176,8 +187,15 @@ abstract class AddMediaFormBase extends FormBase {
     $form['#suffix'] = '</div>';
     // For 8.7.
     $form['#attached']['library'][] = 'media_library/style';
-    // For 8.8, style moved to seven theme. It should work with 8.7.
-    $form['#attached']['library'][] = 'seven/media_library';
+    // For 8.8, style moved to themes. It should work with 8.7.
+    $theme_name = $this->themeManager->getActiveTheme()->getName();
+    if ($theme_name == 'claro') {
+      $form['#attached']['library'][] = 'claro/media_library.theme';
+    }
+    else {
+      // By default we add the seven styles.
+      $form['#attached']['library'][] = 'seven/media_library';
+    }
 
     // The form is posted via AJAX. When there are messages set during the
     // validation or submission of the form, the messages need to be shown to
@@ -280,14 +298,6 @@ abstract class AddMediaFormBase extends FormBase {
 
   abstract protected function buildInputElement(array $form, FormStateInterface $form_state);
 
-  public function validateForm(array &$form, FormStateInterface $form_state) {
-    /*if (!$form_state->isValueEmpty('upload')) {
-      $entities = $this->prepareEntities($form, $form_state);
-      $form_state->setValue('media', $entities);
-      $form_state->setStorage(['media' => $entities]);
-      $form_state->setRebuild();
-    }*/
-  }
 
   /**
    * Form submission handler.
@@ -469,19 +479,56 @@ abstract class AddMediaFormBase extends FormBase {
     }
     $form_display->buildForm($media, $element['fields'], $form_state);
 
-    // We hide the preview of the uploaded file in the image widget with CSS.
-    // @todo Improve hiding file widget elements in
-    //   https://www.drupal.org/project/drupal/issues/2987921
     $source_field_name = $this->getSourceFieldName($this->getMediaType($form_state));
+    // Add a class and process function.
     if (isset($element['fields'][$source_field_name])) {
       $element['fields'][$source_field_name]['#attributes']['class'][] = 'media-library-add-form__source-field';
+      $element['fields'][$source_field_name]['widget'][0]['#process'][] = [static::class, 'hideExtraSourceFieldComponents'];
     }
+    // Add source field name so that it can be identified in form alter and
+    // widget alter hooks.
+    $element['fields']['#source_field_name'] = $source_field_name;
+
     // The revision log field is currently not configurable from the form
     // display, so hide it by changing the access.
     // @todo Make the revision_log_message field configurable in
     //   https://www.drupal.org/project/drupal/issues/2696555
     if (isset($element['fields']['revision_log_message'])) {
       $element['fields']['revision_log_message']['#access'] = FALSE;
+    }
+
+    return $element;
+  }
+
+  /**
+   * Processes an image or file source field element.
+   *
+   * @param array $element
+   *   The entity form source field element.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current form state.
+   * @param $form
+   *   The complete form.
+   *
+   * @return array
+   *   The processed form element.
+   */
+  public static function hideExtraSourceFieldComponents($element, FormStateInterface $form_state, $form) {
+    // Remove original button added by ManagedFile::processManagedFile().
+    if (!empty($element['remove_button'])) {
+      $element['remove_button']['#access'] = FALSE;
+    }
+    // Remove preview added by ImageWidget::process().
+    if (!empty($element['preview'])) {
+      $element['preview']['#access'] = FALSE;
+    }
+
+    $element['#title_display'] = 'none';
+    $element['#description_display'] = 'none';
+
+    // Remove the filename display.
+    foreach ($element['#files'] as $file) {
+      $element['file_' . $file->id()]['filename']['#access'] = FALSE;
     }
     return $element;
   }
