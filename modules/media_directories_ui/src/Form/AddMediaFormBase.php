@@ -117,16 +117,16 @@ abstract class AddMediaFormBase extends FormBase {
   /**
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *
-   * @return int|null
+   * @return int
    */
   protected function getDirectory(FormStateInterface $form_state) {
-    $directory_id = (int) $form_state->get('active_directory');
+    $directory_id = $form_state->get('active_directory');
 
-    if ($directory_id === MEDIA_DIRECTORY_ROOT) {
-      $directory_id = NULL;
+    if (empty($directory_id)) {
+      return MEDIA_DIRECTORY_ROOT;
     }
 
-    return $directory_id;
+    return (int) $directory_id;
   }
 
   /**
