@@ -60,3 +60,17 @@ function media_directories_editor_update_8001() {
   $config->set('widgets.5bc2a17c-b080-4a3b-867c-7953ae9b55c4.id', 'media_directories_browser_widget');
   $config->save();
 }
+
+/**
+ * Rename the entity browsers labels.
+ */
+function media_directories_editor_update_8002() {
+  $config = \Drupal::configFactory()->getEditable('entity_browser.browser.media_directories_editor_browser');
+  $config->set('label', 'Media Directories: Editor widget');
+  $config->save();
+  foreach (\Drupal::languageManager()->getLanguages() as $language) {
+    $config_translation = \Drupal::languageManager()->getLanguageConfigOverride($language->getId(), 'entity_browser.browser.media_directories_editor_browser');
+    $config_translation->set('label', 'Media Directories: Editor widget');
+    $config_translation->save();
+  }
+}

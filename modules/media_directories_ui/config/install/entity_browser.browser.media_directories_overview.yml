@@ -3,7 +3,7 @@ dependencies:
   module:
     - views
 name: media_directories_overview
-label: 'Directory browser'
+label: 'Media Directories: Standalone'
 display: standalone
 display_configuration:
   path: /admin/content/browser

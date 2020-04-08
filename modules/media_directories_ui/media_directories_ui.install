@@ -153,3 +153,24 @@ function media_directories_ui_update_8003() {
     }
   }
 }
+
+/**
+ * Rename the entity browsers labels.
+ */
+function media_directories_ui_update_8004() {
+  $config_factory = \Drupal::configFactory();
+  $config = $config_factory->getEditable('entity_browser.browser.media_directories_overview');
+  $config->set('label', 'Media Directories: Standalone');
+  $config->save();
+  $config = $config_factory->getEditable('entity_browser.browser.media_directories_modal');
+  $config->set('label', 'Media Directories: Field widget');
+  $config->save();
+  foreach (\Drupal::languageManager()->getLanguages() as $language) {
+    $config_translation = \Drupal::languageManager()->getLanguageConfigOverride($language->getId(), 'entity_browser.browser.media_directories_overview');
+    $config_translation->set('label', 'Media Directories: Standalone');
+    $config_translation->save();
+    $config_translation = \Drupal::languageManager()->getLanguageConfigOverride($language->getId(), 'entity_browser.browser.media_directories_modal');
+    $config_translation->set('label', 'Media Directories: Field widget');
+    $config_translation->save();
+  }
+}

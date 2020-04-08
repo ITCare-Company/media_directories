@@ -3,7 +3,7 @@ dependencies:
   module:
     - views
 name: media_directories_modal
-label: 'Media field browser'
+label: 'Media Directories: Field widget'
 display: modal
 display_configuration:
   width: ''

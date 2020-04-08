@@ -4,7 +4,7 @@ dependencies:
   module:
     - views
 name: media_directories_editor_browser
-label: 'Editor browser'
+label: 'Media Directories: Editor widget'
 display: iframe
 display_configuration:
   width: 100%
