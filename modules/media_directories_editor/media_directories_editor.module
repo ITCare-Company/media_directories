@@ -50,7 +50,7 @@ function media_directories_editor_form_entity_embed_dialog_alter(&$form, FormSta
       $url = file_create_url($image_style_url);
       $image_style->createDerivative($file->getFileUri(), $image_style_url);
       // TODO it should be converted to render array.
-      $form['entity']['#markup'] = '<a href="' . $entity->url() . '" title="' . $entity->label() . '"><img src="' . $url .'" alt="' . $entity->label() . '" /></a>';
+      $form['entity']['#markup'] = '<a href="' . $entity->toUrl()->toString() . '" title="' . $entity->label() . '"><img src="' . $url .'" alt="' . $entity->label() . '" /></a>';
     }
   }
 
