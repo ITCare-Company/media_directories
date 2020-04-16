@@ -11,3 +11,12 @@ media_directories_ui.settings:
     hide_admin_toolbar_links:
       type: boolean
       label: 'Hide admin_toolbar_tools links'
+    enable_combined_upload:
+      type: boolean
+      label: 'Enable combined upload'
+    combined_upload_media_types:
+      type: sequence
+      label: 'Enabled Media types'
+      sequence:
+        type: string
+        label: 'Media type'

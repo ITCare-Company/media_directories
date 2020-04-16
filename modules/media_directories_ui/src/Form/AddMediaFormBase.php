@@ -217,6 +217,13 @@ abstract class AddMediaFormBase extends FormBase {
       '#value' => $this->getDirectory($form_state),
     ];
 
+    $media_type = $form_state->get('media_type');
+
+    $form['media_type'] = [
+      '#type' => 'hidden',
+      '#value' => is_object($media_type) ? $media_type->id() : $media_type,
+    ];
+
     $target_bundles = $this->getTargetBundles($form_state);
 
     $form['target_bundles'] = [
@@ -479,7 +486,9 @@ abstract class AddMediaFormBase extends FormBase {
     }
     $form_display->buildForm($media, $element['fields'], $form_state);
 
-    $source_field_name = $this->getSourceFieldName($this->getMediaType($form_state));
+    /** @var \Drupal\media\Entity\MediaType $type */
+    $type = $this->entityTypeManager->getStorage('media_type')->load($media->bundle());
+    $source_field_name = $this->getSourceFieldName($type);
     // Add a class and process function.
     if (isset($element['fields'][$source_field_name])) {
       $element['fields'][$source_field_name]['#attributes']['class'][] = 'media-library-add-form__source-field';

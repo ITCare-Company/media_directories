@@ -118,6 +118,8 @@ class FileUploadForm extends AddMediaFormBase {
    */
   public function processUploadElement(array $element, FormStateInterface $form_state) {
     $element['upload_button']['#submit'] = ['::uploadButtonSubmit'];
+    /** @var \Drupal\media\MediaTypeInterface|string $media_type */
+    $media_type = $form_state->get('media_type');
     // Limit the validation errors to make sure
     // FormValidator::handleErrorsWithLimitedValidation doesn't remove the
     // current selection from the form state.
@@ -136,7 +138,7 @@ class FileUploadForm extends AddMediaFormBase {
       'url' => Url::fromRoute('media_directories_ui.media.add'),
         'options' => [
           'query' => [
-              'media_type' => ($form_state->get('media_type') ? $form_state->get('media_type')->id() : $form_state->get('selected_type')),
+              'media_type' => is_object($media_type) ? $media_type->id() : $media_type,
               'target_bundles' => $this->getTargetBundles($form_state),
               'active_directory' => $this->getDirectory($form_state),
               'selection_mode' => $this->getSelectionMode($form_state),

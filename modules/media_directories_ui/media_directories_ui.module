@@ -13,6 +13,7 @@ use Drupal\Core\Form\FormState;
 use Drupal\Core\Url;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\media_directories_ui\Form\FileUploadForm;
+use Drupal\media_directories_ui\Form\MediaCombinedUploadForm;
 use Drupal\media_directories_ui\Form\OEmbedForm;
 
 /**
@@ -142,6 +143,9 @@ function media_directories_ui_preprocess_views_view_fields__media_directories_ba
  * Implements hook_preprocess_HOOK().
  */
 function media_directories_ui_preprocess_media_directories_add(&$variables) {
+  $ui_config = \Drupal::config('media_directories_ui.settings');
+  $combined_upload_enabled = $ui_config->get('enable_combined_upload');
+  $combined_media_types = $ui_config->get('combined_upload_media_types');
   /** @var \Drupal\media\Entity\MediaType[] $types */
   $types = \Drupal::entityTypeManager()->getStorage('media_type')->loadMultiple();
 
@@ -153,8 +157,46 @@ function media_directories_ui_preprocess_media_directories_add(&$variables) {
     ],
   ];
 
+  // Find the types combined upload should handle.
+  // If types are limited and these are not allowed in combined upload,
+  // then the tab is hidden.
+  $combined_media_types_diff = array_intersect($variables['target_bundles'], $combined_media_types);
+
+  if ($combined_upload_enabled && !empty($combined_media_types_diff)) {
+    $types_string = ' (';
+    foreach ($combined_media_types_diff as $type) {
+      if (isset($types[$type])) {
+        $types_string .= $types[$type]->label() . ', ';
+      }
+    }
+    $types_string = substr($types_string, 0, -2);
+    if (strlen($types_string) > 0) {
+      $types_string .= ')';
+    }
+    $variables['links']['#links']['combined_upload'] = [
+      'title' => t('Combined upload @types_string', ['@types_string' => $types_string]),
+      'url' => Url::fromRoute('media_directories_ui.media.add', [], [
+        'query' => [
+          'media_type' => 'combined_upload',
+          'active_directory' => $variables['active_directory'],
+          'target_bundles' => $variables['target_bundles'],
+        ],
+      ]),
+      'attributes' => ['class' => ['use-ajax', 'media-library-menu__link']],
+    ];
+
+    if ($variables['selected_type'] === 'combined_upload') {
+      $variables['links']['#links']['combined_upload']['attributes']['class'][] = 'active';
+    }
+  }
+
   foreach ($types as $type) {
     if (!is_array($variables['target_bundles']) || !in_array($type->id(), $variables['target_bundles'], TRUE)) {
+      continue;
+    }
+
+    // If combined upload is enabled and the media type is included, we hide the tab.
+    if ($combined_upload_enabled && $combined_media_types[$type->id()] === $type->id()) {
       continue;
     }
 
@@ -176,16 +218,7 @@ function media_directories_ui_preprocess_media_directories_add(&$variables) {
     }
   }
 
-  $type = $types[$variables['selected_type']];
-
   $form_state = new FormState();
-  $form_state->setValue('media_type', $type);
-
-  $source_field = $type->getSource()->getConfiguration()['source_field'];
-  $field_config = \Drupal::entityTypeManager()->getStorage('field_config')->load('media.' . $type->id() .'.' . $source_field);
-
-  $form_state = new FormState();
-  $form_state->set('media_type', $type);
   $form_state->set('active_directory', $variables['active_directory']);
   $form_state->set('target_bundles', $variables['target_bundles']);
   $form_state->set('selection_mode', $variables['selection_mode']);
@@ -194,13 +227,24 @@ function media_directories_ui_preprocess_media_directories_add(&$variables) {
     $form_state->setUserInput([]);
   }
 
-  if (in_array($field_config->getType(), ['file', 'image'])) {
-    $variables['media_form'] = \Drupal::formBuilder()->buildForm(FileUploadForm::class, $form_state);
+  if ($variables['selected_type'] === 'combined_upload') {
+    $form_state->set('media_type', $variables['selected_type']);
+    $variables['media_form'] = \Drupal::formBuilder()->buildForm(MediaCombinedUploadForm::class, $form_state);
   }
   else {
-    $variables['media_form'] = \Drupal::formBuilder()->buildForm(OEmbedForm::class, $form_state);
-  }
+    $type = $types[$variables['selected_type']];
+    $source_field = $type->getSource()->getConfiguration()['source_field'];
+    $field_config = \Drupal::entityTypeManager()->getStorage('field_config')->load('media.' . $type->id() .'.' . $source_field);
 
+    $form_state->set('media_type', $type);
+
+    if (in_array($field_config->getType(), ['file', 'image'])) {
+      $variables['media_form'] = \Drupal::formBuilder()->buildForm(FileUploadForm::class, $form_state);
+    }
+    else {
+      $variables['media_form'] = \Drupal::formBuilder()->buildForm(OEmbedForm::class, $form_state);
+    }
+  }
 }
 
 /**
@@ -281,10 +325,10 @@ function media_directories_ui_menu_links_discovered_alter(&$links) {
     }
     $hide_media_library_media_tab = $config->get('hide_media_library_media_tab');
     if ($hide_media_library_media_tab) {
-      unset($links['admin_toolbar_tools.extra_links:media_page']); 
+      unset($links['admin_toolbar_tools.extra_links:media_page']);
     }
 
-    unset($links['admin_toolbar_tools.extra_links:add_media']); 
+    unset($links['admin_toolbar_tools.extra_links:add_media']);
     foreach (array_keys($links) as $key) {
       if (isset($links[$key]['parent']) && $links[$key]['parent'] === 'admin_toolbar_tools.extra_links:add_media') {
         unset($links[$key]);
@@ -301,6 +345,7 @@ function media_directories_ui_menu_links_discovered_alter(&$links) {
  */
 function media_directories_ui_form_media_directories_config_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
   $config = \Drupal::config('media_directories_ui.settings');
+  $combined_upload_enabled = $config->get('enable_combined_upload');
 
   $form['media_directories_ui'] = [
     '#type' => 'details',
@@ -340,7 +385,46 @@ function media_directories_ui_form_media_directories_config_form_alter(&$form, \
       '#description' => t('If checked, the <em>Add Media</em> menu links of admin_toolbar_tools will be hidden and also it\'s <em>Media</em> and <em>Files</em> links depending on the tab settings.'),
       '#default_value' => $config->get('hide_admin_toolbar_links'),
     ];
- }
+  }
+
+  /** @var  $media_types \Drupal\media\MediaTypeInterface[] */
+  $media_types = \Drupal::entityTypeManager()
+    ->getStorage('media_type')
+    ->loadMultiple();
+
+  $options = [];
+
+  foreach ($media_types as $media_type) {
+    $source_field_allowed_types = $media_type->getSource()->getPluginDefinition()['allowed_field_types'];
+    $valid_field_types = ['file', 'image'];
+    if (array_intersect($valid_field_types, $source_field_allowed_types)) {
+      $options[$media_type->id()] = $media_type->label();
+    }
+  }
+
+  $form['media_directories_ui']['combined_upload'] = [
+    '#type' => 'details',
+    '#title' => t('Combined upload'),
+    '#description' => t('Allows uploading files through one upload field.'),
+    '#collapsible' => TRUE,
+    '#open' => $combined_upload_enabled,
+  ];
+
+  $form['media_directories_ui']['combined_upload']['enable_combined_upload'] = [
+    '#type' => 'checkbox',
+    '#title' => t('Enable combined upload'),
+    '#description' => t('Enables simplified upload form, where user can upload different file types through one upload field.'),
+    '#default_value' => $config->get('enable_combined_upload'),
+  ];
+
+  $form['media_directories_ui']['combined_upload']['combined_upload_media_types'] = [
+    '#type' => 'checkboxes',
+    '#title' => t('Enabled Media types'),
+    '#description' => t('Select media types to use in combined upload. This will work only for media types that have upload field.'),
+    '#options' => $options,
+    '#default_value' => ($config->get('combined_upload_media_types') != NULL ? $config->get('combined_upload_media_types') : []),
+  ];
+
   array_unshift($form['#submit'], 'media_directories_ui_config_form_submit');
 }
 
@@ -355,6 +439,8 @@ function media_directories_ui_config_form_submit(&$form, \Drupal\Core\Form\FormS
     ->set('hide_media_library_media_tab', $form_state->getValue(['media_directories_ui', 'hide_media_library_media_tab']))
     ->set('hide_media_library_files_tab', $form_state->getValue(['media_directories_ui', 'hide_media_library_files_tab']))
     ->set('hide_admin_toolbar_links', $form_state->getValue(['media_directories_ui', 'hide_admin_toolbar_links']))
+    ->set('enable_combined_upload', $form_state->getValue(['media_directories_ui', 'combined_upload', 'enable_combined_upload']))
+    ->set('combined_upload_media_types', $form_state->getValue(['media_directories_ui', 'combined_upload', 'combined_upload_media_types']))
     ->save();
 }
 
