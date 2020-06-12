@@ -51,6 +51,7 @@
 }
 
 .browser--tree {
+  overflow: auto;
   width: 25%;
   max-width: 350px;
   background: #fcfcfa;
