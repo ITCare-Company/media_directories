@@ -5,6 +5,7 @@
  * Install and database hook implementations.
  */
 
+use Drupal\language\ConfigurableLanguageManagerInterface;
 use Drupal\views\Entity\View;
 
 
@@ -165,12 +166,16 @@ function media_directories_ui_update_8004() {
   $config = $config_factory->getEditable('entity_browser.browser.media_directories_modal');
   $config->set('label', 'Media Directories: Field widget');
   $config->save();
-  foreach (\Drupal::languageManager()->getLanguages() as $language) {
-    $config_translation = \Drupal::languageManager()->getLanguageConfigOverride($language->getId(), 'entity_browser.browser.media_directories_overview');
-    $config_translation->set('label', 'Media Directories: Standalone');
-    $config_translation->save();
-    $config_translation = \Drupal::languageManager()->getLanguageConfigOverride($language->getId(), 'entity_browser.browser.media_directories_modal');
-    $config_translation->set('label', 'Media Directories: Field widget');
-    $config_translation->save();
+
+  $language_manager = \Drupal::languageManager();
+  if ($language_manager instanceof ConfigurableLanguageManagerInterface) {
+    foreach ($language_manager ->getLanguages() as $language) {
+      $config_translation = $language_manager->getLanguageConfigOverride($language->getId(), 'entity_browser.browser.media_directories_overview');
+      $config_translation->set('label', 'Media Directories: Standalone');
+      $config_translation->save();
+      $config_translation = $language_manager->getLanguageConfigOverride($language->getId(), 'entity_browser.browser.media_directories_modal');
+      $config_translation->set('label', 'Media Directories: Field widget');
+      $config_translation->save();
+    }
   }
 }
