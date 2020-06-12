@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  */
@@ -6,6 +7,7 @@
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\image\Entity\ImageStyle;
 
 
 /**
@@ -14,7 +16,7 @@ use Drupal\Core\Url;
  * Adding settings to the media_directories config form here.
  *
  */
-function media_directories_editor_form_media_directories_config_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+function media_directories_editor_form_media_directories_config_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   $form['media_directories_editor'] = [
     '#type' => 'details',
     '#title' => t('Editor Settings'),
@@ -44,7 +46,7 @@ function media_directories_editor_form_entity_embed_dialog_alter(&$form, FormSta
   if ($entity !== NULL) {
     /** @var \Drupal\file\Entity\File $file */
     $file = $entity->get('thumbnail')->entity;
-    $image_style = \Drupal\image\Entity\ImageStyle::load('thumbnail');
+    $image_style = ImageStyle::load('thumbnail');
     if ($image_style !== NULL) {
       $image_style_url = $image_style->buildUri($file->getFileUri());
       $url = file_create_url($image_style_url);

@@ -9,6 +9,7 @@ use Drupal\block\Entity\Block;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Asset\AttachedAssetsInterface;
 use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Url;
 use Drupal\Core\Session\AccountInterface;
@@ -250,7 +251,7 @@ function media_directories_ui_preprocess_media_directories_add(&$variables) {
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function media_directories_ui_form_entity_browser_media_directories_overview_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+function media_directories_ui_form_entity_browser_media_directories_overview_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   if (!_media_directories_ui_library_file_exists('jstree')) {
     \Drupal::messenger()->addError(t('The <a href=":url">jsTree library</a> should be installed at <strong>/libraries/jstree/dist/jstree.min.js</strong>, or any path supported by libraries.module if installed.', [':url' => 'https://github.com/vakata/jstree']));
   }
@@ -264,7 +265,7 @@ function media_directories_ui_form_entity_browser_media_directories_overview_for
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function media_directories_ui_form_entity_browser_media_directories_modal_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+function media_directories_ui_form_entity_browser_media_directories_modal_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   if (!_media_directories_ui_library_file_exists('jstree')) {
     \Drupal::messenger()->addError(t('The <a href=":url">jsTree library</a> should be installed at <strong>/libraries/jstree/dist/jstree.min.js</strong>, or any path supported by libraries.module if installed.', [':url' => 'https://github.com/vakata/jstree']));
   }
@@ -278,7 +279,7 @@ function media_directories_ui_form_entity_browser_media_directories_modal_form_a
 /**
  * Implements hook_field_widget_WIDGET_TYPE_form_alter().
  */
-function media_directories_ui_field_widget_entity_browser_entity_reference_form_alter(&$element, \Drupal\Core\Form\FormStateInterface $form_state, $context) {
+function media_directories_ui_field_widget_entity_browser_entity_reference_form_alter(&$element, FormStateInterface $form_state, $context) {
   if (isset($element['entity_browser']) && $element['entity_browser']['#entity_browser'] === 'media_directories_modal') {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $items */
     $items = $context['items'];
@@ -343,7 +344,7 @@ function media_directories_ui_menu_links_discovered_alter(&$links) {
  * Adding settings to the media_directories config form here.
  *
  */
-function media_directories_ui_form_media_directories_config_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+function media_directories_ui_form_media_directories_config_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   $config = \Drupal::config('media_directories_ui.settings');
   $combined_upload_enabled = $config->get('enable_combined_upload');
 
@@ -434,7 +435,7 @@ function media_directories_ui_form_media_directories_config_form_alter(&$form, \
  * @param $form
  * @param \Drupal\Core\Form\FormStateInterface $form_state
  */
-function media_directories_ui_config_form_submit(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
+function media_directories_ui_config_form_submit(&$form, FormStateInterface $form_state) {
   \Drupal::configFactory()->getEditable('media_directories_ui.settings')
     ->set('hide_media_library_media_tab', $form_state->getValue(['media_directories_ui', 'hide_media_library_media_tab']))
     ->set('hide_media_library_files_tab', $form_state->getValue(['media_directories_ui', 'hide_media_library_files_tab']))
