@@ -25,7 +25,7 @@ function media_directories_ui_uninstall() {
   \Drupal::configFactory()->getEditable('image.style.browser_thumbnail')->delete();
 
   // Remove the styles directory and generated images.
-  $browser_thumbnail_dir_uri = file_default_scheme() . '://styles/browser_thumbnail';
+  $browser_thumbnail_dir_uri = \Drupal::config('system.file')->get('default_scheme') . '://styles/browser_thumbnail';
   \Drupal::service('file_system')->deleteRecursive($browser_thumbnail_dir_uri);
   if (\Drupal::service('file_system')->prepareDirectory($browser_thumbnail_dir_uri)) {
     \Drupal::service('file_system')->rmdir($browser_thumbnail_dir_uri);
