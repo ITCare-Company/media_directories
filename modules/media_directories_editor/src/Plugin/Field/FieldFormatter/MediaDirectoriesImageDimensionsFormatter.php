@@ -86,11 +86,11 @@ class MediaDirectoriesImageDimensionsFormatter extends ImageFormatter {
    */
   public static function defaultSettings() {
     return [
-        'dimensions' => [
-          'image_width' => '',
-          'image_height' => '',
-        ],
-      ] + parent::defaultSettings();
+      'dimensions' => [
+        'image_width' => '',
+        'image_height' => '',
+      ],
+    ] + parent::defaultSettings();
   }
 
   /**
@@ -124,7 +124,7 @@ class MediaDirectoriesImageDimensionsFormatter extends ImageFormatter {
         '#description' => $this->t('Original image size: @widthx@height', [
           '@width' => $entity->get('thumbnail')->width,
           '@height' => $entity->get('thumbnail')->height,
-          ]),
+        ]),
         '#attributes' => [
           'class' => ['media-directories-editor--dimensions'],
         ],
@@ -158,7 +158,7 @@ class MediaDirectoriesImageDimensionsFormatter extends ImageFormatter {
       $element['dimensions']['controls'] = [
         '#type' => 'container',
         '#attributes' => [
-          'class' => ['media-directories-editor--controls']
+          'class' => ['media-directories-editor--controls'],
         ],
         'reset' => [
           '#type' => 'html_tag',

@@ -28,7 +28,7 @@ class MediaDirectory extends ManyToOne {
    *
    * @var array
    */
-  public $validated_exposed_input = NULL;
+  public $validatedExposedInput = [];
 
   /**
    * The vocabulary storage.
@@ -57,7 +57,6 @@ class MediaDirectory extends ManyToOne {
    * @var \Drupal\Core\Entity\EntityRepositoryInterface
    */
   protected $entityRepository;
-
 
   /**
    * Constructs a MediaDirectory object.
@@ -214,7 +213,7 @@ class MediaDirectory extends ManyToOne {
     $config = $this->configFactory->get('media_directories.settings');
 
     // If the value is 'All', then we show only elements with empty value.
-    if ($this->validated_exposed_input[0] === 'All') {
+    if ($this->validatedExposedInput[0] === 'All') {
       $this->query->addWhereExpression(0, "$this->tableAlias.$this->realField IS NULL");
 
       if ($config->get('all_files_in_root')) {
@@ -245,7 +244,7 @@ class MediaDirectory extends ManyToOne {
     // If view is an attachment and is inheriting exposed filters, then assume
     // exposed input has already been validated.
     if (!empty($this->view->is_attachment) && $this->view->display_handler->usesExposed()) {
-      $this->validated_exposed_input = (array) $this->view->exposed_raw_input[$this->options['expose']['identifier']];
+      $this->validatedExposedInput = (array) $this->view->exposed_raw_input[$this->options['expose']['identifier']];
     }
 
     // If we're checking for EMPTY or NOT, we don't need any input, and we can
@@ -260,13 +259,13 @@ class MediaDirectory extends ManyToOne {
     // Change default behaviour, we need to filter 'All' values.
     if (!$rc && $value === 'All') {
       $rc = TRUE;
-      $this->validated_exposed_input = [$value];
+      $this->validatedExposedInput = [$value];
     }
 
     if ($rc) {
       // If we have previously validated input, override.
-      if (isset($this->validated_exposed_input)) {
-        $this->value = $this->validated_exposed_input;
+      if (isset($this->validatedExposedInput)) {
+        $this->value = $this->validatedExposedInput;
       }
     }
 
@@ -284,7 +283,7 @@ class MediaDirectory extends ManyToOne {
     $identifier = $this->options['expose']['identifier'];
 
     if ($form_state->getValue($identifier) != 'All') {
-      $this->validated_exposed_input = (array) $form_state->getValue($identifier);
+      $this->validatedExposedInput = (array) $form_state->getValue($identifier);
     }
 
   }

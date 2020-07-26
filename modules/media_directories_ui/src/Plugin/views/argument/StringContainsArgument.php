@@ -2,11 +2,8 @@
 
 namespace Drupal\media_directories_ui\Plugin\views\argument;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\views\Plugin\views\argument\ArgumentPluginBase;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Media directory ui string contains argument plugin.
@@ -19,16 +16,21 @@ class StringContainsArgument extends ArgumentPluginBase {
 
   /**
    * The operator used for the query: or|and.
+   *
    * @var string
    */
   public $operator;
 
   /**
    * The actual value which is used for querying.
+   *
    * @var array
    */
   public $value;
 
+  /**
+   * {@inheritdoc}
+   */
   public function title() {
     if (!$this->argument) {
       return !empty($this->definition['empty field name']) ? $this->definition['empty field name'] : $this->t('Uncategorized');
@@ -57,6 +59,7 @@ class StringContainsArgument extends ArgumentPluginBase {
 
   /**
    * Override for specific title lookups.
+   *
    * @return array
    *   Returns all titles, if it's just one title it's an array with one entry.
    */
@@ -64,12 +67,16 @@ class StringContainsArgument extends ArgumentPluginBase {
     return $this->value;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function query($group_by = FALSE) {
     $this->ensureMyTable();
 
     $this->value = $this->argument;
     $placeholder = $this->placeholder();
-    $null_check = '';//empty($this->options['not']) ? '' : " OR $this->tableAlias.$this->realField IS NULL";
+    // empty($this->options['not']) ? '' : " OR $this->tableAlias.$this->realField IS NULL";.
+    $null_check = '';
 
     if (!empty($this->value)) {
       $operator = empty($this->options['not']) ? 'LIKE' : 'NOT LIKE';

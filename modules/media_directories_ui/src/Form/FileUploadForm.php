@@ -14,6 +14,9 @@ use Drupal\Core\Utility\Token;
 use Drupal\media\MediaInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * A form to upload files.
+ */
 class FileUploadForm extends AddMediaFormBase {
 
   /**
@@ -27,10 +30,15 @@ class FileUploadForm extends AddMediaFormBase {
    * AddMediaFormBase constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
+   *   The current user.
    * @param \Drupal\Core\Utility\Token $token
+   *   The token service.
    * @param \Drupal\Core\Theme\ThemeManagerInterface $theme_manager
+   *   The theme manager.
    * @param \Drupal\Core\Render\ElementInfoManagerInterface $element_info
+   *   The element info service.
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, Token $token, ThemeManagerInterface $theme_manager, ElementInfoManagerInterface $element_info) {
     parent::__construct($entity_type_manager, $current_user, $token, $theme_manager);
@@ -38,9 +46,7 @@ class FileUploadForm extends AddMediaFormBase {
   }
 
   /**
-   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
-   *
-   * @return \Drupal\Core\Form\FormBase|\Drupal\media_directories_ui\Form\AddMediaFormBase
+   * {@inheritDoc}
    */
   public static function create(ContainerInterface $container) {
     return new static(
@@ -52,15 +58,17 @@ class FileUploadForm extends AddMediaFormBase {
     );
   }
 
+  /**
+   * {@inheritDoc}
+   */
   protected function buildInputElement(array $form, FormStateInterface $form_state) {
     $max_filesize = Environment::getUploadMaxSize();
     $media_type = $this->getMediaType($form_state);
 
     $process = (array) $this->elementInfo->getInfoProperty('managed_file', '#process', []);
 
-
     $source_field = $media_type->getSource()->getConfiguration()['source_field'];
-    $field_config = $this->entityTypeManager->getStorage('field_config')->load('media.' . $media_type->id() .'.' . $source_field);
+    $field_config = $this->entityTypeManager->getStorage('field_config')->load('media.' . $media_type->id() . '.' . $source_field);
 
     $form['container']['upload'] = [
       '#type' => 'managed_file',
@@ -89,18 +97,18 @@ class FileUploadForm extends AddMediaFormBase {
    *   The processed upload element.
    */
   public function validateUploadElement(array $element, FormStateInterface $form_state) {
-/*    if ($form_state::hasAnyErrors()) {
-      // When an error occurs during uploading files, remove all files so the
-      // user can re-upload the files.
-      $element['#value'] = [];
+    /*    if ($form_state::hasAnyErrors()) {
+    // When an error occurs during uploading files, remove all files so the
+    // user can re-upload the files.
+    $element['#value'] = [];
     }
     $values = $form_state->getValue('upload', []);
     if (count($values['fids']) > $element['#cardinality'] && $element['#cardinality'] !== FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED) {
-      $form_state->setError($element, $this->t('A maximum of @count files can be uploaded.', [
-        '@count' => $element['#cardinality'],
-      ]));
-      $form_state->setValue('upload', []);
-      $element['#value'] = [];
+    $form_state->setError($element, $this->t('A maximum of @count files can be uploaded.', [
+    '@count' => $element['#cardinality'],
+    ]));
+    $form_state->setValue('upload', []);
+    $element['#value'] = [];
     }*/
     return $element;
   }
@@ -136,15 +144,15 @@ class FileUploadForm extends AddMediaFormBase {
       // @todo Remove when https://www.drupal.org/project/drupal/issues/2504115
       //   is fixed.
       'url' => Url::fromRoute('media_directories_ui.media.add'),
-        'options' => [
-          'query' => [
-              'media_type' => is_object($media_type) ? $media_type->id() : $media_type,
-              'target_bundles' => $this->getTargetBundles($form_state),
-              'active_directory' => $this->getDirectory($form_state),
-              'selection_mode' => $this->getSelectionMode($form_state),
-              FormBuilderInterface::AJAX_FORM_REQUEST => TRUE,
-            ],
+      'options' => [
+        'query' => [
+          'media_type' => is_object($media_type) ? $media_type->id() : $media_type,
+          'target_bundles' => $this->getTargetBundles($form_state),
+          'active_directory' => $this->getDirectory($form_state),
+          'selection_mode' => $this->getSelectionMode($form_state),
+          FormBuilderInterface::AJAX_FORM_REQUEST => TRUE,
         ],
+      ],
     ];
     return $element;
   }
@@ -156,6 +164,9 @@ class FileUploadForm extends AddMediaFormBase {
    *   The form render array.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function uploadButtonSubmit(array $form, FormStateInterface $form_state) {
     $files = $this->entityTypeManager
@@ -165,7 +176,12 @@ class FileUploadForm extends AddMediaFormBase {
   }
 
   /**
-   * {@inheritdoc}
+   * Makes the file of a media permanent.
+   *
+   * @param \Drupal\media\MediaInterface $media
+   *   The media entity.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   protected function prepareMediaEntityForSave(MediaInterface $media) {
     /** @var \Drupal\file\FileInterface $file */
@@ -173,4 +189,5 @@ class FileUploadForm extends AddMediaFormBase {
     $file->setPermanent();
     $file->save();
   }
+
 }

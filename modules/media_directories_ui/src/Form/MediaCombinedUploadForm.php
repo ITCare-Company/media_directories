@@ -1,4 +1,5 @@
 <?php
+
 namespace Drupal\media_directories_ui\Form;
 
 use Drupal\Component\Utility\Environment;
@@ -14,6 +15,9 @@ use Drupal\Core\Utility\Token;
 use Drupal\file\FileInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * A form to upload media of different bundles.
+ */
 class MediaCombinedUploadForm extends FileUploadForm {
 
   /**
@@ -27,11 +31,17 @@ class MediaCombinedUploadForm extends FileUploadForm {
    * AddMediaFormBase constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
+   *   The current user.
    * @param \Drupal\Core\Utility\Token $token
+   *   The token service.
    * @param \Drupal\Core\Theme\ThemeManagerInterface $theme_manager
+   *   The theme manager.
    * @param \Drupal\Core\Render\ElementInfoManagerInterface $element_info
+   *   The element info service.
    * @param \Drupal\Core\File\FileSystemInterface $file_system
+   *   The file system.
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, Token $token, ThemeManagerInterface $theme_manager, ElementInfoManagerInterface $element_info, FileSystemInterface $file_system) {
     parent::__construct($entity_type_manager, $current_user, $token, $theme_manager, $element_info);
@@ -39,9 +49,7 @@ class MediaCombinedUploadForm extends FileUploadForm {
   }
 
   /**
-   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
-   *
-   * @return \Drupal\Core\Form\FormBase|\Drupal\media_directories_ui\Form\AddMediaFormBase
+   * {@inheritDoc}
    */
   public static function create(ContainerInterface $container) {
     return new static(
@@ -76,33 +84,16 @@ class MediaCombinedUploadForm extends FileUploadForm {
       // Upload to temporary folder. Needs to be moved into correct folder after saving.
       '#upload_location' => 'temporary://',
       '#upload_validators' => [
-        'file_validate_extensions' =>  [$this->getValidExtensions($target_types)],
+        'file_validate_extensions' => [$this->getValidExtensions($target_types)],
         'file_validate_size' => [$max_filesize],
       ],
-      '#process' => [['Drupal\file\Element\ManagedFile', 'processManagedFile'], '::processUploadElement'],
+      '#process' => [
+        ['Drupal\file\Element\ManagedFile', 'processManagedFile'],
+        '::processUploadElement',
+      ],
     ];
 
     return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function prepareEntities(array $form, FormStateInterface $form_state, $field_name) {
-    $entities = [];
-
-    foreach ($this->getFiles($form, $form_state) as $file) {
-      $media_type = $this->getType($file);
-      $entities[] = $this->entityTypeManager->getStorage('media')->create([
-        'bundle' => $media_type->id(),
-        $media_type->getSource()->getConfiguration()['source_field'] => $file,
-        'uid' => $this->currentUser->id(),
-        'status' => TRUE,
-        'type' => $media_type->getSource()->getPluginId(),
-      ]);
-    }
-
-    return $entities;
   }
 
   /**
@@ -126,7 +117,7 @@ class MediaCombinedUploadForm extends FileUploadForm {
       $media_storage = $this->entityTypeManager->getStorage('media');
       $source_field_name = $this->getSourceFieldName($media_type);
 
-      $field_config = $this->entityTypeManager->getStorage('field_config')->load('media.' . $media_type->id() .'.' . $source_field_name);
+      $field_config = $this->entityTypeManager->getStorage('field_config')->load('media.' . $media_type->id() . '.' . $source_field_name);
       $destination = $this->getUploadLocation($field_config->getSettings());
       if ($this->fileSystem->prepareDirectory($destination, FileSystemInterface::CREATE_DIRECTORY)) {
         $source_field_value = file_move($source_field_value, $destination);
@@ -144,11 +135,13 @@ class MediaCombinedUploadForm extends FileUploadForm {
    * Returns media type for specific file by mime type.
    *
    * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *
+   *   The form state.
    * @param \Drupal\file\FileInterface $file
+   *   The file.
    *
-   * @return \Drupal\media\MediaTypeInterface
-   *   Media type.
+   * @return mixed
+   *   The media type or NULL.
+   *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
@@ -170,7 +163,7 @@ class MediaCombinedUploadForm extends FileUploadForm {
       }
 
       $source_field = $type->getSource()->getConfiguration()['source_field'];
-      $field_config = $this->entityTypeManager->getStorage('field_config')->load('media.' . $type->id() .'.' . $source_field);
+      $field_config = $this->entityTypeManager->getStorage('field_config')->load('media.' . $type->id() . '.' . $source_field);
 
       if (in_array($extension, explode(' ', $field_config->getSetting('file_extensions')))) {
         return $type;
@@ -183,13 +176,16 @@ class MediaCombinedUploadForm extends FileUploadForm {
   /**
    * Collect all supported extensions.
    *
-   * @param $target_types
+   * @param array $target_types
+   *   The media bundles.
    *
-   * @return array
+   * @return string
+   *   All valid file extensions for the specified media bundles separated by a space.
+   *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  protected function getValidExtensions($target_types) {
+  protected function getValidExtensions(array $target_types) {
     $valid_extensions = [];
     $ui_config = $this->config('media_directories_ui.settings');
     $combined_media_types = $ui_config->get('combined_upload_media_types');
@@ -203,7 +199,7 @@ class MediaCombinedUploadForm extends FileUploadForm {
       }
 
       $source_field = $type->getSource()->getConfiguration()['source_field'];
-      $field_config = $this->entityTypeManager->getStorage('field_config')->load('media.' . $type->id() .'.' . $source_field);
+      $field_config = $this->entityTypeManager->getStorage('field_config')->load('media.' . $type->id() . '.' . $source_field);
       $valid_extensions = array_merge($valid_extensions, explode(' ', $field_config->getSetting('file_extensions')));
     }
 

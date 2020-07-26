@@ -2,6 +2,7 @@
 
 /**
  * @file
+ * Main module file.
  */
 
 use Drupal\Component\Serialization\Json;
@@ -9,18 +10,16 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\image\Entity\ImageStyle;
 
-
 /**
  * Implements hook_form_FORM_ID_alter().
  *
  * Adding settings to the media_directories config form here.
- *
  */
 function media_directories_editor_form_media_directories_config_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   $form['media_directories_editor'] = [
     '#type' => 'details',
     '#title' => t('Editor Settings'),
-    '#description' => t('Here you\'ll find settings regarding the CKEditor integration.'),
+    '#description' => t("Here you'll find settings regarding the CKEditor integration."),
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
   ];
@@ -34,7 +33,7 @@ function media_directories_editor_form_media_directories_config_form_alter(&$for
 }
 
 /**
- * Implements hook_form_FORM_ID_alter()
+ * Implements hook_form_FORM_ID_alter().
  */
 function media_directories_editor_form_entity_embed_dialog_alter(&$form, FormStateInterface $form_state, $form_id) {
   $storage = $form_state->getStorage();
@@ -52,7 +51,7 @@ function media_directories_editor_form_entity_embed_dialog_alter(&$form, FormSta
       $url = file_create_url($image_style_url);
       $image_style->createDerivative($file->getFileUri(), $image_style_url);
       // TODO it should be converted to render array.
-      $form['entity']['#markup'] = '<a href="' . $entity->toUrl()->toString() . '" title="' . $entity->label() . '"><img src="' . $url .'" alt="' . $entity->label() . '" /></a>';
+      $form['entity']['#markup'] = '<a href="' . $entity->toUrl()->toString() . '" title="' . $entity->label() . '"><img src="' . $url . '" alt="' . $entity->label() . '" /></a>';
     }
   }
 
@@ -72,7 +71,7 @@ function media_directories_editor_form_entity_embed_dialog_alter(&$form, FormSta
 }
 
 /**
- * Implements hook_preprocess_HOOK()
+ * Implements hook_preprocess_HOOK().
  */
 function media_directories_editor_preprocess_entity_embed_container(&$variables) {
   // Remove some attributes we don't need.

@@ -11,8 +11,6 @@ use Drupal\entity_browser\WidgetBase;
 use Drupal\Core\Url;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\entity_browser\WidgetValidationManager;
-use Drupal\media_directories_ui\MediaDirectoriesUiBuilder;
-use Drupal\media_directories_ui\MediaDirectoriesUiState;
 use Drupal\taxonomy\Entity\Term;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -60,14 +58,13 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
    *
    * @var string
    */
-  protected $vocabulary_id;
+  protected $vocabularyId;
 
   /**
    * {@inheritdoc}
    */
   public function defaultConfiguration() {
-    return [
-    ] + parent::defaultConfiguration();
+    return [] + parent::defaultConfiguration();
   }
 
   /**
@@ -119,7 +116,7 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
     $this->moduleHandler = $module_handler;
 
     $config = $config_factory->get('media_directories.settings');
-    $this->vocabulary_id = $config->get('directory_taxonomy');
+    $this->vocabularyId = $config->get('directory_taxonomy');
   }
 
   /**
@@ -153,10 +150,10 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
       'translate' => FALSE,
       'delete' => FALSE,
     ];
-    if (isset($this->vocabulary_id)) {
+    if (isset($this->vocabularyId)) {
       $directory = Term::create([
         'name' => 'will not be saved',
-        'vid' => $this->vocabulary_id,
+        'vid' => $this->vocabularyId,
       ]);
       $vocabulary_permissions['create'] = $directory->access('create');
       $vocabulary_permissions['update'] = $directory->access('update');
@@ -174,13 +171,26 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
     }
     $form['#attached']['drupalSettings']['media_directories']['selection_mode'] = $selection_mode;
 
-    $cardinality = (int) NestedArray::getValue($form_state->getStorage(), ['entity_browser', 'validators', 'cardinality', 'cardinality']);
-    $remaining = (int) NestedArray::getValue($form_state->getStorage(), ['entity_browser', 'widget_context', 'remaining']);
+    $cardinality = (int) NestedArray::getValue($form_state->getStorage(), [
+      'entity_browser',
+      'validators',
+      'cardinality',
+      'cardinality',
+    ]);
+    $remaining = (int) NestedArray::getValue($form_state->getStorage(), [
+      'entity_browser',
+      'widget_context',
+      'remaining',
+    ]);
     if ($route_parameter_entity_browser_id == 'media_directories_editor_browser') {
       // Allow only one item to be selected in the editor.
       $remaining = 1;
     }
-    $target_bundles = NestedArray::getValue($form_state->getStorage(), ['entity_browser', 'validators', 'target_bundles']);
+    $target_bundles = NestedArray::getValue($form_state->getStorage(), [
+      'entity_browser',
+      'validators',
+      'target_bundles',
+    ]);
 
     if ($cardinality) {
       $form['#attached']['drupalSettings']['media_directories']['cardinality'] = $cardinality;
@@ -219,7 +229,7 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
     }
     $term_translation_enabled = FALSE;
     if ($this->moduleHandler->moduleExists('content_translation')) {
-      $term_translation_enabled = \Drupal::service('content_translation.manager')->isEnabled('taxonomy_term', $this->vocabulary_id);
+      $term_translation_enabled = \Drupal::service('content_translation.manager')->isEnabled('taxonomy_term', $this->vocabularyId);
     }
     $form['#attached']['drupalSettings']['media_directories']['term_translation_enabled'] = $term_translation_enabled;
 

@@ -10,23 +10,30 @@ use Drupal\Core\Ajax\CommandInterface;
 class RefreshDirectoryTree implements CommandInterface {
 
   /**
-   * @var
+   * The selected directory.
+   *
+   * @var int
    */
-  protected $selected_directory;
+  protected $selectedDirectory;
 
   /**
-   * @var
+   * Newly selected media entity ids.
+   *
+   * @var array
    */
-  protected $newly_selected_entity_ids;
+  protected $newlySelectedEntityIds;
 
   /**
    * RefreshDirectoryTree constructor.
    *
    * @param int $selected_directory
+   *   The selected directory.
+   * @param array $newly_selected_entity_ids
+   *   Newly selected media entity ids.
    */
-  public function __construct($selected_directory = MEDIA_DIRECTORY_ROOT, $newly_selected_entity_ids = []) {
-    $this->selected_directory = $selected_directory;
-    $this->newly_selected_entity_ids = $newly_selected_entity_ids;
+  public function __construct($selected_directory = MEDIA_DIRECTORY_ROOT, array $newly_selected_entity_ids = []) {
+    $this->selectedDirectory = $selected_directory;
+    $this->newlySelectedEntityIds = $newly_selected_entity_ids;
   }
 
   /**
@@ -36,9 +43,9 @@ class RefreshDirectoryTree implements CommandInterface {
     return [
       'command' => 'refreshDirectoryTree',
       'data' => [
-        'selected_directory' => (isset($this->selected_directory) ? $this->selected_directory : MEDIA_DIRECTORY_ROOT),
-        'newly_selected_entity_ids' => $this->newly_selected_entity_ids,
-      ]
+        'selected_directory' => (isset($this->selectedDirectory) ? $this->selectedDirectory : MEDIA_DIRECTORY_ROOT),
+        'newly_selected_entity_ids' => $this->newlySelectedEntityIds,
+      ],
     ];
   }
 

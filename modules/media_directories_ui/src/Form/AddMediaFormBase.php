@@ -1,4 +1,5 @@
 <?php
+
 namespace Drupal\media_directories_ui\Form;
 
 use Drupal\Component\Render\PlainTextOutput;
@@ -14,14 +15,13 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Utility\Token;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Theme\ThemeManagerInterface;
-use Drupal\file\Entity\File;
 use Drupal\media\MediaInterface;
 use Drupal\media\MediaTypeInterface;
 use Drupal\media_directories_ui\Ajax\RefreshDirectoryTree;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Class AddMediaFormBase
+ * Class AddMediaFormBase.
  *
  * Uses code and logic from core. We could try to integrate core directly,
  * but it might be too unstable in this stage.
@@ -62,9 +62,13 @@ abstract class AddMediaFormBase extends FormBase {
    * AddMediaFormBase constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
+   *   The current user.
    * @param \Drupal\Core\Utility\Token $token
+   *   The token service.
    * @param \Drupal\Core\Theme\ThemeManagerInterface $theme_manager
+   *   The theme manager.
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, Token $token, ThemeManagerInterface $theme_manager) {
     $this->entityTypeManager = $entity_type_manager;
@@ -74,9 +78,7 @@ abstract class AddMediaFormBase extends FormBase {
   }
 
   /**
-   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
-   *
-   * @return \Drupal\Core\Form\FormBase|\Drupal\media_directories_ui\Form\AddMediaFormBase
+   * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
     return new static(
@@ -115,9 +117,13 @@ abstract class AddMediaFormBase extends FormBase {
   }
 
   /**
+   * Gets the current active directory from the form state.
+   *
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
    *
    * @return int
+   *   The directory id.
    */
   protected function getDirectory(FormStateInterface $form_state) {
     $directory_id = $form_state->get('active_directory');
@@ -130,9 +136,13 @@ abstract class AddMediaFormBase extends FormBase {
   }
 
   /**
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   * Get the allowed target bundles from the form state.
    *
-   * @return mixed
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   *
+   * @return array
+   *   All allowed target bundle names.
    */
   protected function getTargetBundles(FormStateInterface $form_state) {
     $bundles = $form_state->get('target_bundles');
@@ -141,9 +151,13 @@ abstract class AddMediaFormBase extends FormBase {
   }
 
   /**
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   * Get the current selection mode from the form state.
    *
-   * @return mixed
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   *
+   * @return string
+   *   The current selection mode.
    */
   protected function getSelectionMode(FormStateInterface $form_state) {
     $selection_mode = $form_state->get('selection_mode');
@@ -164,12 +178,11 @@ abstract class AddMediaFormBase extends FormBase {
   protected function getUploadLocation(array $settings) {
     $destination = trim($settings['file_directory'], '/');
 
-     // Replace tokens. As the tokens might contain HTML we convert it to plain
-     // text.
-     $destination = PlainTextOutput::renderFromHtml($this->token->replace($destination, []));
-     return $settings['uri_scheme'] . '://' . $destination;
- }
-
+    // Replace tokens. As the tokens might contain HTML we convert it to plain
+    // text.
+    $destination = PlainTextOutput::renderFromHtml($this->token->replace($destination, []));
+    return $settings['uri_scheme'] . '://' . $destination;
+  }
 
   /**
    * Form constructor.
@@ -242,7 +255,6 @@ abstract class AddMediaFormBase extends FormBase {
       '#value' => $this->getSelectionMode($form_state),
     ];
 
-
     if (empty($added_media)) {
       $form['#attributes']['class'][] = 'media-library-add-form--without-input';
       $form = $this->buildInputElement($form, $form_state);
@@ -303,8 +315,10 @@ abstract class AddMediaFormBase extends FormBase {
     return $form;
   }
 
+  /**
+   * Inheriting classes need to build the desired input element.
+   */
   abstract protected function buildInputElement(array $form, FormStateInterface $form_state);
-
 
   /**
    * Form submission handler.
@@ -323,13 +337,13 @@ abstract class AddMediaFormBase extends FormBase {
     foreach ($added_media as $delta => $media) {
       EntityFormDisplay::collectRenderDisplay($media, 'media_library')
         ->extractFormValues($media, $form['media'][$delta]['fields'], $form_state);
-      //$this->prepareMediaEntityForSave($media);
+      // $this->prepareMediaEntityForSave($media);
       $media->save();
       $tmp_tid_mids[(isset($media->get('directory')->target_id) ? $media->get('directory')->target_id : MEDIA_DIRECTORY_ROOT)][] = $media->id();
       $all_mids[] = $media->id();
     }
 
-    $tid_holding_most_mids  = -1;
+    $tid_holding_most_mids = -1;
     foreach ($tmp_tid_mids as $tid => $mids) {
       if (!isset($tmp_tid_mids[$tid_holding_most_mids]) ||
         (count($tmp_tid_mids[$tid_holding_most_mids]) < count($tmp_tid_mids[$tid]))) {
@@ -339,7 +353,7 @@ abstract class AddMediaFormBase extends FormBase {
 
     if ($form_state->get('selection_mode') != 'keep') {
       if (count($tmp_tid_mids[$tid_holding_most_mids]) < count($all_mids)) {
-        $this->messenger()->addStatus($this->t('You uploaded medias to different folders. Only medias in the current folder (having the most uploaded media count) are selected. '));
+        $this->messenger()->addStatus($this->t('You uploaded medias to different folders. Only medias in the current folder (having the most uploaded media count) are selected.'));
       }
       $form_state->setValue('newly_added_media_ids', $tmp_tid_mids[$tid_holding_most_mids]);
     }
@@ -348,35 +362,6 @@ abstract class AddMediaFormBase extends FormBase {
     }
 
     $form_state->setValue('most_choosen_directory_tid', $tid_holding_most_mids);
-  }
-
-  /**
-   * Prepare uploaded media entities.
-   *
-   * @param array $form
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *
-   * @return array
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   */
-  public function prepareEntities(array $form, FormStateInterface $form_state, $field_name) {
-    $entities = [];
-    $media_type = $this->getMediaType($form_state);
-
-    foreach ($form_state->getValue($field_name) as $fid) {
-      $file = File::load($fid);
-      $entities[] = $this->entityTypeManager->getStorage('media')->create([
-        'bundle' => $media_type->id(),
-        $media_type->getSource()->getConfiguration()['source_field'] => $file,
-        'uid' => $this->currentUser->id(),
-        'status' => TRUE,
-        'type' => $media_type->getSource()->getPluginId(),
-        'directory' => $this->getDirectory($form_state),
-      ]);
-    }
-
-    return $entities;
   }
 
   /**
@@ -393,6 +378,9 @@ abstract class AddMediaFormBase extends FormBase {
    *
    * @return array
    *   The element containing the required fields sub-form.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   protected function buildEntityFormElement(MediaInterface $media, array $form, FormStateInterface $form_state, $delta) {
     // We need to make sure each button has a unique name attribute. The default
@@ -516,13 +504,13 @@ abstract class AddMediaFormBase extends FormBase {
    *   The entity form source field element.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current form state.
-   * @param $form
+   * @param array $form
    *   The complete form.
    *
    * @return array
    *   The processed form element.
    */
-  public static function hideExtraSourceFieldComponents($element, FormStateInterface $form_state, $form) {
+  public static function hideExtraSourceFieldComponents(array $element, FormStateInterface $form_state, array $form) {
     // Remove original button added by ManagedFile::processManagedFile().
     if (!empty($element['remove_button'])) {
       $element['remove_button']['#access'] = FALSE;
@@ -556,7 +544,6 @@ abstract class AddMediaFormBase extends FormBase {
       ->getSourceFieldDefinition($media_type)
       ->getName();
   }
-
 
   /**
    * Returns an array of supported actions for the form.
@@ -627,7 +614,7 @@ abstract class AddMediaFormBase extends FormBase {
         ];
         $form_state->setRebuild();
         $response->addCommand(new ReplaceCommand('#media-library-add-form-wrapper', $build));
-        //$response->addCommand(new InvokeCommand('#media-library-add-form-wrapper :tabbable', 'focus'));
+        // $response->addCommand(new InvokeCommand('#media-library-add-form-wrapper :tabbable', 'focus'));
       }
       // When there are still more items, update the form and shift the focus to
       // the next media item. If the last list item is removed, shift focus to
@@ -689,15 +676,15 @@ abstract class AddMediaFormBase extends FormBase {
       return $form;
     }
 
-/*    $media_ids = array_map(function (MediaInterface $media) {
-      return $media->id();
+    /*    $media_ids = array_map(function (MediaInterface $media) {
+    return $media->id();
     }, $this->getAddedMediaItems($form_state));*/
 
     $form_state->setStorage([]);
     $form_state->setRebuild();
 
     $response = new AjaxResponse();
-    //$response->addCommand(new UpdateSelectionCommand($media_ids));
+    // $response->addCommand(new UpdateSelectionCommand($media_ids));
     $response->addCommand(new CloseModalDialogCommand());
     $response->addCommand(new RefreshDirectoryTree($form_state->getValue('most_choosen_directory_tid'), $form_state->getValue('newly_added_media_ids')));
 
@@ -719,6 +706,9 @@ abstract class AddMediaFormBase extends FormBase {
    *   The complete form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current form state.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   protected function processInputValues(array $source_field_values, array $form, FormStateInterface $form_state) {
     $media_type = $this->getMediaType($form_state);
@@ -731,7 +721,7 @@ abstract class AddMediaFormBase extends FormBase {
     $form_state->set('media', array_values($media));
     // Save the selected items in the form state so they are remembered when an
     // item is removed.
-    //$form_state->set('current_selection', array_filter(explode(',', $form_state->getValue('current_selection'))));
+    // $form_state->set('current_selection', array_filter(explode(',', $form_state->getValue('current_selection'))));.
     $form_state->setRebuild();
   }
 
@@ -746,8 +736,8 @@ abstract class AddMediaFormBase extends FormBase {
    *   The name of the media type's source field.
    * @param mixed $source_field_value
    *   The value for the source field of the media item.
-   *
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
    *
    * @return \Drupal\media\MediaInterface
    *   An unsaved media entity.

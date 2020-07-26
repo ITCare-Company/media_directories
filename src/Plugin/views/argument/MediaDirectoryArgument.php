@@ -3,7 +3,6 @@
 namespace Drupal\media_directories\Plugin\views\argument;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\views\Plugin\views\argument\ArgumentPluginBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -26,12 +25,14 @@ class MediaDirectoryArgument extends ArgumentPluginBase {
 
   /**
    * The operator used for the query: or|and.
+   *
    * @var string
    */
   public $operator;
 
   /**
    * The actual value which is used for querying.
+   *
    * @var array
    */
   public $value;
@@ -45,6 +46,8 @@ class MediaDirectoryArgument extends ArgumentPluginBase {
    *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   The config factory.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, ConfigFactoryInterface $configFactory) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
@@ -60,14 +63,9 @@ class MediaDirectoryArgument extends ArgumentPluginBase {
     return new static($configuration, $plugin_id, $plugin_definition, $container->get('config.factory'));
   }
 
-  protected function defineOptions() {
-    return parent::defineOptions();
-  }
-
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
-    parent::buildOptionsForm($form, $form_state);
-  }
-
+  /**
+   * {@inheritdoc}
+   */
   public function title() {
     if (!$this->argument) {
       return !empty($this->definition['empty field name']) ? $this->definition['empty field name'] : $this->t('Uncategorized');
@@ -96,6 +94,7 @@ class MediaDirectoryArgument extends ArgumentPluginBase {
 
   /**
    * Override for specific title lookups.
+   *
    * @return array
    *   Returns all titles, if it's just one title it's an array with one entry.
    */
@@ -103,18 +102,20 @@ class MediaDirectoryArgument extends ArgumentPluginBase {
     return $this->value;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function query($group_by = FALSE) {
     $this->ensureMyTable();
     $config = $this->configFactory->get('media_directories.settings');
 
-    $this->value = (int)$this->argument;
     $placeholder = $this->placeholder();
     $null_check = empty($this->options['not']) ? '' : " OR $this->tableAlias.$this->realField IS NULL";
 
-    if ($this->value === MEDIA_DIRECTORY_ROOT) {
+    if ((int) $this->argument === MEDIA_DIRECTORY_ROOT) {
       $group = 0;
       if ($config->get('all_files_in_root')) {
-        // We want an exclusive group if we change to OR
+        // We want an exclusive group if we change to OR.
         $group = 9;
         // Show everything.
         $this->query->setWhereGroup('OR', $group);

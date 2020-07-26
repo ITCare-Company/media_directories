@@ -1,4 +1,5 @@
 <?php
+
 namespace Drupal\media_directories_ui\Form;
 
 use Drupal\Core\Ajax\AjaxResponse;
@@ -9,19 +10,28 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\media_directories_ui\Ajax\RefreshDirectoryTree;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Form to delete a directory.
+ */
 class DirectoryDeleteForm extends ConfirmFormBase {
 
   /**
+   * The direcory to delete.
+   *
    * @var \Drupal\taxonomy\Entity\Term
    */
   protected $directory;
 
   /**
+   * Form context.
+   *
    * @var array
    */
   protected $formContext;
 
   /**
+   * The entity type manager.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
@@ -30,6 +40,7 @@ class DirectoryDeleteForm extends ConfirmFormBase {
    * DirectoryDeleteForm constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   The entity type manager.
    */
   public function __construct(EntityTypeManagerInterface $entityTypeManager) {
     $this->entityTypeManager = $entityTypeManager;
@@ -65,6 +76,9 @@ class DirectoryDeleteForm extends ConfirmFormBase {
     return 'directory_delete_form';
   }
 
+  /**
+   * {@inheritDoc}
+   */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $build_info = $form_state->getBuildInfo();
 
@@ -105,6 +119,9 @@ class DirectoryDeleteForm extends ConfirmFormBase {
     return $form;
   }
 
+  /**
+   * Ajax callback when the form is submitted.
+   */
   public function submitModalAjax(array &$form, FormStateInterface $form_state) {
     $response = new AjaxResponse();
 
@@ -135,7 +152,7 @@ class DirectoryDeleteForm extends ConfirmFormBase {
 
       $response->addCommand(new CloseModalDialogCommand());
       $response->addCommand(new RefreshDirectoryTree($parent_id));
-      //$response->addCommand(new AjaxLoadDirectory());
+      // $response->addCommand(new AjaxLoadDirectory());
     }
 
     return $response;
@@ -145,6 +162,7 @@ class DirectoryDeleteForm extends ConfirmFormBase {
    * Close modal dialog.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
+   *   An AJAX response.
    */
   public function closeModalAjax() {
     $response = new AjaxResponse();
@@ -159,4 +177,5 @@ class DirectoryDeleteForm extends ConfirmFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // TODO: Implement submitForm() method.
   }
+
 }

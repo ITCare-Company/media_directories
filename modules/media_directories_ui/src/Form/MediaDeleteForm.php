@@ -1,4 +1,5 @@
 <?php
+
 namespace Drupal\media_directories_ui\Form;
 
 use Drupal\Core\Ajax\AjaxResponse;
@@ -7,14 +8,21 @@ use Drupal\Core\Form\ConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\media_directories_ui\Ajax\LoadDirectoryContent;
 
+/**
+ * A form to delete medias.
+ */
 class MediaDeleteForm extends ConfirmFormBase {
 
   /**
+   * The medias to delete.
+   *
    * @var \Drupal\media\Entity\Media[]
    */
   protected $entities;
 
   /**
+   * The form context.
+   *
    * @var array
    */
   protected $formContext;
@@ -46,6 +54,9 @@ class MediaDeleteForm extends ConfirmFormBase {
     return 'media_delete_form';
   }
 
+  /**
+   * {@inheritDoc}
+   */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $build_info = $form_state->getBuildInfo();
 
@@ -90,6 +101,9 @@ class MediaDeleteForm extends ConfirmFormBase {
     return $form;
   }
 
+  /**
+   * AJAX callback when the form is submitted.
+   */
   public function submitModalAjax(array &$form, FormStateInterface $form_state) {
     $response = new AjaxResponse();
 
@@ -107,6 +121,7 @@ class MediaDeleteForm extends ConfirmFormBase {
    * Close modal dialog.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
+   *   An AJAX response.
    */
   public function closeModalAjax() {
     $response = new AjaxResponse();
@@ -126,4 +141,5 @@ class MediaDeleteForm extends ConfirmFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // TODO: Implement submitForm() method.
   }
+
 }

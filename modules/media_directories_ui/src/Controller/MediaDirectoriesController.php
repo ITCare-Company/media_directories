@@ -22,19 +22,28 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
+/**
+ * Main controller class.
+ */
 class MediaDirectoriesController extends ControllerBase {
   /**
+   * The term storage.
+   *
    * @var \Drupal\taxonomy\TermStorage
    */
   protected $termStorage;
 
   /**
-   * @var FormBuilder
+   * The form builder.
+   *
+   * @var \Drupal\Core\Form\FormBuilder
    */
   protected $formBuilder;
 
   /**
-   * @var RendererInterface
+   * The renderer service.
+   *
+   * @var \Drupal\Core\Render\RendererInterface
    */
   protected $renderer;
 
@@ -57,22 +66,26 @@ class MediaDirectoriesController extends ControllerBase {
    *
    * @var string
    */
-  protected $vocabulary_id;
+  protected $vocabularyId;
 
   /**
    * Indicator if content translation is enabled.
    *
    * @var bool
    */
-  protected $content_translation_enabled;
+  protected $contentTranslationEnabled;
 
   /**
    * MediaDirectoriesController constructor.
    *
    * @param \Drupal\Core\Form\FormBuilder $formBuilder
+   *   The form builder.
    * @param \Drupal\Core\Render\RendererInterface $renderer
+   *   The renderer service.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler.
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   *   The language manager.
    */
   public function __construct(FormBuilder $formBuilder, RendererInterface $renderer, ModuleHandlerInterface $module_handler, LanguageManagerInterface $language_manager) {
     $this->formBuilder = $formBuilder;
@@ -81,8 +94,8 @@ class MediaDirectoriesController extends ControllerBase {
     $this->languageManager = $language_manager;
 
     $config = $this->config('media_directories.settings');
-    $this->vocabulary_id = $config->get('directory_taxonomy');
-    $this->content_translation_enabled = $this->moduleHandler->moduleExists('content_translation');
+    $this->vocabularyId = $config->get('directory_taxonomy');
+    $this->contentTranslationEnabled = $this->moduleHandler->moduleExists('content_translation');
   }
 
   /**
@@ -101,16 +114,18 @@ class MediaDirectoriesController extends ControllerBase {
    * Return directory tree as JSON.
    *
    * @return \Symfony\Component\HttpFoundation\JsonResponse
+   *   A JSON response.
+   *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function directoryTree() {
     $tree = [];
     $this->termStorage = $this->entityTypeManager()->getStorage('taxonomy_term');
-    $terms = $this->termStorage->loadTree($this->vocabulary_id);
+    $terms = $this->termStorage->loadTree($this->vocabularyId);
 
     foreach ($terms as $term) {
-      $this->buildTree($tree, $term, $this->vocabulary_id);
+      $this->buildTree($tree, $term, $this->vocabularyId);
     }
 
     $tree = [
@@ -125,7 +140,7 @@ class MediaDirectoriesController extends ControllerBase {
           'data-tid' => MEDIA_DIRECTORY_ROOT,
         ],
         'children' => array_values($tree),
-      ]
+      ],
     ];
 
     return new JsonResponse($tree);
@@ -137,12 +152,14 @@ class MediaDirectoriesController extends ControllerBase {
    * Inserts directory content into browser.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The request.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
+   *   An AJAX response.
    */
   public function directoryContent(Request $request) {
     $response = new AjaxResponse();
-    $directory_id = (int)$request->request->get('directory_id');
+    $directory_id = (int) $request->request->get('directory_id');
     $target_bundles = $request->request->get('target_bundles');
     $media_name_search = $request->request->get('media_name');
 
@@ -151,25 +168,28 @@ class MediaDirectoriesController extends ControllerBase {
 
     $response->addCommand(new HtmlCommand('.browser--listing', $view));
 
-    return  $response;
+    return $response;
   }
 
   /**
    * Create new directory.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The request.
    *
    * @return \Symfony\Component\HttpFoundation\JsonResponse
+   *   A JSON response.
+   *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function directoryAdd(Request $request) {
-    $directory_id = (int)$request->request->get('parent_id');
+    $directory_id = (int) $request->request->get('parent_id');
     $directory_id = $directory_id === MEDIA_DIRECTORY_ROOT ? 0 : $directory_id;
     $name = $request->request->get('name');
     $current_language = $this->languageManager->getCurrentLanguage();
     $directory = Term::create([
       'name' => $name,
-      'vid' => $this->vocabulary_id,
+      'vid' => $this->vocabularyId,
       'parent' => [$directory_id],
       'langcode' => $current_language->getId(),
     ]);
@@ -180,7 +200,7 @@ class MediaDirectoriesController extends ControllerBase {
 
       $data = [
         'id' => 'dir-' . $directory->id(),
-        'a_attr' => (object)['data-tid' => $directory->id()],
+        'a_attr' => (object) ['data-tid' => $directory->id()],
         'text' => $directory->getName(),
       ];
     }
@@ -192,12 +212,15 @@ class MediaDirectoriesController extends ControllerBase {
    * Rename directory.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The request.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
+   *   An AJAX response.
+   *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function directoryRename(Request $request) {
-    $directory_id = (int)$request->request->get('directory_id');
+    $directory_id = (int) $request->request->get('directory_id');
     $new_name = $request->request->get('directory_new_name');
     $directory = Term::load($directory_id);
 
@@ -219,8 +242,11 @@ class MediaDirectoriesController extends ControllerBase {
    * Move directory to different directory.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The request.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
+   *   An AJAX response.
+   *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Core\Entity\EntityStorageException
@@ -228,8 +254,8 @@ class MediaDirectoriesController extends ControllerBase {
    */
   public function directoryMove(Request $request) {
     $response = new AjaxResponse();
-    $move_directory_id = (int)$request->request->get('move_directory_id');
-    $to_directory_id = (int)$request->request->get('directory_id');
+    $move_directory_id = (int) $request->request->get('move_directory_id');
+    $to_directory_id = (int) $request->request->get('directory_id');
     $response->addCommand(new RefreshDirectoryTree($to_directory_id));
 
     // This shouldn't happen, but might cause issues when it does.
@@ -237,10 +263,10 @@ class MediaDirectoriesController extends ControllerBase {
       return $response;
     }
 
-    /** @var Term $directory */
+    /** @var \Drupal\taxonomy\Entity\Term $directory */
     $directory = $this->entityTypeManager()->getStorage('taxonomy_term')->load($move_directory_id);
     if ($directory->access('update')) {
-      $directory->get('parent')->setValue($to_directory_id === MEDIA_DIRECTORY_ROOT ? NULL: $to_directory_id);
+      $directory->get('parent')->setValue($to_directory_id === MEDIA_DIRECTORY_ROOT ? NULL : $to_directory_id);
       $directory->save();
     }
     else {
@@ -255,13 +281,15 @@ class MediaDirectoriesController extends ControllerBase {
    * Delete directory.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The request.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
+   *   An AJAX response.
    */
   public function directoryDelete(Request $request) {
     $response = new AjaxResponse();
 
-    $directory_id = (int)$request->request->get('directory_id');
+    $directory_id = (int) $request->request->get('directory_id');
     $target_bundles = $request->request->get('target_bundles');
     $directory = Term::load($directory_id);
 
@@ -289,8 +317,10 @@ class MediaDirectoriesController extends ControllerBase {
    * New media entity add form.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The request.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
+   *   An AJAX response.
    */
   public function mediaAdd(Request $request) {
     $response = new AjaxResponse();
@@ -313,7 +343,6 @@ class MediaDirectoriesController extends ControllerBase {
 
     if ($target_bundles) {
       // Here we land if no file is present.
-
       // Only list media types where the user has permission for.
       foreach ($target_bundles as $delta => $bundle) {
         if (!$this->entityTypeManager()->getAccessControlHandler('media')->createAccess($bundle)) {
@@ -352,8 +381,11 @@ class MediaDirectoriesController extends ControllerBase {
    * Media entity edit form.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The request.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
+   *   An AJAX response.
+   *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Core\Form\EnforcedResponseException
@@ -366,7 +398,7 @@ class MediaDirectoriesController extends ControllerBase {
     if (count($media_items) == 0) {
       // We're probably in the AJAX Form-Callback of the MediaEditForm (inheriting AddMediaFormBase)
       $media_items = $request->request->get('media', []);
-      $media_ids = [] ;
+      $media_ids = [];
       foreach ($media_items as $mid => $data) {
         // The nested array needs to be removed as nothing will not be loaded like this.
         $media_ids[$mid] = $mid;
@@ -406,15 +438,18 @@ class MediaDirectoriesController extends ControllerBase {
    * Move media to directory.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The request.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
+   *   An AJAX response.
+   *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function mediaMove(Request $request) {
     $response = new AjaxResponse();
     $media_items = $request->request->get('media_items', []);
-    $directory_id = (int)$request->request->get('directory_id');
+    $directory_id = (int) $request->request->get('directory_id');
 
     /** @var \Drupal\media\Entity\Media $media_entities */
     $media_entities = $this->entityTypeManager()->getStorage('media')->loadMultiple($media_items);
@@ -422,7 +457,7 @@ class MediaDirectoriesController extends ControllerBase {
     foreach ($media_entities as $media_entity) {
       if ($media_entity->hasField('directory')) {
         if ($media_entity->access('update')) {
-          $media_entity->get('directory')->setValue($directory_id === MEDIA_DIRECTORY_ROOT ? NULL: $directory_id);
+          $media_entity->get('directory')->setValue($directory_id === MEDIA_DIRECTORY_ROOT ? NULL : $directory_id);
           $media_entity->save();
         }
         else {
@@ -444,8 +479,11 @@ class MediaDirectoriesController extends ControllerBase {
    * Media entity delete confirmation form.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The request.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
+   *   An AJAX response.
+   *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
@@ -488,11 +526,14 @@ class MediaDirectoriesController extends ControllerBase {
   /**
    * Populates a tree array given a taxonomy term tree object.
    *
-   * @param $tree
-   * @param $object
-   * @param $vocabulary
+   * @param array $tree
+   *   An array representing the tree.
+   * @param object $object
+   *   A taxonomy term.
+   * @param string $vocabulary
+   *   The vocabulary id.
    */
-  protected function buildTree(&$tree, $object, $vocabulary) {
+  protected function buildTree(array &$tree, $object, $vocabulary) {
     if ($object->depth !== 0) {
       return;
     }
@@ -500,7 +541,7 @@ class MediaDirectoriesController extends ControllerBase {
     $tree[$object->tid] = $object;
     $tree[$object->tid]->children = [];
     $tree[$object->tid]->text = $object->name;
-    if ($this->content_translation_enabled) {
+    if ($this->contentTranslationEnabled) {
       $current_language = $this->languageManager->getCurrentLanguage();
       $term = Term::load($object->tid);
       if ($term && $term->hasTranslation($current_language->getId())) {
@@ -533,13 +574,15 @@ class MediaDirectoriesController extends ControllerBase {
     $tree[$object->tid]->children = array_values($tree[$object->tid]->children);
   }
 
- /**
+  /**
    * Adds a PrependCommad to an ajax response rendering the current status messages.
    *
    * @param \Drupal\Core\Ajax\AjaxResponse $response
+   *   The response.
    * @param string $selector
+   *   A jQuery selector.
    */
-  protected function addMessagesToResponse($response, $selector = '.entity-browser-form') {
+  protected function addMessagesToResponse(AjaxResponse $response, $selector = '.entity-browser-form') {
     $status_messages = ['#type' => 'status_messages'];
     $messages = $this->renderer->renderRoot($status_messages);
     if (!empty($messages)) {
@@ -547,12 +590,13 @@ class MediaDirectoriesController extends ControllerBase {
     }
   }
 
-   /**
+  /**
    * Adds the current status messages on top of a form.
    *
-   * @param \Drupal\Core\Form\FormBase $form
+   * @param array $form
+   *   A from.
    */
-  protected function addMessagesToForm($form) {
+  protected function addMessagesToForm(array $form) {
     $form['messages']['status'] = [
       '#type' => 'status_messages',
       '#weight' => -100,

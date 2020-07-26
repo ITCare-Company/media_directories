@@ -15,6 +15,9 @@ use Drupal\media\OEmbed\UrlResolverInterface;
 use Drupal\media\Plugin\media\Source\OEmbedInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * A form to add remote content using OEmbed resources.
+ */
 class OEmbedForm extends AddMediaFormBase {
 
   /**
@@ -37,8 +40,11 @@ class OEmbedForm extends AddMediaFormBase {
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
+   *   The current user.
    * @param \Drupal\Core\Utility\Token $token
+   *   The token service.
    * @param \Drupal\Core\Theme\ThemeManagerInterface $theme_manager
+   *   The theme manager.
    * @param \Drupal\media\OEmbed\UrlResolverInterface $url_resolver
    *   The oEmbed URL resolver service.
    * @param \Drupal\media\OEmbed\ResourceFetcherInterface $resource_fetcher
@@ -124,9 +130,9 @@ class OEmbedForm extends AddMediaFormBase {
         'url' => Url::fromRoute('media_directories_ui.media.add'),
         'options' => [
           'query' => [
-              'media_type' => ($form_state->get('media_type') ? $form_state->get('media_type')->id() : $form_state->get('selected_type')),
-              FormBuilderInterface::AJAX_FORM_REQUEST => TRUE,
-            ],
+            'media_type' => ($form_state->get('media_type') ? $form_state->get('media_type')->id() : $form_state->get('selected_type')),
+            FormBuilderInterface::AJAX_FORM_REQUEST => TRUE,
+          ],
         ],
       ],
       '#attributes' => [

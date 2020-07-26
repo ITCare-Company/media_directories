@@ -197,7 +197,7 @@ function media_directories_ui_preprocess_media_directories_add(&$variables) {
     }
 
     // If combined upload is enabled and the media type is included, we hide the tab.
-    if ($combined_upload_enabled && $combined_media_types[$type->id()] === $type->id()) {
+    if ($combined_upload_enabled && isset($combined_media_types[$type->id()]) && $combined_media_types[$type->id()] === $type->id()) {
       continue;
     }
 
@@ -210,7 +210,7 @@ function media_directories_ui_preprocess_media_directories_add(&$variables) {
           'target_bundles' => $variables['target_bundles'],
           'selection_mode' => $variables['selection_mode'],
         ],
-        ]),
+      ]),
       'attributes' => ['class' => ['use-ajax', 'media-library-menu__link']],
     ];
 
@@ -235,7 +235,7 @@ function media_directories_ui_preprocess_media_directories_add(&$variables) {
   else {
     $type = $types[$variables['selected_type']];
     $source_field = $type->getSource()->getConfiguration()['source_field'];
-    $field_config = \Drupal::entityTypeManager()->getStorage('field_config')->load('media.' . $type->id() .'.' . $source_field);
+    $field_config = \Drupal::entityTypeManager()->getStorage('field_config')->load('media.' . $type->id() . '.' . $source_field);
 
     $form_state->set('media_type', $type);
 
@@ -256,7 +256,7 @@ function media_directories_ui_form_entity_browser_media_directories_overview_for
     \Drupal::messenger()->addError(t('The <a href=":url">jsTree library</a> should be installed at <strong>/libraries/jstree/dist/jstree.min.js</strong>, or any path supported by libraries.module if installed.', [':url' => 'https://github.com/vakata/jstree']));
   }
 
-  if(!_media_directories_ui_vocabulary_set()) {
+  if (!_media_directories_ui_vocabulary_set()) {
     $settings_url = Url::fromRoute('media_directories.config_form');
     \Drupal::messenger()->addError(t('Vocabulary is not selected. Please select it in the <a href=":url">settings</a>.', [':url' => $settings_url->toString()]));
   }
@@ -270,7 +270,7 @@ function media_directories_ui_form_entity_browser_media_directories_modal_form_a
     \Drupal::messenger()->addError(t('The <a href=":url">jsTree library</a> should be installed at <strong>/libraries/jstree/dist/jstree.min.js</strong>, or any path supported by libraries.module if installed.', [':url' => 'https://github.com/vakata/jstree']));
   }
 
-  if(!_media_directories_ui_vocabulary_set()) {
+  if (!_media_directories_ui_vocabulary_set()) {
     $settings_url = Url::fromRoute('media_directories.config_form');
     \Drupal::messenger()->addError(t('Vocabulary is not selected. Please select it in the <a href=":url">settings</a>.', [':url' => $settings_url->toString()]));
   }
@@ -342,7 +342,6 @@ function media_directories_ui_menu_links_discovered_alter(&$links) {
  * Implements hook_form_FORM_ID_alter().
  *
  * Adding settings to the media_directories config form here.
- *
  */
 function media_directories_ui_form_media_directories_config_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   $config = \Drupal::config('media_directories_ui.settings');
@@ -383,12 +382,12 @@ function media_directories_ui_form_media_directories_config_form_alter(&$form, F
     $form['media_directories_ui']['hide_admin_toolbar_links'] = [
       '#type' => 'checkbox',
       '#title' => t('Hide admin_toolbar_tools links'),
-      '#description' => t('If checked, the <em>Add Media</em> menu links of admin_toolbar_tools will be hidden and also it\'s <em>Media</em> and <em>Files</em> links depending on the tab settings.'),
+      '#description' => t("If checked, the <em>Add Media</em> menu links of admin_toolbar_tools will be hidden and also it's <em>Media</em> and <em>Files</em> links depending on the tab settings."),
       '#default_value' => $config->get('hide_admin_toolbar_links'),
     ];
   }
 
-  /** @var  $media_types \Drupal\media\MediaTypeInterface[] */
+  /** @var  \Drupal\media\MediaTypeInterface[] $media_types */
   $media_types = \Drupal::entityTypeManager()
     ->getStorage('media_type')
     ->loadMultiple();
@@ -432,21 +431,40 @@ function media_directories_ui_form_media_directories_config_form_alter(&$form, F
 /**
  * Submit handler for saving Media Directories UI configuration.
  *
- * @param $form
+ * @param array $form
+ *   The form.
  * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state.
  */
-function media_directories_ui_config_form_submit(&$form, FormStateInterface $form_state) {
+function media_directories_ui_config_form_submit(array &$form, FormStateInterface $form_state) {
   \Drupal::configFactory()->getEditable('media_directories_ui.settings')
-    ->set('hide_media_library_media_tab', $form_state->getValue(['media_directories_ui', 'hide_media_library_media_tab']))
-    ->set('hide_media_library_files_tab', $form_state->getValue(['media_directories_ui', 'hide_media_library_files_tab']))
-    ->set('hide_admin_toolbar_links', $form_state->getValue(['media_directories_ui', 'hide_admin_toolbar_links']))
-    ->set('enable_combined_upload', $form_state->getValue(['media_directories_ui', 'combined_upload', 'enable_combined_upload']))
-    ->set('combined_upload_media_types', $form_state->getValue(['media_directories_ui', 'combined_upload', 'combined_upload_media_types']))
+    ->set('hide_media_library_media_tab', $form_state->getValue([
+      'media_directories_ui',
+      'hide_media_library_media_tab',
+    ]))
+    ->set('hide_media_library_files_tab', $form_state->getValue([
+      'media_directories_ui',
+      'hide_media_library_files_tab',
+    ]))
+    ->set('hide_admin_toolbar_links', $form_state->getValue([
+      'media_directories_ui',
+      'hide_admin_toolbar_links',
+    ]))
+    ->set('enable_combined_upload', $form_state->getValue([
+      'media_directories_ui',
+      'combined_upload',
+      'enable_combined_upload',
+    ]))
+    ->set('combined_upload_media_types', $form_state->getValue([
+      'media_directories_ui',
+      'combined_upload',
+      'combined_upload_media_types',
+    ]))
     ->save();
 }
 
 /**
- *  Helper function to see if a library file exists.
+ * Helper function to see if a library file exists.
  */
 function _media_directories_ui_library_file_exists($library_name) {
   if (function_exists('libraries_get_path') && libraries_get_path($library_name)) {
@@ -466,7 +484,7 @@ function _media_directories_ui_library_file_exists($library_name) {
 }
 
 /**
- *  Helper function to see if vocabulary is setup.
+ * Helper function to see if vocabulary is setup.
  */
 function _media_directories_ui_vocabulary_set() {
   $vid = \Drupal::config('media_directories.settings')->get('directory_taxonomy');

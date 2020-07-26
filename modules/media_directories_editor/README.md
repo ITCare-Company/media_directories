@@ -10,4 +10,5 @@ This module uses contrib modules to provide required functionality:
 ## Installation
 - Enable module
 - Drag button 'Media' to CKEditor toolbar.
-- If Image Resize Filter module installed, enable filters "Display embedded entities" and "Image Resize Filter: Resize images based on their given height and width attributes"
+- If Image Resize Filter module installed, enable filters "Display embedded entities" and
+  "Image Resize Filter: Resize images based on their given height and width attributes"

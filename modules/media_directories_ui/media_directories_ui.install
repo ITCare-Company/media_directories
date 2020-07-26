@@ -8,7 +8,6 @@
 use Drupal\language\ConfigurableLanguageManagerInterface;
 use Drupal\views\Entity\View;
 
-
 /**
  * Implements hook_uninstall().
  */
@@ -117,14 +116,14 @@ function media_directories_ui_update_8002() {
 function media_directories_ui_update_8003() {
 
   // Rename the view (config entity) and replace its id.
-  // $view->createDuplicate()>set('id',  would also be an option
+  // $view->createDuplicate()>set('id',  would also be an option.
   $config_factory = \Drupal::configFactory();
   $config_factory->rename('views.view.media_directory_browser', 'views.view.media_directories_base');
   $config = $config_factory->getEditable('views.view.media_directories_base');
   $config->set('id', 'media_directories_base');
   $config->save();
 
-  // Rename aund update the entity browsers
+  // Rename aund update the entity browsers.
   $config_factory->rename('entity_browser.browser.directory_browser', 'entity_browser.browser.media_directories_overview');
   $config = $config_factory->getEditable('entity_browser.browser.media_directories_overview');
   $config->set('name', 'media_directories_overview');
@@ -169,7 +168,7 @@ function media_directories_ui_update_8004() {
 
   $language_manager = \Drupal::languageManager();
   if ($language_manager instanceof ConfigurableLanguageManagerInterface) {
-    foreach ($language_manager ->getLanguages() as $language) {
+    foreach ($language_manager->getLanguages() as $language) {
       $config_translation = $language_manager->getLanguageConfigOverride($language->getId(), 'entity_browser.browser.media_directories_overview');
       $config_translation->set('label', 'Media Directories: Standalone');
       $config_translation->save();

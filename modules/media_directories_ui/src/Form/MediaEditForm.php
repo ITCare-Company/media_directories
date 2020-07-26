@@ -1,4 +1,5 @@
 <?php
+
 namespace Drupal\media_directories_ui\Form;
 
 use Drupal\Core\Ajax\AjaxResponse;
@@ -10,9 +11,8 @@ use Drupal\media\MediaInterface;
 use Drupal\media\MediaTypeInterface;
 use Drupal\media_directories_ui\Ajax\LoadDirectoryContent;
 
-
 /**
- * Class MediaEditForm
+ * Class MediaEditForm.
  *
  * Uses code and logic from core. We could try to integrate core directly,
  * but it might be too unstable in this stage.
@@ -21,7 +21,12 @@ use Drupal\media_directories_ui\Ajax\LoadDirectoryContent;
  */
 class MediaEditForm extends AddMediaFormBase {
 
-  var $media;
+  /**
+   * Temporary store of the media entity.
+   *
+   * @var \Drupal\media\MediaInterface
+   */
+  public $media;
 
   /**
    * {@inheritdoc}
@@ -47,8 +52,8 @@ class MediaEditForm extends AddMediaFormBase {
   protected function getTargetBundles(FormStateInterface $form_state) {
     $medias = $form_state->get('media');
     if (is_array($medias)) {
-      $bundles =  [];
-      foreach($medias as $media) {
+      $bundles = [];
+      foreach ($medias as $media) {
         $bundles[] = $media->bundle();
       }
       return $bundles;
@@ -67,6 +72,7 @@ class MediaEditForm extends AddMediaFormBase {
    *
    * @return array
    *   The form structure.
+   *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
@@ -103,15 +109,16 @@ class MediaEditForm extends AddMediaFormBase {
    *
    * @return array
    *   The element containing the required fields sub-form.
+   *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   protected function buildEntityFormElement(MediaInterface $media, array $form, FormStateInterface $form_state, $delta) {
     // Set the media object to be used in overwritten methods.
     $this->media = $media;
 
     $element = parent::buildEntityFormElement($media, $form, $form_state, $delta);
-
 
     // Make the language field un-editable.
     if (isset($element['fields']['langcode'])) {
@@ -130,11 +137,11 @@ class MediaEditForm extends AddMediaFormBase {
     // We show the left sided preview and provide a link to the full media edit page.
     if (!empty($element['preview'])) {
       $element['preview']['#access'] = TRUE;
-      $link = new Link($this->t('Edit in new tab') , $media->toUrl('edit-form'));
+      $link = new Link($this->t('Edit in new tab'), $media->toUrl('edit-form'));
       $element['preview']['edit_link'] = $link->toRenderable();
       $element['preview']['edit_link']['#attributes']['class'][] = 'edit-link';
       $element['preview']['edit_link']['#attributes']['target'] = '_blank';
-     }
+    }
 
     // Remove original button added by ManagedFile::processManagedFile().
     if (!empty($element['remove_button'])) {
@@ -158,7 +165,6 @@ class MediaEditForm extends AddMediaFormBase {
       ->getSourceFieldDefinition($media_type)
       ->getName();
   }
-
 
   /**
    * Returns an array of supported actions for the form.
@@ -195,15 +201,16 @@ class MediaEditForm extends AddMediaFormBase {
    *   The current state of the form.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
+   *   An AJAX response.
    */
-  public function saveMedia(array &$form, FormStateInterface $form_state) {
+  public static function saveMedia(array &$form, FormStateInterface $form_state) {
     $response = new AjaxResponse();
     $added_media = $form_state->get('media');
 
     foreach ($added_media as $delta => $media) {
       EntityFormDisplay::collectRenderDisplay($media, 'media_library')
         ->extractFormValues($media, $form['media'][$delta]['fields'], $form_state);
-      //$this->prepareMediaEntityForSave($media);
+      // $this->prepareMediaEntityForSave($media);
       $media->save();
     }
 
@@ -224,4 +231,5 @@ class MediaEditForm extends AddMediaFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // Nothing to do here.
   }
+
 }

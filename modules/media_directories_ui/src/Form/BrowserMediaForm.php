@@ -1,4 +1,5 @@
 <?php
+
 namespace Drupal\media_directories_ui\Form;
 
 use Drupal\Core\Ajax\AjaxResponse;
@@ -9,7 +10,7 @@ use Drupal\media\MediaForm;
 use Drupal\media_directories_ui\Ajax\LoadDirectoryContent;
 
 /**
- * Class BrowserMediaForm
+ * Class BrowserMediaForm.
  *
  * @package Drupal\media_directories_ui\Form
  */
@@ -33,8 +34,8 @@ class BrowserMediaForm extends MediaForm {
       $form['#theme_wrappers'] = [
         'form',
         'container' => [
-          '#attributes' => ['id' => 'media-edit-form']
-        ]
+          '#attributes' => ['id' => 'media-edit-form'],
+        ],
       ];
 
       // Hide revision info, we probably don't need it.
@@ -58,18 +59,21 @@ class BrowserMediaForm extends MediaForm {
       'event' => 'click',
     ];
 
-    return  $actions;
+    return $actions;
   }
 
   /**
    * Ajax submit callback.
    *
-   * @param $form
+   * @param array $form
+   *   The form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
+   *   An AJAX response.
    */
-  public function ajaxSubmit($form, FormStateInterface $form_state) {
+  public function ajaxSubmit(array $form, FormStateInterface $form_state) {
     $response = new AjaxResponse();
     $storage = $form_state->getStorage();
 

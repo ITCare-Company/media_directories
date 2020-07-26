@@ -5,7 +5,7 @@
  * Installation and update impementations.
  */
 
- use Drupal\views\Entity\View;
+use Drupal\views\Entity\View;
 
 /**
  * Implements hook_install().
