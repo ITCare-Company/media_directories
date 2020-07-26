@@ -2,7 +2,6 @@
 
 namespace Drupal\media_directories_ui\Form;
 
-use Drupal\Component\Utility\Environment;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -12,7 +11,8 @@ use Drupal\Core\Render\ElementInfoManagerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Theme\ThemeManagerInterface;
 use Drupal\Core\Utility\Token;
-use Drupal\file\FileInterface;
+use Drupal\media\Entity\MediaType;
+use Drupal\media_directories_ui\MediaDirectoriesUiHelper;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -26,6 +26,13 @@ class MediaCombinedUploadForm extends FileUploadForm {
    * @var \Drupal\Core\File\FileSystemInterface
    */
   protected $fileSystem;
+
+  /**
+   * The file system service.
+   *
+   * @var \Drupal\media_directories_ui\MediaDirectoriesUiHelper
+   */
+  protected $mediaDirectoriesUiHelper;
 
   /**
    * AddMediaFormBase constructor.
@@ -42,10 +49,13 @@ class MediaCombinedUploadForm extends FileUploadForm {
    *   The element info service.
    * @param \Drupal\Core\File\FileSystemInterface $file_system
    *   The file system.
+   * @param \Drupal\media_directories_ui\MediaDirectoriesUiHelper $media_directories_ui_helper
+   *   The media directories ui helper.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, Token $token, ThemeManagerInterface $theme_manager, ElementInfoManagerInterface $element_info, FileSystemInterface $file_system) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, Token $token, ThemeManagerInterface $theme_manager, ElementInfoManagerInterface $element_info, FileSystemInterface $file_system, MediaDirectoriesUiHelper $media_directories_ui_helper) {
     parent::__construct($entity_type_manager, $current_user, $token, $theme_manager, $element_info);
     $this->fileSystem = $file_system;
+    $this->mediaDirectoriesUiHelper = $media_directories_ui_helper;
   }
 
   /**
@@ -58,7 +68,8 @@ class MediaCombinedUploadForm extends FileUploadForm {
       $container->get('token'),
       $container->get('theme.manager'),
       $container->get('element_info'),
-      $container->get('file_system')
+      $container->get('file_system'),
+      $container->get('media_directories_ui.helper')
     );
   }
 
@@ -74,18 +85,20 @@ class MediaCombinedUploadForm extends FileUploadForm {
    */
   public function buildInputElement(array $form, FormStateInterface $form_state) {
     $target_types = $this->getTargetBundles($form_state);
-    $max_filesize = Environment::getUploadMaxSize();
+    $validators_by_media_type = [];
+    foreach ($target_types as $type) {
+      $validators_by_media_type[$type] = $this->getUploadValidators(MediaType::load($type));
+    }
 
     $form['container']['upload'] = [
       '#type' => 'managed_file',
       '#title' => $this->t('Select files'),
-      '#description' => $this->t('Allowed file extensions: @extensions', ['@extensions' => $this->getValidExtensions($target_types)]),
+      '#description' => $this->t('Allowed file extensions: @extensions', ['@extensions' => $this->mediaDirectoriesUiHelper->getValidExtensions($target_types)]),
       '#multiple' => TRUE,
       // Upload to temporary folder. Needs to be moved into correct folder after saving.
       '#upload_location' => 'temporary://',
       '#upload_validators' => [
-        'file_validate_extensions' => [$this->getValidExtensions($target_types)],
-        'file_validate_size' => [$max_filesize],
+        'media_directories_ui_file_validator' => [$validators_by_media_type],
       ],
       '#process' => [
         ['Drupal\file\Element\ManagedFile', 'processManagedFile'],
@@ -113,7 +126,7 @@ class MediaCombinedUploadForm extends FileUploadForm {
     $media = [];
 
     foreach ($source_field_values as $source_field_value) {
-      $media_type = $this->getMediaType($form_state, $source_field_value);
+      $media_type = $this->mediaDirectoriesUiHelper->getMediaType($source_field_value);
       $media_storage = $this->entityTypeManager->getStorage('media');
       $source_field_name = $this->getSourceFieldName($media_type);
 
@@ -129,83 +142,6 @@ class MediaCombinedUploadForm extends FileUploadForm {
     // Re-key the media items before setting them in the form state.
     $form_state->set('media', array_values($media));
     $form_state->setRebuild();
-  }
-
-  /**
-   * Returns media type for specific file by mime type.
-   *
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state.
-   * @param \Drupal\file\FileInterface $file
-   *   The file.
-   *
-   * @return mixed
-   *   The media type or NULL.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   */
-  protected function getMediaType(FormStateInterface $form_state, FileInterface $file = NULL) {
-    if ($file === NULL) {
-      return NULL;
-    }
-
-    /** @var \Drupal\media\Entity\MediaType[] $types */
-    $types = $this->entityTypeManager->getStorage('media_type')->loadMultiple();
-
-    $extension = pathinfo($file->getFileUri(), PATHINFO_EXTENSION);
-    $target_types = $this->getTargetBundles($form_state);
-
-    foreach ($types as $type) {
-
-      if (!in_array($type->id(), $target_types, TRUE)) {
-        continue;
-      }
-
-      $source_field = $type->getSource()->getConfiguration()['source_field'];
-      $field_config = $this->entityTypeManager->getStorage('field_config')->load('media.' . $type->id() . '.' . $source_field);
-
-      if (in_array($extension, explode(' ', $field_config->getSetting('file_extensions')))) {
-        return $type;
-      }
-    }
-
-    return NULL;
-  }
-
-  /**
-   * Collect all supported extensions.
-   *
-   * @param array $target_types
-   *   The media bundles.
-   *
-   * @return string
-   *   All valid file extensions for the specified media bundles separated by a space.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   */
-  protected function getValidExtensions(array $target_types) {
-    $valid_extensions = [];
-    $ui_config = $this->config('media_directories_ui.settings');
-    $combined_media_types = $ui_config->get('combined_upload_media_types');
-    /** @var \Drupal\media\Entity\MediaType[] $types */
-    $types = $this->entityTypeManager->getStorage('media_type')->loadMultiple();
-
-    foreach ($types as $type) {
-
-      if (!in_array($type->id(), $target_types, TRUE) || !in_array($type->id(), $combined_media_types, TRUE)) {
-        continue;
-      }
-
-      $source_field = $type->getSource()->getConfiguration()['source_field'];
-      $field_config = $this->entityTypeManager->getStorage('field_config')->load('media.' . $type->id() . '.' . $source_field);
-      $valid_extensions = array_merge($valid_extensions, explode(' ', $field_config->getSetting('file_extensions')));
-    }
-
-    $valid_extensions = array_unique($valid_extensions);
-
-    return implode(' ', $valid_extensions);
   }
 
   /**

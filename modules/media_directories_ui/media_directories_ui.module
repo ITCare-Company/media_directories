@@ -13,6 +13,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Url;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\file\FileInterface;
 use Drupal\media_directories_ui\Form\FileUploadForm;
 use Drupal\media_directories_ui\Form\MediaCombinedUploadForm;
 use Drupal\media_directories_ui\Form\OEmbedForm;
@@ -339,6 +340,35 @@ function media_directories_ui_menu_links_discovered_alter(&$links) {
 }
 
 /**
+ * Wrapper validator callback to do the actual file validations.
+ *
+ * @param \Drupal\file\FileInterface $file
+ *   A file entity.
+ * @param array $validators_by_media_type
+ *   All validators per media type.
+ *
+ * @return array
+ *   An empty array if the file is accepted or error message(s) if it's not.
+ *
+ * @see hook_file_validate()
+ */
+function media_directories_ui_file_validator(FileInterface $file, array $validators_by_media_type) {
+  $errors = [];
+
+  $ui_helper = \Drupal::service('media_directories_ui.helper');
+  /** @var \Drupal\media\Entity\MediaType $media_type */
+  $media_type = $ui_helper->getMediaType($file);
+  if ($media_type != NULL) {
+    $errors = file_validate($file, $validators_by_media_type[$media_type->getEntityTypeId()]);
+  }
+  else {
+    $errors[] = t('Only files with the following extensions are allowed: %files-allowed.', ['%files-allowed' => $ui_helper->getValidExtensions()]);
+  }
+
+  return $errors;
+}
+
+/**
  * Implements hook_form_FORM_ID_alter().
  *
  * Adding settings to the media_directories config form here.
@@ -405,7 +435,7 @@ function media_directories_ui_form_media_directories_config_form_alter(&$form, F
   $form['media_directories_ui']['combined_upload'] = [
     '#type' => 'details',
     '#title' => t('Combined upload'),
-    '#description' => t('Allows uploading files through one upload field.'),
+    '#description' => t("Allows uploading files through one upload field. A media type is identified by it's file extension(s)!"),
     '#collapsible' => TRUE,
     '#open' => $combined_upload_enabled,
   ];

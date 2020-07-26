@@ -9,7 +9,6 @@ use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Theme\ThemeManagerInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Render\ElementInfoManagerInterface;
-use Drupal\Component\Utility\Environment;
 use Drupal\Core\Utility\Token;
 use Drupal\media\MediaInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -62,21 +61,17 @@ class FileUploadForm extends AddMediaFormBase {
    * {@inheritDoc}
    */
   protected function buildInputElement(array $form, FormStateInterface $form_state) {
-    $max_filesize = Environment::getUploadMaxSize();
     $media_type = $this->getMediaType($form_state);
-
-    $process = (array) $this->elementInfo->getInfoProperty('managed_file', '#process', []);
-
     $source_field = $media_type->getSource()->getConfiguration()['source_field'];
     $field_config = $this->entityTypeManager->getStorage('field_config')->load('media.' . $media_type->id() . '.' . $source_field);
+
+    $process = (array) $this->elementInfo->getInfoProperty('managed_file', '#process', []);
 
     $form['container']['upload'] = [
       '#type' => 'managed_file',
       '#title' => $field_config->label(),
       '#description' => $this->t('Allowed file extensions: @extensions', ['@extensions' => $field_config->getSetting('file_extensions')]),
-      '#upload_validators' => [
-        'file_validate_extensions' => [$field_config->getSetting('file_extensions')],
-      ],
+      '#upload_validators' => $this->getUploadValidators($media_type),
       '#multiple' => TRUE,
       '#upload_location' => $this->getUploadLocation($field_config->getSettings()),
       '#process' => array_merge(['::validateUploadElement'], $process, ['::processUploadElement']),

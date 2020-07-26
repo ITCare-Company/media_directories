@@ -3,6 +3,7 @@
 namespace Drupal\media_directories_ui\Form;
 
 use Drupal\Component\Render\PlainTextOutput;
+use Drupal\Component\Utility\Environment;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\CloseModalDialogCommand;
 use Drupal\Core\Ajax\OpenModalDialogCommand;
@@ -10,11 +11,13 @@ use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Field\TypedData\FieldItemDataDefinition;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Utility\Token;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Theme\ThemeManagerInterface;
+use Drupal\file\Plugin\Field\FieldType\FileItem;
 use Drupal\media\MediaInterface;
 use Drupal\media\MediaTypeInterface;
 use Drupal\media_directories_ui\Ajax\RefreshDirectoryTree;
@@ -182,6 +185,38 @@ abstract class AddMediaFormBase extends FormBase {
     // text.
     $destination = PlainTextOutput::renderFromHtml($this->token->replace($destination, []));
     return $settings['uri_scheme'] . '://' . $destination;
+  }
+
+  /**
+   * Returns the upload validators for a field.
+   *
+   * @param \Drupal\media\MediaTypeInterface $media_type
+   *   The array of field settings.
+   *
+   * @return array
+   *   The file fields upload validators argument.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  protected function getUploadValidators(MediaTypeInterface $media_type) {
+    $upload_validators = $this->createFileItem($media_type)->getUploadValidators();
+    $source_field = $media_type->getSource()->getConfiguration()['source_field'];
+    $field_config = $this->entityTypeManager->getStorage('field_config')->load('media.' . $media_type->id() . '.' . $source_field);
+    if ($field_config->getSetting('max_resolution') || $field_config->getSetting('min_resolution')) {
+      $upload_validators['file_validate_is_image'] = [];
+      $upload_validators['file_validate_image_resolution'] = [
+        $field_config->getSetting('max_resolution'),
+        $field_config->getSetting('min_resolution'),
+      ];
+    }
+
+    if (!isset($upload_validators['file_validate_size'])) {
+      $max_filesize = Environment::getUploadMaxSize();
+      $upload_validators['file_validate_size'] = [$max_filesize];
+    }
+
+    return $upload_validators;
   }
 
   /**
@@ -543,6 +578,21 @@ abstract class AddMediaFormBase extends FormBase {
     return $media_type->getSource()
       ->getSourceFieldDefinition($media_type)
       ->getName();
+  }
+
+  /**
+   * Create a file field item.
+   *
+   * @param \Drupal\media\MediaTypeInterface $media_type
+   *   The media type of the media item.
+   *
+   * @return \Drupal\file\Plugin\Field\FieldType\FileItem
+   *   A created file item.
+   */
+  protected function createFileItem(MediaTypeInterface $media_type) {
+    $field_definition = $media_type->getSource()->getSourceFieldDefinition($media_type);
+    $data_definition = FieldItemDataDefinition::create($field_definition);
+    return new FileItem($data_definition);
   }
 
   /**
