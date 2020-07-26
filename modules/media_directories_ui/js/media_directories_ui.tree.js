@@ -17,6 +17,15 @@
           ellipsis: true
         }
       },
+      sort: function (a, b) {
+        var weight_a = this.get_node(a).original.weight;
+        var weight_b = this.get_node(b).original.weight;
+        if (weight_a !== weight_b) {
+          return this.get_node(a).original.weight > this.get_node(b).original.weight ? 1 : -1;
+        } else {
+          return this.get_text(a) > this.get_text(b) ? 1 : -1;
+        }
+      },
       dnd: {
         copy: false,
         is_draggable: function is_draggable(nodes) {
