@@ -5,6 +5,7 @@ namespace Drupal\media_directories_ui\Form;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Security\TrustedCallbackInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Theme\ThemeManagerInterface;
 use Drupal\Core\Url;
@@ -16,7 +17,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * A form to upload files.
  */
-class FileUploadForm extends AddMediaFormBase {
+class FileUploadForm extends AddMediaFormBase implements TrustedCallbackInterface {
 
   /**
    * The element info discovery service.
@@ -24,6 +25,13 @@ class FileUploadForm extends AddMediaFormBase {
    * @var \Drupal\Core\Render\ElementInfoManagerInterface
    */
   protected $elementInfo;
+
+  /**
+   * {@inheritDoc}
+   */
+  public static function trustedCallbacks() {
+    return ['preRenderUploadElement'];
+  }
 
   /**
    * AddMediaFormBase constructor.
@@ -66,6 +74,7 @@ class FileUploadForm extends AddMediaFormBase {
     $field_config = $this->entityTypeManager->getStorage('field_config')->load('media.' . $media_type->id() . '.' . $source_field);
 
     $process = (array) $this->elementInfo->getInfoProperty('managed_file', '#process', []);
+    $pre_render = (array) $this->elementInfo->getInfoProperty('managed_file', '#pre_render', []);
 
     $form['container']['upload'] = [
       '#type' => 'managed_file',
@@ -75,6 +84,7 @@ class FileUploadForm extends AddMediaFormBase {
       '#multiple' => TRUE,
       '#upload_location' => $this->getUploadLocation($field_config->getSettings()),
       '#process' => array_merge(['::validateUploadElement'], $process, ['::processUploadElement']),
+      '#pre_render' => array_merge($pre_render, [[static::class, 'preRenderUploadElement']]),
     ];
 
     return $form;
@@ -149,6 +159,47 @@ class FileUploadForm extends AddMediaFormBase {
         ],
       ],
     ];
+
+    // If a remove button is present, also allow to submit the from using a new button,
+    // as the upload_button will be hidden with .hide-js by core.
+    if (isset($element['remove_button'])) {
+      $element['proceed_button'] = [
+        '#type' => 'submit',
+        '#value' => $this->t('Proceed with all files from the list'),
+      ];
+      if (isset($element['upload_button']['#validate'])) {
+        $element['proceed_button']['#validate'] = $element['upload_button']['#validate'];
+      }
+      if (isset($element['upload_button']['#submit'])) {
+        $element['proceed_button']['#submit'] = $element['upload_button']['#submit'];
+      }
+      if (isset($element['upload_button']['#limit_validation_errors'])) {
+        $element['proceed_button']['#limit_validation_errors'] = $element['upload_button']['#limit_validation_errors'];
+      }
+      if (isset($element['upload_button']['#ajax'])) {
+        $element['proceed_button']['#ajax'] = $element['upload_button']['#ajax'];
+      }
+      if (isset($element['upload_button']['#weight'])) {
+        $element['proceed_button']['#weight'] = $element['upload_button']['#weight'];
+      }
+    }
+
+    return $element;
+  }
+
+  /**
+   * Render API callback: Hides display of the proceed control.
+   *
+   * @see \Drupal\file\Element\ManagedFile::preRenderManagedFile()
+   */
+  public static function preRenderUploadElement($element) {
+    if (isset($element['proceed_button'])) {
+      // Make sure to be hidden, when the the remove button is hidden.
+      if (isset($element['remove_button']['#access'])) {
+        $element['proceed_button']['#access'] = $element['remove_button']['#access'];
+      }
+    }
+
     return $element;
   }
 

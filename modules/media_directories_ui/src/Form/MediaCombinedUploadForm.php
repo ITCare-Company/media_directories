@@ -90,6 +90,8 @@ class MediaCombinedUploadForm extends FileUploadForm {
       $validators_by_media_type[$type] = $this->getUploadValidators(MediaType::load($type));
     }
 
+    $pre_render = (array) $this->elementInfo->getInfoProperty('managed_file', '#pre_render', []);
+
     $form['container']['upload'] = [
       '#type' => 'managed_file',
       '#title' => $this->t('Select files'),
@@ -104,6 +106,7 @@ class MediaCombinedUploadForm extends FileUploadForm {
         ['Drupal\file\Element\ManagedFile', 'processManagedFile'],
         '::processUploadElement',
       ],
+      '#pre_render' => array_merge($pre_render, [[static::class, 'preRenderUploadElement']]),
     ];
 
     return $form;
