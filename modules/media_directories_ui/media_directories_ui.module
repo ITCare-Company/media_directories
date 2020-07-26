@@ -450,7 +450,7 @@ function media_directories_ui_form_media_directories_config_form_alter(&$form, F
   $form['media_directories_ui']['combined_upload']['combined_upload_media_types'] = [
     '#type' => 'checkboxes',
     '#title' => t('Enabled Media types'),
-    '#description' => t('Select media types to use in combined upload. This will work only for media types that have upload field.'),
+    '#description' => t('Select media types to use in combined upload (you need to select at least one). This will work only for media types that have upload field.'),
     '#options' => $options,
     '#default_value' => ($config->get('combined_upload_media_types') != NULL ? $config->get('combined_upload_media_types') : []),
   ];
@@ -479,7 +479,7 @@ function media_directories_ui_config_form_submit(array &$form, FormStateInterfac
     ->set('hide_admin_toolbar_links', $form_state->getValue([
       'media_directories_ui',
       'hide_admin_toolbar_links',
-    ]))
+    ], FALSE))
     ->set('enable_combined_upload', $form_state->getValue([
       'media_directories_ui',
       'combined_upload',
