@@ -68,3 +68,40 @@ function media_directories_install() {
     $view_table->save();
   }
 }
+
+/**
+ * Implements hook_uninstall().
+ */
+function media_directories_uninstall() {
+
+  // Remove Media library view configuration.
+  $view = View::load('media_library');
+
+  if ($view !== NULL) {
+    $default_display = &$view->getDisplay('default');
+    $widget_display = &$view->getDisplay('widget');
+    $widget_table_display = &$view->getDisplay('widget_table');
+    if (isset($default_display['display_options']['filters']['directory'])) {
+      unset($default_display['display_options']['filters']['directory']);
+    }
+    if (isset($widget_display['display_options']['filters']['directory'])) {
+      unset($widget_display['display_options']['filters']['directory']);
+    }
+    if (isset($widget_table_display['display_options']['filters']['directory'])) {
+      unset($widget_table_display['display_options']['filters']['directory']);
+    }
+    $view->save();
+
+    unset($default_display);
+  }
+
+  // Remove default Media view configuration.
+  $view_table = View::load('media');
+  if ($view_table !== NULL) {
+    $default_display = &$view_table->getDisplay('default');
+    if (isset($default_display['display_options']['filters']['directory'])) {
+      unset($default_display['display_options']['filters']['directory']);
+    }
+    $view_table->save();
+  }
+}
