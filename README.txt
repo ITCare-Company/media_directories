@@ -5,7 +5,7 @@ special filters will be added to existing Media pages.
 
 REQUIREMENTS
 ======================
-Drupal core 8.7
+Drupal core 8.8.3+
 Media (core)
 Media library (core)
 

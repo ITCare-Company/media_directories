@@ -5,7 +5,7 @@ Alternative UI for Media Directories module, providing classical file browsing i
 
 REQUIREMENTS
 ============
-- Drupal Core 8.7+
+- Drupal Core 8.8.3+
 - Entity browser
 - jsTree library
   o Download jsTree from https://github.com/vakata/jstree

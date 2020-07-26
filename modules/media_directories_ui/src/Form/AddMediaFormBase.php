@@ -233,11 +233,9 @@ abstract class AddMediaFormBase extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form['#prefix'] = '<div id="media-library-add-form-wrapper" class="media-library-add-form-wrapper">';
     $form['#suffix'] = '</div>';
-    // For 8.7.
-    $form['#attached']['library'][] = 'media_library/style';
-    // For 8.8, style moved to themes. It should work with 8.7.
+
     $theme_name = $this->themeManager->getActiveTheme()->getName();
-    if ($theme_name == 'claro') {
+    if (in_array($theme_name, ['claro', 'gin'])) {
       $form['#attached']['library'][] = 'claro/media_library.theme';
     }
     else {
