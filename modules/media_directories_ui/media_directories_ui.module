@@ -179,6 +179,8 @@ function media_directories_ui_preprocess_media_directories_add(&$variables) {
           'media_type' => 'combined_upload',
           'active_directory' => $variables['active_directory'],
           'target_bundles' => $variables['target_bundles'],
+          'cardinality' => $variables['cardinality'],
+          'selection_mode' => $variables['selection_mode'],
         ],
       ]),
       'attributes' => ['class' => ['use-ajax', 'media-library-menu__link']],
