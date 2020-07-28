@@ -724,15 +724,10 @@ abstract class AddMediaFormBase extends FormBase {
       return $form;
     }
 
-    /*    $media_ids = array_map(function (MediaInterface $media) {
-    return $media->id();
-    }, $this->getAddedMediaItems($form_state));*/
-
     $form_state->setStorage([]);
     $form_state->setRebuild();
 
     $response = new AjaxResponse();
-    // $response->addCommand(new UpdateSelectionCommand($media_ids));
     $response->addCommand(new CloseModalDialogCommand());
     $response->addCommand(new RefreshDirectoryTree($form_state->getValue('most_choosen_directory_tid'), $form_state->getValue('newly_added_media_ids')));
 

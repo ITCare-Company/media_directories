@@ -26,10 +26,6 @@ function media_directories_ui_theme($existing, $type, $theme, $path) {
     'media_directories_browser' => [
       'render element' => 'browser',
     ],
-    'dropzonejs__media_upload' => [
-      'base hook' => 'dropzonejs',
-      'template' => 'dropzonejs--media-upload',
-    ],
     'media_directories_add' => [
       'variables' => [
         'selected_type' => NULL,
