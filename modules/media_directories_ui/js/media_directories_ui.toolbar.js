@@ -75,6 +75,7 @@
                     submit: {
                       active_directory: Drupal.MediaBrowser.active_directory,
                       target_bundles: Drupal.MediaBrowser.targetBundles,
+                      cardinality: drupalSettings.media_directories.cardinality,
                       selection_mode: drupalSettings.media_directories.selection_mode
                     }
                   };
@@ -97,6 +98,7 @@
             submit: {
               active_directory: Drupal.MediaBrowser.active_directory,
               target_bundles: Drupal.MediaBrowser.targetBundles,
+              cardinality: drupalSettings.media_directories.cardinality,
               selection_mode: drupalSettings.media_directories.selection_mode
             }
           };

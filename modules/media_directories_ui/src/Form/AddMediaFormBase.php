@@ -169,6 +169,24 @@ abstract class AddMediaFormBase extends FormBase {
   }
 
   /**
+   * Get the current cardinality from the form state.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   *
+   * @return int
+   *   The current cardinality, or -1 for unlimited.
+   */
+  protected function getCardinality(FormStateInterface $form_state) {
+    $cardinality = intval($form_state->get('cardinality'));
+
+    if ($cardinality == 0) {
+      return -1;
+    }
+    return $cardinality;
+  }
+
+  /**
    * Determines the URI for a file field.
    *
    * @param array $settings
@@ -288,6 +306,11 @@ abstract class AddMediaFormBase extends FormBase {
       '#value' => $this->getSelectionMode($form_state),
     ];
 
+    $form['cardinality'] = [
+      '#type' => 'hidden',
+      '#value' => $this->getCardinality($form_state),
+    ];
+
     if (empty($added_media)) {
       $form['#attributes']['class'][] = 'media-library-add-form--without-input';
       $form = $this->buildInputElement($form, $form_state);
@@ -384,13 +407,24 @@ abstract class AddMediaFormBase extends FormBase {
       }
     }
 
+    $cardinality = $this->getCardinality($form_state);
+
     if ($form_state->get('selection_mode') != 'keep') {
-      if (count($tmp_tid_mids[$tid_holding_most_mids]) < count($all_mids)) {
+      $newly_added_media_ids = $tmp_tid_mids[$tid_holding_most_mids];
+      if (count($newly_added_media_ids) < count($all_mids)) {
         $this->messenger()->addStatus($this->t('You uploaded medias to different folders. Only medias in the current folder (having the most uploaded media count) are selected.'));
       }
-      $form_state->setValue('newly_added_media_ids', $tmp_tid_mids[$tid_holding_most_mids]);
+      if ($cardinality > -1 && $cardinality < count($newly_added_media_ids)) {
+        $newly_added_media_ids = array_slice($newly_added_media_ids, 0, $cardinality);
+        $this->messenger()->addStatus($this->formatPlural(count($cardinality), 'As this field only accepts one media, only the first one uploaded is selected.', 'You uploaded more medias then allowed for the field, only the first @count are selected.'));
+      }
+      $form_state->setValue('newly_added_media_ids', $newly_added_media_ids);
     }
     else {
+      if ($cardinality > -1 && $cardinality < count($all_mids)) {
+        $newly_added_media_ids = array_slice($all_mids, 0, $cardinality);
+        $this->messenger()->addStatus($this->formatPlural(count($cardinality), 'As this field only accepts one media, only the first one uploaded is selected.', 'You uploaded more medias then allowed for the field, only the first @count are selected.'));
+      }
       $form_state->setValue('newly_added_media_ids', $all_mids);
     }
 

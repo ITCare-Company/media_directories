@@ -154,6 +154,7 @@ class FileUploadForm extends AddMediaFormBase implements TrustedCallbackInterfac
           'media_type' => is_object($media_type) ? $media_type->id() : $media_type,
           'target_bundles' => $this->getTargetBundles($form_state),
           'active_directory' => $this->getDirectory($form_state),
+          'cardinality' => $this->getCardinality($form_state),
           'selection_mode' => $this->getSelectionMode($form_state),
           FormBuilderInterface::AJAX_FORM_REQUEST => TRUE,
         ],

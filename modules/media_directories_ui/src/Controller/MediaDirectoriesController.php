@@ -328,6 +328,8 @@ class MediaDirectoriesController extends ControllerBase {
     $combined_media_types = $ui_config->get('combined_upload_media_types');
     $active_directory = (int) $request->get('active_directory', MEDIA_DIRECTORY_ROOT);
     $target_bundles = $request->get('target_bundles');
+    $selection_mode = $request->get('selection_mode');
+    $cardinality = $request->get('cardinality', -1);
 
     // Find the types combined upload should handle.
     // If types are limited and these are not allowed in combined upload,
@@ -358,12 +360,12 @@ class MediaDirectoriesController extends ControllerBase {
     }
 
     if (count($target_bundles) > 0) {
-      $selection_mode = $request->get('selection_mode');
       $build = [
         '#theme' => 'media_directories_add',
         '#selected_type' => $selected_type,
         '#active_directory' => $active_directory,
         '#target_bundles' => $target_bundles,
+        '#cardinality' => $cardinality,
         '#selection_mode' => $selection_mode,
       ];
 

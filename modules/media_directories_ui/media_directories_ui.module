@@ -31,6 +31,7 @@ function media_directories_ui_theme($existing, $type, $theme, $path) {
         'selected_type' => NULL,
         'active_directory' => NULL,
         'target_bundles' => NULL,
+        'cardinality' => -1,
         'selection_mode' => NULL,
         'media_library_form_rebuild' => FALSE,
       ],
@@ -205,6 +206,7 @@ function media_directories_ui_preprocess_media_directories_add(&$variables) {
           'media_type' => $type->id(),
           'active_directory' => $variables['active_directory'],
           'target_bundles' => $variables['target_bundles'],
+          'cardinality' => $variables['cardinality'],
           'selection_mode' => $variables['selection_mode'],
         ],
       ]),
@@ -219,6 +221,7 @@ function media_directories_ui_preprocess_media_directories_add(&$variables) {
   $form_state = new FormState();
   $form_state->set('active_directory', $variables['active_directory']);
   $form_state->set('target_bundles', $variables['target_bundles']);
+  $form_state->set('cardinality', $variables['cardinality']);
   $form_state->set('selection_mode', $variables['selection_mode']);
 
   if ($variables['media_library_form_rebuild']) {
