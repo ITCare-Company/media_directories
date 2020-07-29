@@ -60,7 +60,7 @@ CONFIGURATION
 
 ### Media directories UI module
  1. Use the entity browser Media Directory: Field widget form widget on your content types media reference fields
- 2. Enable the media form display media_library (/admin/structure/media/manage/image/form-display) and limit the fields to configure a nice quick edit dialog (when using media_directories_ui).
+ 2. Enable the media form display media_library (/admin/structure/media/manage/image/form-display) and limit the fields to configure a nice quick edit dialog.
  3. Optionally enable the combined upload form in the settings: /admin/config/media/media_directories
 
 ### Media directories editor module
