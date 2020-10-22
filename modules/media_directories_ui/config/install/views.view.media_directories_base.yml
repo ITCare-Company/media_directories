@@ -302,19 +302,17 @@ display:
       header: {  }
       footer: {  }
       empty:
-        area:
+        area_text_custom:
           id: area
           table: views
-          field: area
+          field: area_text_custom
           relationship: none
           group_type: group
           admin_label: ''
           empty: true
           tokenize: false
-          content:
-            value: 'Folder is empty'
-            format: full_html
-          plugin_id: text
+          content: 'Folder is empty'
+          plugin_id: text_custom
       relationships: {  }
       arguments:
         directory:
