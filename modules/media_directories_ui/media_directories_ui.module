@@ -234,7 +234,7 @@ function media_directories_ui_preprocess_media_directories_add(&$variables) {
     $form_state->set('media_type', $variables['selected_type']);
     $variables['media_form'] = \Drupal::formBuilder()->buildForm(MediaCombinedUploadForm::class, $form_state);
   }
-  else {
+  elseif (isset($types[$variables['selected_type']])) {
     $type = $types[$variables['selected_type']];
     $source_field = $type->getSource()->getConfiguration()['source_field'];
     $field_config = \Drupal::entityTypeManager()->getStorage('field_config')->load('media.' . $type->id() . '.' . $source_field);
