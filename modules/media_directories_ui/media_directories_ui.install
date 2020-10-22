@@ -13,6 +13,14 @@ use Drupal\views\Entity\View;
  */
 function media_directories_ui_uninstall() {
 
+  // Remove the styles directory and generated images.
+  // Do this first, so that errors will not leave a half-configured module back.
+  $browser_thumbnail_dir_uri = \Drupal::config('system.file')->get('default_scheme') . '://styles/browser_thumbnail';
+  \Drupal::service('file_system')->deleteRecursive($browser_thumbnail_dir_uri);
+  if (\Drupal::service('file_system')->prepareDirectory($browser_thumbnail_dir_uri)) {
+    \Drupal::service('file_system')->rmdir($browser_thumbnail_dir_uri);
+  }
+
   // Remove the view.
   \Drupal::configFactory()->getEditable('views.view.media_directories_base')->delete();
 
@@ -22,13 +30,6 @@ function media_directories_ui_uninstall() {
 
   // Remove the image style.
   \Drupal::configFactory()->getEditable('image.style.browser_thumbnail')->delete();
-
-  // Remove the styles directory and generated images.
-  $browser_thumbnail_dir_uri = \Drupal::config('system.file')->get('default_scheme') . '://styles/browser_thumbnail';
-  \Drupal::service('file_system')->deleteRecursive($browser_thumbnail_dir_uri);
-  if (\Drupal::service('file_system')->prepareDirectory($browser_thumbnail_dir_uri)) {
-    \Drupal::service('file_system')->rmdir($browser_thumbnail_dir_uri);
-  }
 }
 
 /**
