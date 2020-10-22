@@ -1,9 +1,10 @@
-.media-directories-editor--dimensions .fieldset-wrapper {
+.media-directories-editor--dimensions .details-wrapper {
   display: flex;
   flex-wrap: wrap;
 }
 
-.media-directories-editor--dimensions .description {
+/* The first element is description, expand it fully. */
+.media-directories-editor--dimensions .details-wrapper > div:first-child {
   width: 100%;
 }
 

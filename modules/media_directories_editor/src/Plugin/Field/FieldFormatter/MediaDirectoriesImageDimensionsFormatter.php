@@ -2,17 +2,15 @@
 
 namespace Drupal\media_directories_editor\Plugin\Field\FieldFormatter;
 
-use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\image\ImageStyleStorageInterface;
-use Drupal\image\Plugin\Field\FieldFormatter\ImageFormatter;
-use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;
-use Drupal\Core\Render\RendererInterface;
-use Drupal\media\MediaInterface;
+use Drupal\media\Plugin\Field\FieldFormatter\MediaThumbnailFormatter;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Field\FieldDefinitionInterface;
 
 /**
  * Plugin implementation of the 'media_directories_editor_thumbnail' formatter.
@@ -25,14 +23,14 @@ use Drupal\Core\Field\FieldDefinitionInterface;
  *   }
  * )
  */
-class MediaDirectoriesImageDimensionsFormatter extends ImageFormatter {
+class MediaDirectoriesImageDimensionsFormatter extends MediaThumbnailFormatter {
 
   /**
-   * The renderer service.
+   * The configuration factory service.
    *
-   * @var \Drupal\Core\Render\RendererInterface
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
    */
-  protected $renderer;
+  protected $configFactory;
 
   /**
    * Constructs an MediaThumbnailFormatter object.
@@ -57,10 +55,12 @@ class MediaDirectoriesImageDimensionsFormatter extends ImageFormatter {
    *   The image style entity storage handler.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The configuration factory service.
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, AccountInterface $current_user, ImageStyleStorageInterface $image_style_storage, RendererInterface $renderer) {
-    parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings, $current_user, $image_style_storage);
-    $this->renderer = $renderer;
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, AccountInterface $current_user, ImageStyleStorageInterface $image_style_storage, RendererInterface $renderer, ConfigFactoryInterface $config_factory) {
+    parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings, $current_user, $image_style_storage, $renderer);
+    $this->configFactory = $config_factory;
   }
 
   /**
@@ -77,7 +77,8 @@ class MediaDirectoriesImageDimensionsFormatter extends ImageFormatter {
       $configuration['third_party_settings'],
       $container->get('current_user'),
       $container->get('entity_type.manager')->getStorage('image_style'),
-      $container->get('renderer')
+      $container->get('renderer'),
+      $container->get('config.factory')
     );
   }
 
@@ -95,17 +96,6 @@ class MediaDirectoriesImageDimensionsFormatter extends ImageFormatter {
 
   /**
    * {@inheritdoc}
-   *
-   * This has to be overridden because FileFormatterBase expects $item to be
-   * of type \Drupal\file\Plugin\Field\FieldType\FileItem and calls
-   * isDisplayed() which is not in FieldItemInterface.
-   */
-  protected function needsEntityLoad(EntityReferenceItem $item) {
-    return !$item->hasNewEntity();
-  }
-
-  /**
-   * {@inheritdoc}
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
     $element = parent::settingsForm($form, $form_state);
@@ -115,18 +105,37 @@ class MediaDirectoriesImageDimensionsFormatter extends ImageFormatter {
       /** @var \Drupal\media\Entity\Media $entity */
       $entity = $storage['entity'];
       $element['#attached']['library'][] = 'media_directories_editor/image-resize';
-      $element['image_style']['#access'] = FALSE;
       $element['image_link']['#access'] = FALSE;
 
+      $config = $this->configFactory->get('media_directories_editor.settings');
+      $styles = $element['image_style']['#options'];
+      $selected_styles = $config->get('embed_dialog.image_styles');
+
+      if (!empty($selected_styles)) {
+        $styles = array_intersect_key($styles, $selected_styles);
+      }
+
+      $image_style_options[(string) $this->t('Pre-defined styles')] = $styles;
+
+      $element['image_style']['#options'] = $image_style_options;
+      $element['image_style']['#empty_option'] = $this->t('Custom dimensions');
+      $element['image_style']['#description'] = $this->t('Choose from pre-defined image styles or set custom dimensions.');
+
       $element['dimensions'] = [
-        '#type' => 'fieldset',
+        '#type' => 'details',
         '#title' => $this->t('Image size'),
         '#description' => $this->t('Original image size: @widthx@height', [
           '@width' => $entity->get('thumbnail')->width,
           '@height' => $entity->get('thumbnail')->height,
         ]),
+        '#open' => TRUE,
         '#attributes' => [
           'class' => ['media-directories-editor--dimensions'],
+        ],
+        '#states' => [
+          'visible' => [
+            ':input[name="attributes[data-entity-embed-display-settings][image_style]"]' => ['value' => ''],
+          ],
         ],
       ];
 
@@ -188,6 +197,10 @@ class MediaDirectoriesImageDimensionsFormatter extends ImageFormatter {
       return $elements;
     }
 
+    if ($this->getSetting('image_style')) {
+      return parent::viewElements($items, $langcode);
+    }
+
     /** @var \Drupal\media\MediaInterface[] $media_items */
     foreach ($media_items as $delta => $media) {
       /** @var \Drupal\file\Entity\File $file */
@@ -208,42 +221,6 @@ class MediaDirectoriesImageDimensionsFormatter extends ImageFormatter {
     }
 
     return $elements;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function isApplicable(FieldDefinitionInterface $field_definition) {
-    // This formatter is only available for entity types that reference
-    // media items.
-    return ($field_definition->getFieldStorageDefinition()->getSetting('target_type') == 'media');
-  }
-
-  /**
-   * Get the URL for the media thumbnail.
-   *
-   * @param \Drupal\media\MediaInterface $media
-   *   The media item.
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity that the field belongs to.
-   *
-   * @return \Drupal\Core\Url|null
-   *   The URL object for the media item or null if we don't want to add
-   *   a link.
-   */
-  protected function getMediaThumbnailUrl(MediaInterface $media, EntityInterface $entity) {
-    $url = NULL;
-    $image_link_setting = $this->getSetting('image_link');
-    // Check if the formatter involves a link.
-    if ($image_link_setting == 'content') {
-      if (!$entity->isNew()) {
-        $url = $entity->toUrl();
-      }
-    }
-    elseif ($image_link_setting === 'media') {
-      $url = $media->toUrl();
-    }
-    return $url;
   }
 
 }
