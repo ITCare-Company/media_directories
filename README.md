@@ -39,7 +39,18 @@ REQUIREMENTS
       1. Download jsTree from https://github.com/vakata/jstree
       2. Extract it as is, rename "jstree-X.Y.Z" to "jstree", so the assets are at:
         /libraries/jstree/dist/jstree.min.js
+  * Run `composer update --lock`
 
+**Note:** jsTree library can also be installed and managed via composer using `wikimedia/composer-merge-plugin`.
+Run `composer require wikimedia/composer-merge-plugin` and
+Edit your site's `composer.json` file and add the following under the "extra" section:
+```
+"merge-plugin": {
+   "include": [
+      "web/modules/contrib/media_directories/composer.libraries.json"
+   ]
+},
+```
 
 INSTALLATION
 ------------
