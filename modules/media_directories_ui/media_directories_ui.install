@@ -45,9 +45,9 @@ function media_directories_ui_requirements($phase) {
   return [
     'jstree_library' => [
       'title'       => t('jsTree library'),
-      'description' => $exists ? '' : t('The <a href=":url">jsTree library</a> should be installed at <strong>/libraries/jstree/dist/jstree.min.js</strong>, or any path supported by libraries.module if installed.', [':url' => 'https://github.com/vakata/jstree']),
-      'severity'    => $exists ? REQUIREMENT_OK : REQUIREMENT_ERROR,
-      'value'       => $exists ? t('Installed') : t('Not installed'),
+      'description' => $exists ? '' : t('The <a href=":url">jsTree library</a> should be installed at <strong>/libraries/jstree/dist/jstree.min.js</strong>, or any path supported by libraries.module if enabled.', [':url' => 'https://github.com/vakata/jstree']),
+      'severity'    => $exists ? REQUIREMENT_OK : REQUIREMENT_WARNING,
+      'value'       => $exists ? t('Installed') : t('Served by CDN'),
     ],
   ];
 }

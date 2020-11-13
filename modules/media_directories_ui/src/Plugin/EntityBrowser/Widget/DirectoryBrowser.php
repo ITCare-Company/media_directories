@@ -124,7 +124,16 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
    */
   public function getForm(array &$original_form, FormStateInterface $form_state, array $additional_widget_parameters) {
     $form = parent::getForm($original_form, $form_state, $additional_widget_parameters);
+
     $form['#attached']['library'][] = 'media_directories_ui/media-ui';
+    if (_media_directories_ui_library_file_exists('jstree')) {
+      $form['#attached']['library'][] = 'media_directories_ui/jstree';
+    }
+    else {
+      // Use CDN if jsTree library is not installed.
+      $form['#attached']['library'][] = 'media_directories_ui/jstree-cdn';
+    }
+
     // Default values.
     $form['#attached']['drupalSettings']['media_directories']['cardinality'] = -1;
     $form['#attached']['drupalSettings']['media_directories']['target_bundles'] = [];

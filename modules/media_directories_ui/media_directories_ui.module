@@ -254,28 +254,14 @@ function media_directories_ui_preprocess_media_directories_add(&$variables) {
  * Implements hook_form_FORM_ID_alter().
  */
 function media_directories_ui_form_entity_browser_media_directories_overview_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  if (!_media_directories_ui_library_file_exists('jstree')) {
-    \Drupal::messenger()->addError(t('The <a href=":url">jsTree library</a> should be installed at <strong>/libraries/jstree/dist/jstree.min.js</strong>, or any path supported by libraries.module if installed.', [':url' => 'https://github.com/vakata/jstree']));
-  }
-
-  if (!_media_directories_ui_vocabulary_set()) {
-    $settings_url = Url::fromRoute('media_directories.config_form');
-    \Drupal::messenger()->addError(t('Vocabulary is not selected. Please select it in the <a href=":url">settings</a>.', [':url' => $settings_url->toString()]));
-  }
+  _media_directories_ui_requirements_check();
 }
 
 /**
  * Implements hook_form_FORM_ID_alter().
  */
 function media_directories_ui_form_entity_browser_media_directories_modal_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  if (!_media_directories_ui_library_file_exists('jstree')) {
-    \Drupal::messenger()->addError(t('The <a href=":url">jsTree library</a> should be installed at <strong>/libraries/jstree/dist/jstree.min.js</strong>, or any path supported by libraries.module if installed.', [':url' => 'https://github.com/vakata/jstree']));
-  }
-
-  if (!_media_directories_ui_vocabulary_set()) {
-    $settings_url = Url::fromRoute('media_directories.config_form');
-    \Drupal::messenger()->addError(t('Vocabulary is not selected. Please select it in the <a href=":url">settings</a>.', [':url' => $settings_url->toString()]));
-  }
+  _media_directories_ui_requirements_check();
 }
 
 /**
@@ -492,6 +478,17 @@ function media_directories_ui_config_form_submit(array &$form, FormStateInterfac
       'combined_upload_media_types',
     ]))
     ->save();
+}
+
+/**
+ * Helper function to check requirements.
+ */
+function _media_directories_ui_requirements_check() {
+  $settings_url = Url::fromRoute('media_directories.config_form');
+  if (!_media_directories_ui_vocabulary_set()) {
+    $settings_url = Url::fromRoute('media_directories.config_form');
+    \Drupal::messenger()->addError(t('Vocabulary is not selected. Please select it in the <a href=":url">settings</a>.', [':url' => $settings_url->toString()]));
+  }
 }
 
 /**
