@@ -12,6 +12,7 @@ use Drupal\Core\Form\FormBuilder;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Render\RendererInterface;
+use Drupal\Core\Url;
 use Drupal\media_directories_ui\Form\MediaEditForm;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\media_directories_ui\MediaDirectoriesUiHelper;
@@ -347,9 +348,9 @@ class MediaDirectoriesController extends ControllerBase {
   public function mediaAdd(Request $request) {
     $response = new AjaxResponse();
     $ui_config = $this->config('media_directories_ui.settings');
-    $combined_media_types = $ui_config->get('combined_upload_media_types');
+    $combined_media_types = $ui_config->get('combined_upload_media_types', []);
     $active_directory = (int) $request->get('active_directory', MEDIA_DIRECTORY_ROOT);
-    $target_bundles = $request->get('target_bundles');
+    $target_bundles = $request->get('target_bundles', []);
     $selection_mode = $request->get('selection_mode');
     $cardinality = $request->get('cardinality', -1);
 
@@ -365,36 +366,42 @@ class MediaDirectoriesController extends ControllerBase {
       $first_media_type = reset($target_bundles);
     }
 
-    if ($target_bundles) {
-      // Here we land if no file is present.
-      // Only list media types where the user has permission for.
-      foreach ($target_bundles as $delta => $bundle) {
-        if (!$this->entityTypeManager()->getAccessControlHandler('media')->createAccess($bundle)) {
-          unset($target_bundles[$delta]);
+    if (count($target_bundles) > 0) {
+      if ($target_bundles) {
+        // Here we land if no file is present.
+        // Only list media types where the user has permission for.
+        foreach ($target_bundles as $delta => $bundle) {
+          if (!$this->entityTypeManager()->getAccessControlHandler('media')->createAccess($bundle)) {
+            unset($target_bundles[$delta]);
+          }
         }
+        $first_media_type = reset($target_bundles);
+        $selected_type = $request->get('media_type', $first_media_type);
+      }
+      else {
+        // Here we land when a file was just picked by the user.
+        $selected_type = $request->get('media_type', $first_media_type);
       }
 
-      $selected_type = $request->get('media_type', $first_media_type);
+      if (count($target_bundles) > 0) {
+        $build = [
+          '#theme' => 'media_directories_add',
+          '#selected_type' => $selected_type,
+          '#active_directory' => $active_directory,
+          '#target_bundles' => $target_bundles,
+          '#cardinality' => $cardinality,
+          '#selection_mode' => $selection_mode,
+        ];
+
+        $response->addCommand(new OpenModalDialogCommand($this->t('Add media'), $build, ['width' => '800']));
+      }
+      else {
+        $this->messenger()->addError($this->t('No permission found for the creation of any media type.'));
+        $this->addMessagesToResponse($response);
+      }
     }
     else {
-      // Here we land when a file was just picked by the user.
-      $selected_type = $request->get('media_type', $first_media_type);
-    }
-
-    if (count($target_bundles) > 0) {
-      $build = [
-        '#theme' => 'media_directories_add',
-        '#selected_type' => $selected_type,
-        '#active_directory' => $active_directory,
-        '#target_bundles' => $target_bundles,
-        '#cardinality' => $cardinality,
-        '#selection_mode' => $selection_mode,
-      ];
-
-      $response->addCommand(new OpenModalDialogCommand($this->t('Add media'), $build, ['width' => '800']));
-    }
-    else {
-      $this->messenger()->addError($this->t('No permission found for the creation of any media type.'));
+      $this->messenger()->addError($this->t('No media type seems to exist. <a href=":url">Add a new media type.</a>', [':url' => Url::fromRoute('entity.media_type.add_form')->toString()]));
       $this->addMessagesToResponse($response);
     }
 
