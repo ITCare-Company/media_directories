@@ -43,7 +43,7 @@
 
       // Media item click actions.
       var $items = $browser_listing.find('.media-item');
-      if ($items.length == 0 && Drupal.MediaBrowser.searchString !== '') {
+      if ($items.length == 0 && Drupal.MediaBrowser.searchString && Drupal.MediaBrowser.searchString != '') {
         $('.view-empty').once().append('<a id="media-browser-clear-search-string">' + Drupal.t('Clear filter') + '</a>');
         $('#media-browser-clear-search-string').on('click', function () {
           Drupal.MediaBrowser.toolbar.filterMediaBrowserByName('');
@@ -130,9 +130,12 @@
 
             var $html = $('<div id="jstree-dnd" class="jstree-default"></div>');
             $html.append('<i class="fas fa-arrows-alt"></i>');
+            $html.append('<i class="jstree-icon jstree-ocl" role="presentation"></i>');
             $html.append('<span class="jstree-items-count">' + Drupal.formatPlural(nodes.length, '1 item', '@count items') + '</span>');
             $html.append(nodes[0].element[0].outerHTML);
             return $.vakata.dnd.start(e, {
+              'handleDndStopMedia': true,
+              'currentDirectory': Drupal.MediaBrowser.activeDirectory,
               'jstree': true,
               'nodes': nodes
             }, $html);

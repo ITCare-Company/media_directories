@@ -28,7 +28,7 @@ class MediaCombinedUploadForm extends FileUploadForm {
   protected $fileSystem;
 
   /**
-   * The file system service.
+   * Our helper service.
    *
    * @var \Drupal\media_directories_ui\MediaDirectoriesUiHelper
    */

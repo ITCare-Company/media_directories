@@ -37,99 +37,108 @@
       contextmenu: {
         items: Drupal.MediaBrowser.treeContextMenu
       }
-    });
+    })
+    .on('changed.jstree', function (e, data) {
+      if (data.action === 'select_node') {
+        var doLoadContent = false;
+        if (drupalSettings.media_directories.selection_mode != 'keep') {
+          if (!Drupal.MediaBrowser.keepSelectionOnChange && Drupal.MediaBrowser.getSelectedMids().length > 0) {
+            var $warningDialog = $('<div>' + Drupal.theme('mediaDirectoriesDeSelectionWarningChangeDirectoryModal') + '</div>').appendTo('body');
+            Drupal.dialog($warningDialog, {
+              title: Drupal.t('Clear selection?'),
+              buttons: [{
+                text: Drupal.t('Cancel'),
+                click: function click() {
+                  $(this).dialog('close');
+                }
+              }, {
+                text: Drupal.t('OK'),
+                click: function click() {
+                  var directory_id = data.node.a_attr["data-tid"];
+                  Drupal.MediaBrowser.loadDirectoryContent(directory_id);
+                  Drupal.MediaBrowser.active_directory = directory_id;
 
-    $(Drupal.MediaBrowser.treeSelector).once().each(function () {
-      $(this).on('changed.jstree', function (e, data) {
-        if (data.action === 'select_node') {
-          var doLoadContent = false;
-          if (drupalSettings.media_directories.selection_mode != 'keep') {
-            if (!Drupal.MediaBrowser.keepSelectionOnChange && Drupal.MediaBrowser.getSelectedMids().length > 0) {
-              var $warningDialog = $('<div>' + Drupal.theme('mediaDirectoriesDeSelectionWarningChangeDirectoryModal') + '</div>').appendTo('body');
-              Drupal.dialog($warningDialog, {
-                title: Drupal.t('Clear selection?'),
-                buttons: [{
-                  text: Drupal.t('Cancel'),
-                  click: function click() {
-                    $(this).dialog('close');
-                  }
-                }, {
-                  text: Drupal.t('OK'),
-                  click: function click() {
-                    var directory_id = data.node.a_attr["data-tid"];
-                    Drupal.MediaBrowser.loadDirectoryContent(directory_id);
-                    Drupal.MediaBrowser.active_directory = directory_id;
-
-                    if (drupalSettings.media_directories.selection_mode != 'keep') {
-                      if (!Drupal.MediaBrowser.keepSelectionOnChange) {
-                        // Clear selection from global storage.
-                        Drupal.MediaBrowser.clearMediaSelection();
-                      }
+                  if (drupalSettings.media_directories.selection_mode != 'keep') {
+                    if (!Drupal.MediaBrowser.keepSelectionOnChange) {
+                      // Clear selection from global storage.
+                      Drupal.MediaBrowser.clearMediaSelection();
                     }
-
-                    Drupal.MediaBrowser.keepSelectionOnChange = false;
-                    $(this).dialog('close');
                   }
-                }]
-              }).showModal();
-            }
-            else {
-              doLoadContent = true;
-            }
+
+                  Drupal.MediaBrowser.keepSelectionOnChange = false;
+                  $(this).dialog('close');
+                }
+              }]
+            }).showModal();
           }
           else {
             doLoadContent = true;
           }
+        }
+        else {
+          doLoadContent = true;
+        }
 
-          if (doLoadContent) {
-            var directory_id = data.node.a_attr["data-tid"];
-            Drupal.MediaBrowser.loadDirectoryContent(directory_id);
-            Drupal.MediaBrowser.active_directory = directory_id;
-            Drupal.MediaBrowser.keepSelectionOnChange = false;
+        if (doLoadContent) {
+          var directory_id = data.node.a_attr["data-tid"];
+          Drupal.MediaBrowser.loadDirectoryContent(directory_id);
+          Drupal.MediaBrowser.active_directory = directory_id;
+          Drupal.MediaBrowser.keepSelectionOnChange = false;
+        }
+      }
+    })
+    .on('loaded.jstree', function () {
+      Drupal.MediaBrowser.loadDirectoryContent(-1);
+
+      // Clear selection from global storage.
+      Drupal.MediaBrowser.clearMediaSelection(false);
+    })
+    .on('rename_node.jstree', function (event, data) {
+      var directory_id = $('#' + data.node.a_attr['id']).data('tid');
+      Drupal.MediaBrowser.renameDirectory(directory_id, data.text);
+    })
+    .on('move_node.jstree', function (event, data) {
+      var move_directory_id = data.node.a_attr['data-tid'];
+      var target_directory_id = data.parent === '#' ? -1 : $('#' + data.parent + '_anchor').data('tid');
+      Drupal.MediaBrowser.moveDirectoryToDirectory(move_directory_id, target_directory_id);
+    });
+  };
+
+  /**
+   * Global event bindings.
+   */
+  Drupal.MediaBrowser.globalBindings = function () {
+    $(document).once().each(function () {
+      // Drag&Drop indicators for media dnd operation.
+      $(this).on('dnd_move.vakata', function (e, data) {
+        // Only work on media: folders drag&drop are handled from jsTree events directly.
+        if (data.data.handleDndStopMedia) {
+          // Check if the tree instance is dnd enabled.
+          var jsTree = $(Drupal.MediaBrowser.treeSelector).jstree(true);
+          if (jsTree && jsTree._data && jsTree._data.dnd) {
+            // Check if hovering a folder.
+            ref = jsTree.settings.dnd.large_drop_target ? $(data.event.target).closest('.jstree-node').children('.jstree-anchor') : $(data.event.target).closest('.jstree-anchor');
+            if (ref && ref.length && ref.parent().is('.jstree-closed, .jstree-open, .jstree-leaf')) {
+              if (data.data.currentDirectory !== data.event.target.dataset.tid) {
+                data.helper.find('.jstree-icon').first().removeClass('jstree-er').addClass('jstree-ok');
+              } else {
+                data.helper.find('.jstree-icon').removeClass('jstree-ok').addClass('jstree-er');
+              }
+            }
           }
         }
       });
-      $(this).on('loaded.jstree', function () {
-        Drupal.MediaBrowser.loadDirectoryContent(-1);
 
-        // Clear selection from global storage.
-        Drupal.MediaBrowser.clearMediaSelection(false);
-      });
-      $(this).on('rename_node.jstree', function (event, data) {
-        var directory_id = $('#' + data.node.a_attr['id']).data('tid');
-        Drupal.MediaBrowser.renameDirectory(directory_id, data.text);
-      });
-    });
-
-    $(document).once().each(function () {
-      // Drag and Drop event bind.
+      // Drag and Drop event bind for external sources.
       $(this).on('dnd_stop.vakata', function (e, data) {
-        var type = 'media';
-
-        if ($(data.data.obj).hasClass('jstree-node')) {
-          type = 'directory';
-        }
-
-        if (!data.event.target.hasAttribute('data-tid')) {
-          return;
-        }
-
-        if (type === 'media') {
+        var targetDirectory = data.event.target.dataset.tid;
+        // Only work on media: folders drag&drop are handled from jsTree events directly.
+        if (data.data.handleDndStopMedia && data.data.currentDirectory !== targetDirectory) {
           var media_items = [];
-
           for (var i = 0; i < data.data.nodes.length; i++) {
             media_items.push(data.data.nodes[i].id);
           }
-
-          Drupal.MediaBrowser.moveMediaToDirectory(media_items, data.event.target.dataset.tid);
-        } else {
-          var move_directory_id = $('#' + data.data.obj[0].id + '_anchor').data('tid');
-          var target_directory_id = data.event.target.dataset.tid;
-
-          // Do not try to move directory under itself.
-          if (parseInt(move_directory_id) !== parseInt(target_directory_id)) {
-            Drupal.MediaBrowser.moveDirectoryToDirectory(move_directory_id, target_directory_id);
-          }
+          Drupal.MediaBrowser.moveMediaToDirectory(media_items, targetDirectory);
         }
       });
     });
@@ -178,6 +187,7 @@
    */
   Drupal.MediaBrowser.moveMediaToDirectory = function (media_items, directory_id) {
     if (media_items && directory_id) {
+      Drupal.MediaBrowser.startLoader();
       var ajaxSettings = {
         url: Drupal.MediaBrowser.getUrl('media.move'),
         submit: {
@@ -186,7 +196,9 @@
           target_bundles: Drupal.MediaBrowser.targetBundles
         }
       };
-      Drupal.ajax(ajaxSettings).execute();
+      Drupal.ajax(ajaxSettings).execute().done(function () {
+        Drupal.MediaBrowser.stopLoader();
+      });
 
       // User is moving media to new directory, we need to clean selection.
       Drupal.MediaBrowser.clearMediaSelection();
@@ -271,11 +283,21 @@
       return false;
     }
 
-    // While dragging, don't allow dropping between nodes.
-    if (operation === 'move_node' && node_position === 0 && more.pos === 'i') {
-      return true;
+    if (operation === 'move_node') {
+      // While dragging, don't allow dropping between nodes.
+      if(more.dnd === true && more.pos === 'i') {
+        if (node.parent !== node_parent.id) {
+            return true;
+        }
+      }
+      // Handle the last event aka "drop".
+      else if (more.core === true) {
+        if (node.parent !== node_parent.id) {
+            return true;
+        }
+      }
     }
-    // Create/rename operations are allowed.
+    // Create/rename and edit operations are allowed.
     else if (operation === 'create_node' || operation === 'rename_node' || operation === 'edit') {
       return true;
     }

@@ -14,6 +14,7 @@ use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\media_directories_ui\Form\MediaEditForm;
 use Drupal\taxonomy\Entity\Term;
+use Drupal\media_directories_ui\MediaDirectoriesUiHelper;
 use Drupal\media_directories_ui\Ajax\RefreshDirectoryTree;
 use Drupal\media_directories_ui\Form\DirectoryDeleteForm;
 use Drupal\media_directories_ui\Form\MediaDeleteForm;
@@ -76,6 +77,13 @@ class MediaDirectoriesController extends ControllerBase {
   protected $contentTranslationEnabled;
 
   /**
+   * Our helper service.
+   *
+   * @var \Drupal\media_directories_ui\MediaDirectoriesUiHelper
+   */
+  protected $mediaDirectoriesUiHelper;
+
+  /**
    * MediaDirectoriesController constructor.
    *
    * @param \Drupal\Core\Form\FormBuilder $formBuilder
@@ -86,8 +94,10 @@ class MediaDirectoriesController extends ControllerBase {
    *   The module handler.
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
    *   The language manager.
+   * @param \Drupal\media_directories_ui\MediaDirectoriesUiHelper $media_directories_ui_helper
+   *   The media directories ui helper.
    */
-  public function __construct(FormBuilder $formBuilder, RendererInterface $renderer, ModuleHandlerInterface $module_handler, LanguageManagerInterface $language_manager) {
+  public function __construct(FormBuilder $formBuilder, RendererInterface $renderer, ModuleHandlerInterface $module_handler, LanguageManagerInterface $language_manager, MediaDirectoriesUiHelper $media_directories_ui_helper) {
     $this->formBuilder = $formBuilder;
     $this->renderer = $renderer;
     $this->moduleHandler = $module_handler;
@@ -96,6 +106,7 @@ class MediaDirectoriesController extends ControllerBase {
     $config = $this->config('media_directories.settings');
     $this->vocabularyId = $config->get('directory_taxonomy');
     $this->contentTranslationEnabled = $this->moduleHandler->moduleExists('content_translation');
+    $this->mediaDirectoriesUiHelper = $media_directories_ui_helper;
   }
 
   /**
@@ -106,7 +117,8 @@ class MediaDirectoriesController extends ControllerBase {
       $container->get('form_builder'),
       $container->get('renderer'),
       $container->get('module_handler'),
-      $container->get('language_manager')
+      $container->get('language_manager'),
+      $container->get('media_directories_ui.helper')
     );
   }
 
@@ -266,8 +278,18 @@ class MediaDirectoriesController extends ControllerBase {
     /** @var \Drupal\taxonomy\Entity\Term $directory */
     $directory = $this->entityTypeManager()->getStorage('taxonomy_term')->load($move_directory_id);
     if ($directory->access('update')) {
-      $directory->get('parent')->setValue($to_directory_id === MEDIA_DIRECTORY_ROOT ? NULL : $to_directory_id);
-      $directory->save();
+      /** @var \Drupal\taxonomy\Entity\Term $new_parent_directory */
+      $new_parent_directory = $this->entityTypeManager()->getStorage('taxonomy_term')->load($to_directory_id);
+      if ($to_directory_id !== MEDIA_DIRECTORY_ROOT && $this->mediaDirectoriesUiHelper->termIsAnAnchestorOf($new_parent_directory, $directory)) {
+        $this->messenger()->addError($this->t("You cannot move a directory to one of it's sub-directories!"));
+        $this->addMessagesToResponse($response);
+      } elseif ($this->mediaDirectoriesUiHelper->termIsAChildOf($directory, $new_parent_directory)) {
+        $this->messenger()->addError($this->t('The directory is already a child of the destination directory!'));
+        $this->addMessagesToResponse($response);
+      } else {
+        $directory->get('parent')->setValue($to_directory_id === MEDIA_DIRECTORY_ROOT ? NULL : $to_directory_id);
+        $directory->save();
+      }
     }
     else {
       $this->messenger()->addError($this->t('No permission found to move this directory.'));
@@ -459,8 +481,14 @@ class MediaDirectoriesController extends ControllerBase {
     foreach ($media_entities as $media_entity) {
       if ($media_entity->hasField('directory')) {
         if ($media_entity->access('update')) {
-          $media_entity->get('directory')->setValue($directory_id === MEDIA_DIRECTORY_ROOT ? NULL : $directory_id);
-          $media_entity->save();
+          $new_target_id = ($directory_id === MEDIA_DIRECTORY_ROOT ? NULL : $directory_id);
+          if ($media_entity->get('directory')->target_id != $new_target_id) {
+            $media_entity->get('directory')->setValue($new_target_id);
+            $media_entity->save();
+          }
+          else {
+            $this->messenger()->addError($this->t('The media is already inside the destination directory!'));
+          }
         }
         else {
           $this->messenger()->addError($this->t('Media %media_label of type %media_type cannot be moved due to lack of permissions.', [

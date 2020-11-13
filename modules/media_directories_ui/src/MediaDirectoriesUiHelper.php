@@ -5,6 +5,7 @@ namespace Drupal\media_directories_ui;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\file\FileInterface;
+use Drupal\taxonomy\Entity\Term;
 
 /**
  * Media directories UI helper service.
@@ -112,4 +113,68 @@ class MediaDirectoriesUiHelper {
     return implode(' ', $valid_extensions);
   }
 
+  /**
+   * Checks if a term belongs to the specified anchestor.
+   *
+   * @param \Drupal\taxonomy\entity\Term $term
+   *   The term to check against.
+   * @param \Drupal\taxonomy\entity\Term $anchestor
+   *   The anchestor to search for.
+   *
+   * @return boolean
+   *   Wheater the provided anchestor is an anchestor.
+   */
+  public function termIsAnAnchestorOf(Term $term, Term $anchestor) {
+    if ($term === NULL || $anchestor === NULL) {
+      return FALSE;
+    }
+
+    /** @var \Drupal\taxonomy\Entity\Term[] $types */
+    $anchestors = $this->entityTypeManager->getStorage('taxonomy_term')->loadAllParents($term->id());
+
+    foreach ($anchestors as $one_of_the_anchestors) {
+      if ($anchestor->id() == $one_of_the_anchestors->id()) {
+        return TRUE;
+      }
+    }
+
+    return FALSE;
+  }
+
+  /**
+   * Checks if a term belongs to the specified parent.
+   *
+   * @param \Drupal\taxonomy\entity\Term $term
+   *   The term to check against.
+   * @param \Drupal\taxonomy\entity\Term $parent|null
+   *   The parent to search for, or NULL if the parent is <ROOT>.
+   *
+   * @return boolean
+   *   Wheater the provided parent is a parent.
+   */
+  public function termIsAChildOf(Term $term, $parent) {
+    if ($term === NULL) {
+      return FALSE;
+    }
+
+    /** @var \Drupal\taxonomy\Entity\Term[] $types */
+    $parents = $this->entityTypeManager->getStorage('taxonomy_term')->loadParents($term->id());
+    if ($parent === NULL) {
+      if (count($parents) == 0) {
+        // See https://www.drupal.org/node/2019905
+        return TRUE;
+      }
+      else {
+        return FALSE;
+      }
+    }
+
+    foreach ($parents as $one_of_the_parents) {
+      if ($parent->id() == $one_of_the_parents->id()) {
+        return TRUE;
+      }
+    }
+
+    return FALSE;
+  }
 }
