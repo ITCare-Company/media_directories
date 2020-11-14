@@ -367,7 +367,7 @@ class MediaDirectoriesController extends ControllerBase {
     }
 
     if (count($target_bundles) > 0) {
-      if ($target_bundles) {
+      if ($first_media_type != 'combined_upload' && $target_bundles) {
         // Here we land if no file is present.
         // Only list media types where the user has permission for.
         foreach ($target_bundles as $delta => $bundle) {
