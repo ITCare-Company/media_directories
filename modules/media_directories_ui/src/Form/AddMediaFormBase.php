@@ -416,14 +416,14 @@ abstract class AddMediaFormBase extends FormBase {
       }
       if ($cardinality > -1 && $cardinality < count($newly_added_media_ids)) {
         $newly_added_media_ids = array_slice($newly_added_media_ids, 0, $cardinality);
-        $this->messenger()->addStatus($this->formatPlural(count($cardinality), 'As this field only accepts one media, only the first one uploaded is selected.', 'You uploaded more medias then allowed for the field, only the first @count are selected.'));
+        $this->messenger()->addStatus($this->formatPlural($cardinality, 'As this field only accepts one media, only the first one uploaded is selected.', 'You uploaded more medias then allowed for the field, only the first @count are selected.'));
       }
       $form_state->setValue('newly_added_media_ids', $newly_added_media_ids);
     }
     else {
       if ($cardinality > -1 && $cardinality < count($all_mids)) {
         $newly_added_media_ids = array_slice($all_mids, 0, $cardinality);
-        $this->messenger()->addStatus($this->formatPlural(count($cardinality), 'As this field only accepts one media, only the first one uploaded is selected.', 'You uploaded more medias then allowed for the field, only the first @count are selected.'));
+        $this->messenger()->addStatus($this->formatPlural($cardinality, 'As this field only accepts one media, only the first one uploaded is selected.', 'You uploaded more medias then allowed for the field, only the first @count are selected.'));
       }
       $form_state->setValue('newly_added_media_ids', $all_mids);
     }
