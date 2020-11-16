@@ -35,13 +35,12 @@ REQUIREMENTS
   * Media library (core)
   * Entity browser (by submodule media_directories_ui)
   * Entity embed (by submodule media_directories_editor)
-  * jsTree library
+  * jsTree library (is taken from CDN as long as no min.js file exists), we recommend to install it manually (fe. to be able to work offline):
       1. Download jsTree from https://github.com/vakata/jstree
       2. Extract it as is, rename "jstree-X.Y.Z" to "jstree", so the assets are at:
         /libraries/jstree/dist/jstree.min.js
-  * Run `composer update --lock`
 
-**Note:** jsTree library can also be installed and managed via composer using `wikimedia/composer-merge-plugin`.
+**Note:** jsTree library is ready to be managed via composer using the `wikimedia/composer-merge-plugin`.
 Run `composer require wikimedia/composer-merge-plugin` and
 Edit your site's `composer.json` file and add the following under the "extra" section:
 ```
@@ -51,12 +50,13 @@ Edit your site's `composer.json` file and add the following under the "extra" se
    ]
 },
 ```
+Run `composer update --lock`
+
 
 INSTALLATION
 ------------
 
-We recommend composer to install the module, which will not install the jsTree library yet,
-then normally install the module in Drupal.
+We recommend composer to install the module, then normally enable the module in Drupal.
 **media_directories_editor** will intsall everything,
 **media_directories_ui** all the UX and field integration,
 **media_directories** only the directory field and media(-library) integration.
@@ -75,7 +75,7 @@ CONFIGURATION
  3. Optionally enable the combined upload form in the settings: /admin/config/media/media_directories
 
 ### Media directories editor module
-Add the directory icon-ed Media button to a text format, fe. full_html (/admin/config/content/formats/manage/full_html) and make sure "Embed media" and "Display embedded entities" filter are enabled.
+Add the directory icon-ed Media button to a text format, fe. full_html (/admin/config/content/formats/manage/full_html) and make sure the "Embed media" and "Display embedded entities" filters are enabled.
 
 
 RECOMMENDED MODULES
@@ -83,6 +83,12 @@ RECOMMENDED MODULES
 
 Image resize filter for the editor integration.
 https://www.drupal.org/project/image_resize_filter
+
+SUPPORTED MODULES
+-------------------
+
+Admin toolbar can be configured to hide core's media overview, to only show our media browser.
+https://www.drupal.org/project/admin_toolbar
 
 
 INSPIRATION
