@@ -101,6 +101,8 @@ class MediaCombinedUploadForm extends FileUploadForm {
       '#upload_location' => 'temporary://',
       '#upload_validators' => [
         'media_directories_ui_file_validator' => [$validators_by_media_type],
+        // We need to respect core's _file_save_upload_single, by giving all extensions again.
+        'file_validate_extensions' => [$this->mediaDirectoriesUiHelper->getValidExtensions($target_types)],
       ],
       '#process' => [
         ['Drupal\file\Element\ManagedFile', 'processManagedFile'],
