@@ -112,20 +112,18 @@ class MediaDirectoryArgument extends ArgumentPluginBase {
     $placeholder = $this->placeholder();
     $null_check = empty($this->options['not']) ? '' : " OR $this->tableAlias.$this->realField IS NULL";
 
+    $new_group = $this->query->setWhereGroup();
     if ((int) $this->argument === MEDIA_DIRECTORY_ROOT) {
-      $group = 0;
       if ($config->get('all_files_in_root')) {
-        // We want an exclusive group if we change to OR.
-        $group = 9;
         // Show everything.
-        $this->query->setWhereGroup('OR', $group);
-        $this->query->addWhereExpression($group, "$this->tableAlias.$this->realField IS NOT NULL");
+        $this->query->setWhereGroup('OR', $new_group);
+        $this->query->addWhereExpression($new_group, "$this->tableAlias.$this->realField IS NOT NULL");
       }
-      $this->query->addWhereExpression($group, "$this->tableAlias.$this->realField IS NULL");
+      $this->query->addWhereExpression($new_group, "$this->tableAlias.$this->realField IS NULL");
     }
     else {
       $operator = empty($this->options['not']) ? '=' : '!=';
-      $this->query->addWhereExpression(0, "$this->tableAlias.$this->realField $operator $placeholder" . $null_check, [$placeholder => $this->argument]);
+      $this->query->addWhereExpression($new_group, "$this->tableAlias.$this->realField $operator $placeholder" . $null_check, [$placeholder => $this->argument]);
     }
 
   }

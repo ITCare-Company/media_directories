@@ -80,7 +80,8 @@ class StringContainsArgument extends ArgumentPluginBase {
 
     if (!empty($this->value)) {
       $operator = empty($this->options['not']) ? 'LIKE' : 'NOT LIKE';
-      $this->query->addWhereExpression(0, "$this->tableAlias.$this->realField $operator $placeholder" . $null_check, [$placeholder => '%' . $this->argument . '%']);
+      $new_group = $this->query->setWhereGroup();
+      $this->query->addWhereExpression($new_group, "$this->tableAlias.$this->realField $operator $placeholder" . $null_check, [$placeholder => '%' . $this->argument . '%']);
     }
 
   }

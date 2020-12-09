@@ -210,12 +210,13 @@ class MediaDirectory extends ManyToOne {
 
     // If the value is 'All', then we show only elements with empty value.
     if ($this->validatedExposedInput[0] === 'All') {
-      $this->query->addWhereExpression(0, "$this->tableAlias.$this->realField IS NULL");
+      $new_group = $this->query->setWhereGroup('AND');
+      $this->query->addWhereExpression($new_group, "$this->tableAlias.$this->realField IS NULL");
 
       if ($config->get('all_files_in_root')) {
         // Show everything.
-        $this->query->setWhereGroup('OR', 0);
-        $this->query->addWhereExpression(0, "$this->tableAlias.$this->realField IS NOT NULL");
+        $this->query->setWhereGroup('OR', $new_group);
+        $this->query->addWhereExpression($new_group, "$this->tableAlias.$this->realField IS NOT NULL");
       }
     }
     else {

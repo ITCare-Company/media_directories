@@ -141,10 +141,15 @@ class MediaDirectoriesController extends ControllerBase {
       $this->buildTree($tree, $term, $this->vocabularyId);
     }
 
+    $root_directory_name = $this->t('Root');
+    if ($this->config('media_directories.settings')->get('all_files_in_root')) {
+      $root_directory_name .=  ' (' . $this->t('All directories') . ')';
+    }
+
     $tree = [
       [
         'id' => 'dir-root',
-        'text' => $this->t('Root'),
+        'text' => $root_directory_name,
         'state' => [
           'opened' => TRUE,
           'selected' => TRUE,
