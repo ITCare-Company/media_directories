@@ -73,7 +73,7 @@
                   var ajaxSettings = {
                     url: Drupal.MediaBrowser.getUrl('media.add'),
                     submit: {
-                      active_directory: Drupal.MediaBrowser.active_directory,
+                      active_directory: Drupal.MediaBrowser.activeDirectory,
                       target_bundles: Drupal.MediaBrowser.targetBundles,
                       cardinality: drupalSettings.media_directories.cardinality,
                       selection_mode: drupalSettings.media_directories.selection_mode
@@ -96,7 +96,7 @@
           var ajaxSettings = {
             url: Drupal.MediaBrowser.getUrl('media.add'),
             submit: {
-              active_directory: Drupal.MediaBrowser.active_directory,
+              active_directory: Drupal.MediaBrowser.activeDirectory,
               target_bundles: Drupal.MediaBrowser.targetBundles,
               cardinality: drupalSettings.media_directories.cardinality,
               selection_mode: drupalSettings.media_directories.selection_mode
@@ -117,7 +117,7 @@
         var ajaxSettings = {
           url: Drupal.MediaBrowser.getUrl('media.edit'),
           submit: {
-            active_directory: Drupal.MediaBrowser.active_directory,
+            active_directory: Drupal.MediaBrowser.activeDirectory,
             media_items: Drupal.MediaBrowser.getSelectedMids()
           }
         };

@@ -56,7 +56,7 @@
                 click: function click() {
                   var directory_id = data.node.a_attr["data-tid"];
                   Drupal.MediaBrowser.loadDirectoryContent(directory_id);
-                  Drupal.MediaBrowser.active_directory = directory_id;
+                  Drupal.MediaBrowser.activeDirectory = directory_id;
 
                   if (drupalSettings.media_directories.selection_mode != 'keep') {
                     if (!Drupal.MediaBrowser.keepSelectionOnChange) {
@@ -82,7 +82,7 @@
         if (doLoadContent) {
           var directory_id = data.node.a_attr["data-tid"];
           Drupal.MediaBrowser.loadDirectoryContent(directory_id);
-          Drupal.MediaBrowser.active_directory = directory_id;
+          Drupal.MediaBrowser.activeDirectory = directory_id;
           Drupal.MediaBrowser.keepSelectionOnChange = false;
         }
       }
