@@ -108,7 +108,7 @@
    * Global event bindings.
    */
   Drupal.MediaBrowser.globalBindings = function () {
-    $(document).once().each(function () {
+    $(document).once('media-browser-dnd-move').each(function () {
       // Drag&Drop indicators for media dnd operation.
       $(this).on('dnd_move.vakata', function (e, data) {
         // Only work on media: folders drag&drop are handled from jsTree events directly.

@@ -21,7 +21,7 @@
 
       // Attach listener to the top document and current document to
       // register keypress inside iframe without focusing iframe first.
-      $(top.document).once('media-browser').each(function () {
+      $(top.document).once('media-browser-keypress-top').each(function () {
         $(this).on('keydown', function (e) {
           if (e.ctrlKey || e.metaKey || e.which === 17) {
             Drupal.MediaBrowser.media.ctrlPressed = true;
@@ -31,7 +31,7 @@
         });
       });
 
-      $(document).once('media-browser').each(function () {
+      $(document).once('media-browser-keypress').each(function () {
         $(this).on('keydown', function (e) {
           if (e.ctrlKey || e.metaKey || e.which === 17) {
             Drupal.MediaBrowser.media.ctrlPressed = true;
@@ -49,7 +49,7 @@
           Drupal.MediaBrowser.toolbar.filterMediaBrowserByName('');
         });
       }
-      $items.once().each(function () {
+      $items.once('media-browser-click').each(function () {
         $(this).on('click', function () {
           var media_id = $(this).data('mid');
           var selected_items = Drupal.MediaBrowser.selectedMedia.length;
