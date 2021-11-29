@@ -1,4 +1,8 @@
 (function ($, Drupal, drupalSettings) {
+  if (typeof $.jstree === 'undefined') {
+    $('.browser--listing').once('media-directories-no-jstree').append(Drupal.t('Could not load jsTree!') + ' <a href="' + Drupal.url('admin/reports/status') + '" target="_blank">' + Drupal.t('Check status page') + '</a>');
+    return;
+  }
   Drupal.MediaBrowser.tree = function () {
     $(Drupal.MediaBrowser.treeSelector).jstree({
       plugins: ['dnd', 'wholerow', 'contextmenu', 'sort'],
