@@ -353,7 +353,7 @@ class MediaDirectoriesController extends ControllerBase {
   public function mediaAdd(Request $request) {
     $response = new AjaxResponse();
     $ui_config = $this->config('media_directories_ui.settings');
-    $combined_media_types = $ui_config->get('combined_upload_media_types', []);
+    ($config->get('combined_upload_media_types') != NULL ? $config->get('combined_upload_media_types') : [])
     $active_directory = (int) $request->get('active_directory', MEDIA_DIRECTORY_ROOT);
     $target_bundles = $request->get('target_bundles', []);
     $selection_mode = $request->get('selection_mode');
