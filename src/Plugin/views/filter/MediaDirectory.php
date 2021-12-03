@@ -115,6 +115,9 @@ class MediaDirectory extends ManyToOne {
       $form['markup'] = [
         '#markup' => '<div class="js-form-item form-item">' . $this->t('Vocabulary is not selected. Please select it in the <a href=":url">settings</a>.', [':url' => $settings_url->toString()]) . '</div>',
       ];
+
+      // Initialize the form's value to avoid further errors.
+      $form['value'] = [];
       return;
     }
     $this->options['vid'] = $vid;
