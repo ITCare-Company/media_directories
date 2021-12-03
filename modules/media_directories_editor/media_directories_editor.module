@@ -7,6 +7,7 @@
 
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Media;
 use Drupal\Core\Url;
 
 /**
@@ -78,45 +79,50 @@ function media_directories_editor_config_form_submit(array &$form, FormStateInte
  */
 function media_directories_editor_form_entity_embed_dialog_alter(&$form, FormStateInterface $form_state, $form_id) {
   $storage = $form_state->getStorage();
-  /** @var \Drupal\media\Entity\Media $entity */
-  $entity = $storage['entity'];
   /** @var \Drupal\embed\Entity\EmbedButton $embed_button */
   $embed_button = $storage['embed_button'];
 
-  if ($entity !== NULL) {
-    /** @var \Drupal\file\Entity\File $file */
-    $file = $entity->get('thumbnail')->entity;
-    $image = [
-      '#theme' => 'image_style',
-      '#style_name' => 'thumbnail',
-      '#alt' => $entity->label(),
-      '#uri' => $file->getFileUri(),
-    ];
-    $link = [
-      '#type' => 'link',
-      '#title' => $image,
-      '#url' => $entity->toUrl(),
-      '#attributes' => [
-        'target' => '_blank',
-      ],
-    ];
-    $form['entity']['#title'] = t('Selected item');
-    $form['entity']['link'] = $link;
-    unset($form['entity']['#markup']);
-  }
+  // Make sure we only alter the form for the button defined by our module.
+  if ($embed_button->id() == 'media_directories') {
 
-  if (isset($form['attributes']['data-entity-embed-display-settings']) && $entity->bundle() === 'image') {
-    $entity_element = $form_state->get('entity_element');
-    if (isset($entity_element['data-entity-embed-display-settings']) && !is_array($entity_element['data-entity-embed-display-settings'])) {
-      $entity_element['data-entity-embed-display-settings'] = Json::decode($entity_element['data-entity-embed-display-settings']);
+    /** @var \Drupal\media\Entity\Media $entity */
+    $entity = $storage['entity'];
+
+    if ($entity !== NULL && $entity instanceof Media) {
+      /** @var \Drupal\file\Entity\File $file */
+      $file = $entity->get('thumbnail')->entity;
+      $image = [
+        '#theme' => 'image_style',
+        '#style_name' => 'thumbnail',
+        '#alt' => $entity->label(),
+        '#uri' => $file->getFileUri(),
+      ];
+      $link = [
+        '#type' => 'link',
+        '#title' => $image,
+        '#url' => $entity->toUrl(),
+        '#attributes' => [
+          'target' => '_blank',
+        ],
+      ];
+      $form['entity']['#title'] = t('Selected item');
+      $form['entity']['link'] = $link;
+      unset($form['entity']['#markup']);
     }
-  }
 
-  // Add bundle validation constraint to entity browser.
-  if (isset($form['entity_browser'])) {
-    $bundles = $embed_button->getTypeSetting('bundles');
-    $bundles = array_combine($bundles, $bundles);
-    $form['entity_browser']['#entity_browser_validators']['target_bundles'] = ['bundle' => $bundles];
+    if (isset($form['attributes']['data-entity-embed-display-settings']) && $entity->bundle() === 'image') {
+      $entity_element = $form_state->get('entity_element');
+      if (isset($entity_element['data-entity-embed-display-settings']) && !is_array($entity_element['data-entity-embed-display-settings'])) {
+        $entity_element['data-entity-embed-display-settings'] = Json::decode($entity_element['data-entity-embed-display-settings']);
+      }
+    }
+
+    // Add bundle validation constraint to entity browser.
+    if (isset($form['entity_browser'])) {
+      $bundles = $embed_button->getTypeSetting('bundles');
+      $bundles = array_combine($bundles, $bundles);
+      $form['entity_browser']['#entity_browser_validators']['target_bundles'] = ['bundle' => $bundles];
+    }
   }
 }
 
