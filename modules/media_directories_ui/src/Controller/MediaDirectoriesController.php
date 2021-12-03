@@ -398,7 +398,14 @@ class MediaDirectoriesController extends ControllerBase {
           '#selection_mode' => $selection_mode,
         ];
 
-        $response->addCommand(new OpenModalDialogCommand($this->t('Add media'), $build, ['width' => '800']));
+        try {
+          $response->addCommand(new OpenModalDialogCommand($this->t('Add media'), $build, ['width' => '800']));
+        }
+        catch (\Exception $e) {
+          // fe. the OEmbed form can throw some errors if offline.
+          $this->messenger()->addError($e->getMessage());
+          $this->addMessagesToResponse($response, '.media-library-add-form-wrapper');
+        }
       }
       else {
         $this->messenger()->addError($this->t('No permission found for the creation of any media type.'));
