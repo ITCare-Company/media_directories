@@ -9,7 +9,9 @@ use Drupal\Core\Url;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\TermStorageInterface;
 use Drupal\taxonomy\VocabularyStorageInterface;
+use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\Plugin\views\filter\ManyToOne;
+use Drupal\views\ViewExecutable;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -102,7 +104,9 @@ class MediaDirectory extends ManyToOne {
   /**
    * {@inheritdoc}
    */
-  protected function valueForm(&$form, FormStateInterface $form_state) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, array &$options = NULL) {
+    parent::init($view, $display, $options);
+
     $config = $this->configFactory->get('media_directories.settings');
     $vid = $config->get('directory_taxonomy');
 
@@ -113,8 +117,22 @@ class MediaDirectory extends ManyToOne {
       ];
       return;
     }
+    $this->options['vid'] = $vid;
+  }
 
-    $vocabulary = $this->vocabularyStorage->load($vid);
+  /**
+   * {@inheritdoc}
+   */
+  public function getValueOptions() {
+    return $this->valueOptions;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function valueForm(&$form, FormStateInterface $form_state) {
+    $vocabulary = $this->vocabularyStorage->load($this->options['vid']);
+
     $tree = $this->termStorage->loadTree($vocabulary->id(), 0, NULL, TRUE);
     $options = [];
 
@@ -209,7 +227,7 @@ class MediaDirectory extends ManyToOne {
     $config = $this->configFactory->get('media_directories.settings');
 
     // If the value is 'All', then we show only elements with empty value.
-    if ($this->validatedExposedInput[0] === 'All') {
+    if (isset($this->validatedExposedInput[0]) && $this->validatedExposedInput[0] === 'All') {
       $new_group = $this->query->setWhereGroup('AND');
       $this->query->addWhereExpression($new_group, "$this->tableAlias.$this->realField IS NULL");
 
@@ -339,12 +357,9 @@ class MediaDirectory extends ManyToOne {
    * {@inheritdoc}
    */
   public function calculateDependencies() {
-    $config = $this->configFactory->get('media_directories.settings');
-    $vid = $config->get('directory_taxonomy');
     $dependencies = parent::calculateDependencies();
 
-    $vocabulary = $vid ? $this->vocabularyStorage->load($vid) : NULL;
-
+    $vocabulary = $this->vocabularyStorage->load($this->options['vid']);
     if ($vocabulary) {
       $dependencies[$vocabulary->getConfigDependencyKey()][] = $vocabulary->getConfigDependencyName();
     }
