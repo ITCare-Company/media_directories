@@ -235,17 +235,16 @@ function media_directories_ui_preprocess_media_directories_add(&$variables) {
     $variables['media_form'] = \Drupal::formBuilder()->buildForm(MediaCombinedUploadForm::class, $form_state);
   }
   elseif (isset($types[$variables['selected_type']])) {
+    /** @var \Drupal\media\Entity\MediaType $type */
     $type = $types[$variables['selected_type']];
-    $source_field = $type->getSource()->getConfiguration()['source_field'];
-    $field_config = \Drupal::entityTypeManager()->getStorage('field_config')->load('media.' . $type->id() . '.' . $source_field);
-
     $form_state->set('media_type', $type);
 
-    if (in_array($field_config->getType(), ['file', 'image'])) {
-      $variables['media_form'] = \Drupal::formBuilder()->buildForm(FileUploadForm::class, $form_state);
+    $plugin_definition = $type->getSource()->getPluginDefinition();
+    if (isset($plugin_definition['deriver']) && $plugin_definition['deriver'] == 'Drupal\media\Plugin\media\Source\OEmbedDeriver') {
+      $variables['media_form'] = \Drupal::formBuilder()->buildForm(OEmbedForm::class, $form_state);
     }
     else {
-      $variables['media_form'] = \Drupal::formBuilder()->buildForm(OEmbedForm::class, $form_state);
+      $variables['media_form'] = \Drupal::formBuilder()->buildForm(FileUploadForm::class, $form_state);
     }
   }
 }
