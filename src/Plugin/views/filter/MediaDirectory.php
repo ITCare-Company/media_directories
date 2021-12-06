@@ -109,17 +109,6 @@ class MediaDirectory extends ManyToOne {
 
     $config = $this->configFactory->get('media_directories.settings');
     $vid = $config->get('directory_taxonomy');
-
-    if (empty($vid)) {
-      $settings_url = Url::fromRoute('media_directories.config_form');
-      $form['markup'] = [
-        '#markup' => '<div class="js-form-item form-item">' . $this->t('Vocabulary is not selected. Please select it in the <a href=":url">settings</a>.', [':url' => $settings_url->toString()]) . '</div>',
-      ];
-
-      // Initialize the form's value to avoid further errors.
-      $form['value'] = [];
-      return;
-    }
     $this->options['vid'] = $vid;
   }
 
@@ -135,6 +124,17 @@ class MediaDirectory extends ManyToOne {
    */
   protected function valueForm(&$form, FormStateInterface $form_state) {
     $vocabulary = $this->vocabularyStorage->load($this->options['vid']);
+
+    if (empty($vocabulary)) {
+      $settings_url = Url::fromRoute('media_directories.config_form');
+      $form['markup'] = [
+        '#markup' => '<div class="js-form-item form-item">' . $this->t('Vocabulary is not selected. Please select it in the <a href=":url">settings</a>.', [':url' => $settings_url->toString()]) . '</div>',
+      ];
+
+      // Initialize the form's value to avoid further errors.
+      $form['value'] = [];
+      return;
+    }
 
     $tree = $this->termStorage->loadTree($vocabulary->id(), 0, NULL, TRUE);
     $options = [];
