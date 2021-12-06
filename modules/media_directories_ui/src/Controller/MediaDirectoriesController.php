@@ -8,6 +8,7 @@ use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Ajax\PrependCommand;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Form\FormAjaxException;
 use Drupal\Core\Form\FormBuilder;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Language\LanguageManagerInterface;
@@ -402,9 +403,16 @@ class MediaDirectoriesController extends ControllerBase {
           $response->addCommand(new OpenModalDialogCommand($this->t('Add media'), $build, ['width' => '800']));
         }
         catch (\Exception $e) {
-          // fe. the OEmbed form can throw some errors if offline.
-          $this->messenger()->addError($e->getMessage());
-          $this->addMessagesToResponse($response, '.media-library-add-form-wrapper');
+          if ($e instanceof FormAjaxException) {
+            // Make sure to re-throw the FormAjaxException!
+            // This is needed to break for AJAX form processing.
+            throw $e;
+          }
+          else {
+            // fe. the OEmbed form can throw some errors if offline.
+            $this->messenger()->addError($e->getMessage());
+            $this->addMessagesToResponse($response, '.media-library-add-form-wrapper');
+          }
         }
       }
       else {
