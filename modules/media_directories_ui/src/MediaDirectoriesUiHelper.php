@@ -63,7 +63,7 @@ class MediaDirectoriesUiHelper {
     if (empty($extension)) {
       $extension = pathinfo($file->getFilename(), PATHINFO_EXTENSION);
     }
-    $combined_media_types = ($config->get('combined_upload_media_types') != NULL ? $config->get('combined_upload_media_types') : []);
+    $combined_media_types = ($this->settings->get('combined_upload_media_types') != NULL ? $this->settings->get('combined_upload_media_types') : []);
 
     foreach ($types as $type) {
 
@@ -93,7 +93,7 @@ class MediaDirectoriesUiHelper {
    */
   public function getValidExtensions() {
     $valid_extensions = [];
-    $combined_media_types = ($config->get('combined_upload_media_types') != NULL ? $config->get('combined_upload_media_types') : []);
+    $combined_media_types = ($this->settings->get('combined_upload_media_types') != NULL ? $this->settings->get('combined_upload_media_types') : []);
     /** @var \Drupal\media\Entity\MediaType[] $types */
     $types = $this->entityTypeManager->getStorage('media_type')->loadMultiple();
 

@@ -144,7 +144,7 @@ function media_directories_ui_preprocess_views_view_fields__media_directories_ba
 function media_directories_ui_preprocess_media_directories_add(&$variables) {
   $ui_config = \Drupal::config('media_directories_ui.settings');
   $combined_upload_enabled = $ui_config->get('enable_combined_upload');
-  $combined_media_types = ($config->get('combined_upload_media_types') != NULL ? $config->get('combined_upload_media_types') : []);
+  $combined_media_types = ($ui_config->get('combined_upload_media_types') != NULL ? $ui_config->get('combined_upload_media_types') : []);
   /** @var \Drupal\media\Entity\MediaType[] $types */
   $types = \Drupal::entityTypeManager()->getStorage('media_type')->loadMultiple();
 
