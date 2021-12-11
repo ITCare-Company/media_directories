@@ -123,7 +123,10 @@ class MediaDirectory extends ManyToOne {
    * {@inheritdoc}
    */
   protected function valueForm(&$form, FormStateInterface $form_state) {
-    $vocabulary = $this->vocabularyStorage->load($this->options['vid']);
+    $vocabulary = NULL;
+    if (isset($this->options['vid'])) {
+      $vocabulary = $this->vocabularyStorage->load($this->options['vid']);
+    }
 
     if (empty($vocabulary)) {
       $settings_url = Url::fromRoute('media_directories.config_form');
@@ -362,7 +365,10 @@ class MediaDirectory extends ManyToOne {
   public function calculateDependencies() {
     $dependencies = parent::calculateDependencies();
 
-    $vocabulary = $this->vocabularyStorage->load($this->options['vid']);
+    $vocabulary = NULL;
+    if (isset($this->options['vid'])) {
+      $vocabulary = $this->vocabularyStorage->load($this->options['vid']);
+    }
     if ($vocabulary) {
       $dependencies[$vocabulary->getConfigDependencyKey()][] = $vocabulary->getConfigDependencyName();
     }
