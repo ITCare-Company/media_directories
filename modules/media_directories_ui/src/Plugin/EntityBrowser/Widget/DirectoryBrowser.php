@@ -218,7 +218,7 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
       $types = $this->entityTypeManager->getStorage('media_type')->loadMultiple();
 
       foreach ($types as $type) {
-        $enabled_bundles[] = $type->id();
+        $enabled_bundles[$type->id()] = $type->id();
       }
     }
 
@@ -324,6 +324,23 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
 
       // If there weren't any errors set, run the normal validators.
       if (empty($form_state->getErrors())) {
+        $target_bundles = NestedArray::getValue($form_state->getStorage(), [
+          'entity_browser',
+          'validators',
+          'target_bundles',
+        ]);
+        // Here we alter the form state to make sure all bundles are listed for the entity_browser validator,
+        // if there is no target bundle selected in the button config. See #3193549.
+        if (isset($target_bundles['bundle']) && count($target_bundles['bundle']) == 0) {
+          /** @var \Drupal\media\Entity\MediaType[] $types */
+          $types = $this->entityTypeManager->getStorage('media_type')->loadMultiple();
+          $all_bundles['bundle'] = [];
+          foreach ($types as $type) {
+            $all_bundles['bundle'][$type->id()] = $type->id();
+          }
+          $form_state->set(['entity_browser', 'validators', 'target_bundles'], $all_bundles);
+        }
+
         parent::validate($form, $form_state);
       }
     }
