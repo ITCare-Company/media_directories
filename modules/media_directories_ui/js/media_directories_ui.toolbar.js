@@ -133,7 +133,7 @@
         }
 
         var mids = Drupal.MediaBrowser.getSelectedMids();
-        window.open('/media/' + mids[0] + '/edit/translations');
+        window.open(drupalSettings.path.baseUrl + drupalSettings.path.pathPrefix + 'media/' + mids[0] + '/edit/translations');
       });
 
       // Delete media button.
