@@ -383,14 +383,14 @@ function media_directories_ui_form_media_directories_config_form_alter(&$form, F
   $form['media_directories_ui']['hide_media_library_media_tab'] = [
     '#type' => 'checkbox',
     '#title' => t('Hide Media tab'),
-    '#description' => t('If checked, the <em>Media</em> tab will be hidden.'),
+    '#description' => t('If checked, the <em>Media</em> tab will be hidden. <strong>Needs manual cache rebuild!</strong>'),
     '#default_value' => $config->get('hide_media_library_media_tab'),
   ];
 
   $form['media_directories_ui']['hide_media_library_files_tab'] = [
     '#type' => 'checkbox',
     '#title' => t('Hide Files tab'),
-    '#description' => t('If checked, the <em>Files</em> tab will be hidden.'),
+    '#description' => t('If checked, the <em>Files</em> tab will be hidden. <strong>Needs manual cache rebuild!</strong>'),
     '#default_value' => $config->get('hide_media_library_files_tab'),
   ];
 
@@ -398,7 +398,7 @@ function media_directories_ui_form_media_directories_config_form_alter(&$form, F
     $form['media_directories_ui']['hide_admin_toolbar_links'] = [
       '#type' => 'checkbox',
       '#title' => t('Hide admin_toolbar_tools links'),
-      '#description' => t("If checked, the <em>Add Media</em> menu links of admin_toolbar_tools will be hidden and also it's <em>Media</em> and <em>Files</em> links depending on the tab settings."),
+      '#description' => t("If checked, the <em>Add Media</em> menu links of admin_toolbar_tools will be hidden and also it's <em>Media</em> and <em>Files</em> links depending on the tab settings. . <strong>Needs manual cache rebuild!</strong>"),
       '#default_value' => $config->get('hide_admin_toolbar_links'),
     ];
   }

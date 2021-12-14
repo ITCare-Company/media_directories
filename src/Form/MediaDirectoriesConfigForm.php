@@ -78,7 +78,8 @@ class MediaDirectoriesConfigForm extends ConfigFormBase {
     $form['directory_taxonomy'] = [
       '#type' => 'select',
       '#title' => $this->t('Taxonomy'),
-      '#description' => $this->t('Select taxonomy for directory structure or  <a href=":create_vocabulary_url">create a new one</a>.', [
+      '#description' => $this->t('<strong>When changing this setting, all caches will be cleared.</strong>' .
+        '<br/>Select an existing vocabulary representing the directory structure or  <a href=":create_vocabulary_url">create a new one</a>.', [
         ':create_vocabulary_url' => $vocabulary_add_url,
       ]),
       '#options' => $options,
@@ -99,14 +100,19 @@ class MediaDirectoriesConfigForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    $current_vocabulary = $this->config('media_directories.settings')->get('directory_taxonomy');
+    $new_vocabulary = $form_state->getValue('directory_taxonomy');
     $this->config('media_directories.settings')
-      ->set('directory_taxonomy', $form_state->getValue('directory_taxonomy'))
+      ->set('directory_taxonomy', $new_vocabulary)
       ->set('all_files_in_root', $form_state->getValue('all_files_in_root'))
       ->save();
 
     // Clear cache to change base field settings.
     // @see media_directories_entity_base_field_info().
-    drupal_flush_all_caches();
+    if ($current_vocabulary !== $new_vocabulary) {
+      drupal_flush_all_caches();
+      $this->messenger()->addStatus($this->t('Caches cleared.'));
+    }
 
     parent::submitForm($form, $form_state);
   }
