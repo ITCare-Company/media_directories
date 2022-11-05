@@ -50,7 +50,7 @@ function media_directories_ui_css_alter(&$css, AttachedAssetsInterface $assets) 
   $route = 'entity_browser.media_directories_overview';
 
   if (Drupal::routeMatch()->getRouteName() === $route) {
-    unset($css[drupal_get_path('module', 'entity_browser') . '/css/entity_browser.entity_browser.css']);
+    unset($css[\Drupal::service('extension.list.module')->getPath('entity_browser') . '/css/entity_browser.entity_browser.css']);
   }
 }
 

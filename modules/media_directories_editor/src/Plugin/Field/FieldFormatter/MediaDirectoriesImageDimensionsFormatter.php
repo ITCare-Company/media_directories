@@ -213,7 +213,7 @@ class MediaDirectoriesImageDimensionsFormatter extends MediaThumbnailFormatter {
           'height' => $this->getSetting('dimensions')['image_height'],
           'class' => [],
         ],
-        '#uri' => file_create_url($file->getFileUri()),
+        '#uri' => \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri()),
       ];
 
       // Add cacheability of each item in the field.

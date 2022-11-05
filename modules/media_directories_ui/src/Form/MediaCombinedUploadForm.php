@@ -138,7 +138,7 @@ class MediaCombinedUploadForm extends FileUploadForm {
       $field_config = $this->entityTypeManager->getStorage('field_config')->load('media.' . $media_type->id() . '.' . $source_field_name);
       $destination = $this->getUploadLocation($field_config->getSettings());
       if ($this->fileSystem->prepareDirectory($destination, FileSystemInterface::CREATE_DIRECTORY)) {
-        $source_field_value = file_move($source_field_value, $destination);
+        $source_field_value = \Drupal::service('file.repository')->move($source_field_value, $destination);
       }
 
       $media[] = $this->createMediaFromValue($media_type, $media_storage, $source_field_name, $source_field_value, $form_state);
