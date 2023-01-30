@@ -15,6 +15,7 @@ use Drupal\Core\Field\TypedData\FieldItemDataDefinition;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Utility\Token;
+use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Theme\ThemeManagerInterface;
 use Drupal\file\Plugin\Field\FieldType\FileItem;
@@ -62,6 +63,13 @@ abstract class AddMediaFormBase extends FormBase {
   protected $themeManager;
 
   /**
+   * The renderer service.
+   *
+   * @var \Drupal\Core\Render\RendererInterface
+   */
+  protected $renderer;
+
+  /**
    * AddMediaFormBase constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -72,12 +80,15 @@ abstract class AddMediaFormBase extends FormBase {
    *   The token service.
    * @param \Drupal\Core\Theme\ThemeManagerInterface $theme_manager
    *   The theme manager.
+   * @param \Drupal\Core\Render\RendererInterface $renderer
+   *   The renderer service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, Token $token, ThemeManagerInterface $theme_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, Token $token, ThemeManagerInterface $theme_manager, RendererInterface $renderer) {
     $this->entityTypeManager = $entity_type_manager;
     $this->currentUser = $current_user;
     $this->token = $token;
     $this->themeManager = $theme_manager;
+    $this->renderer = $renderer;
   }
 
   /**
@@ -88,7 +99,8 @@ abstract class AddMediaFormBase extends FormBase {
       $container->get('entity_type.manager'),
       $container->get('current_user'),
       $container->get('token'),
-      $container->get('theme.manager')
+      $container->get('theme.manager'),
+      $container->get('renderer')
     );
   }
 
@@ -253,12 +265,11 @@ abstract class AddMediaFormBase extends FormBase {
     $form['#suffix'] = '</div>';
 
     $theme_name = $this->themeManager->getActiveTheme()->getName();
-    if (in_array($theme_name, ['claro', 'gin'])) {
+    if ($theme_name === 'claro') {
       $form['#attached']['library'][] = 'claro/media_library.theme';
     }
-    else {
-      // By default we add the seven styles.
-      $form['#attached']['library'][] = 'seven/media_library';
+    else if ($theme_name === 'gin') {
+      $form['#attached']['library'][] = 'gin/media_library.theme';
     }
 
     // The form is posted via AJAX. When there are messages set during the
@@ -766,7 +777,7 @@ abstract class AddMediaFormBase extends FormBase {
     $response->addCommand(new RefreshDirectoryTree($form_state->getValue('most_choosen_directory_tid'), $form_state->getValue('newly_added_media_ids')));
 
     $status_messages = ['#type' => 'status_messages'];
-    $messages = \Drupal::service('renderer')->renderRoot($status_messages);
+    $messages = $this->renderer->renderRoot($status_messages);
     if (!empty($messages)) {
       $response->addCommand(new OpenModalDialogCommand('', $messages));
     }

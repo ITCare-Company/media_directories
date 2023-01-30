@@ -30,7 +30,7 @@ This module also offers an alternative way to browse and use Medias. Initial UI 
 REQUIREMENTS
 ------------
 
-  * Drupal 8.8.3
+  * Drupal 9.3
   * Media (core)
   * Media library (core)
   * Entity browser (by submodule media_directories_ui)

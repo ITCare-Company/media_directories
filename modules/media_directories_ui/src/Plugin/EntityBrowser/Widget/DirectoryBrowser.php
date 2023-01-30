@@ -7,6 +7,7 @@ use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
+use Drupal\content_translation\ContentTranslationManagerInterface;
 use Drupal\entity_browser\WidgetBase;
 use Drupal\Core\Url;
 use Drupal\Core\Extension\ModuleHandlerInterface;
@@ -52,6 +53,13 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
    * @var \Drupal\Core\Extension\ModuleHandlerInterface
    */
   protected $moduleHandler;
+
+  /**
+   * The content translation manager.
+   *
+   * @var \Drupal\content_translation\ContentTranslationManagerInterface
+   */
+  protected $contentTranslationManager;
 
   /**
    * The vocabulary id to use.
@@ -114,6 +122,14 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
     $this->currentUser = $current_user;
     $this->routeMatch = $route_match;
     $this->moduleHandler = $module_handler;
+
+    if ($this->moduleHandler->moduleExists('content_translation')) {
+      // I found no way to inject an optional service into this plugin.
+      // @see https://symfony.com/doc/current/service_container/optional_dependencies.html
+      // @see https://orkjern.com/services-with-optional-dependencies-drupal-8
+      // @see https://www.md-systems.ch/en/blog/techblog/2016/12/17/how-to-safely-inject-additional-services-into-an-overridden-service
+      $this->contentTranslationManager = \Drupal::service('content_translation.manager');
+    }
 
     $config = $config_factory->get('media_directories.settings');
     $this->vocabularyId = $config->get('directory_taxonomy');
@@ -227,18 +243,14 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
     // Check wheater medias are translatable and pass on as javascript settings.
     foreach ($enabled_bundles as $type) {
       $media_translation_enabled = FALSE;
-      if ($this->moduleHandler->moduleExists('content_translation')) {
-        // I found no way to inject an optional service into this plugin.
-        // @see https://symfony.com/doc/current/service_container/optional_dependencies.html
-        // @see https://orkjern.com/services-with-optional-dependencies-drupal-8
-        // @see https://www.md-systems.ch/en/blog/techblog/2016/12/17/how-to-safely-inject-additional-services-into-an-overridden-service
-        $media_translation_enabled = \Drupal::service('content_translation.manager')->isEnabled('media', $type);
+      if (isset($this->contentTranslationManager)) {
+        $media_translation_enabled = $this->contentTranslationManager->isEnabled('media', $type);
       }
       $form['#attached']['drupalSettings']['media_directories']['media_translation_enabled'][$type] = $media_translation_enabled;
     }
     $term_translation_enabled = FALSE;
-    if ($this->moduleHandler->moduleExists('content_translation')) {
-      $term_translation_enabled = \Drupal::service('content_translation.manager')->isEnabled('taxonomy_term', $this->vocabularyId);
+    if (isset($this->contentTranslationManager)) {
+      $term_translation_enabled = $this->contentTranslationManager->isEnabled('taxonomy_term', $this->vocabularyId);
     }
     $form['#attached']['drupalSettings']['media_directories']['term_translation_enabled'] = $term_translation_enabled;
 
@@ -389,7 +401,6 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
     $values = $form_state->getValues()['table'][$this->uuid()]['form'];
     $this->configuration['submit_text'] = $values['submit_text'];
     $this->configuration['auto_select'] = $values['auto_select'];
-
   }
 
 }

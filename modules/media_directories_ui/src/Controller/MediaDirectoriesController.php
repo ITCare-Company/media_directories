@@ -179,7 +179,7 @@ class MediaDirectoriesController extends ControllerBase {
   public function directoryContent(Request $request) {
     $response = new AjaxResponse();
     $directory_id = (int) $request->request->get('directory_id');
-    $target_bundles = $request->request->get('target_bundles');
+    $target_bundles = $request->request->all('target_bundles');
     $media_name_search = $request->request->get('media_name');
 
     $bundles = $target_bundles ? implode('+', $target_bundles) : 'all';
@@ -319,7 +319,7 @@ class MediaDirectoriesController extends ControllerBase {
     $response = new AjaxResponse();
 
     $directory_id = (int) $request->request->get('directory_id');
-    $target_bundles = $request->request->get('target_bundles');
+    $target_bundles = $request->request->all('target_bundles');
     $directory = Term::load($directory_id);
 
     if ($directory === NULL) {
@@ -444,11 +444,11 @@ class MediaDirectoriesController extends ControllerBase {
    */
   public function mediaEdit(Request $request) {
     $response = new AjaxResponse();
-    $media_items = $request->request->get('media_items', []);
+    $media_items = $request->request->all('media_items', []);
     $active_directory = (int) $request->request->get('active_directory', MEDIA_DIRECTORY_ROOT);
     if (count($media_items) == 0) {
       // We're probably in the AJAX Form-Callback of the MediaEditForm (inheriting AddMediaFormBase)
-      $media_items = $request->request->get('media', []);
+      $media_items = $request->request->all('media', []);
       $media_ids = [];
       foreach ($media_items as $mid => $data) {
         // The nested array needs to be removed as nothing will not be loaded like this.
@@ -546,7 +546,7 @@ class MediaDirectoriesController extends ControllerBase {
    */
   public function mediaDelete(Request $request) {
     $response = new AjaxResponse();
-    $media_items = $request->request->get('media_items', []);
+    $media_items = $request->request->all('media_items', []);
 
     if (empty($media_items)) {
       return $response;

@@ -6,8 +6,10 @@ use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\File\FileSystemInterface;
+use Drupal\file\FileRepositoryInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\ElementInfoManagerInterface;
+use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Theme\ThemeManagerInterface;
 use Drupal\Core\Utility\Token;
@@ -35,6 +37,13 @@ class MediaCombinedUploadForm extends FileUploadForm {
   protected $mediaDirectoriesUiHelper;
 
   /**
+   * The file repository service.
+   *
+   * @var \Drupal\file\FileRepositoryInterface
+   */
+  protected $fileRepository;
+
+  /**
    * AddMediaFormBase constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -47,15 +56,20 @@ class MediaCombinedUploadForm extends FileUploadForm {
    *   The theme manager.
    * @param \Drupal\Core\Render\ElementInfoManagerInterface $element_info
    *   The element info service.
+   * @param \Drupal\Core\Render\RendererInterface $renderer
+   *   The renderer service.
    * @param \Drupal\Core\File\FileSystemInterface $file_system
    *   The file system.
    * @param \Drupal\media_directories_ui\MediaDirectoriesUiHelper $media_directories_ui_helper
    *   The media directories ui helper.
+   * @param \Drupal\file\FileRepositoryInterface $file_repository
+   *   The file repository service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, Token $token, ThemeManagerInterface $theme_manager, ElementInfoManagerInterface $element_info, FileSystemInterface $file_system, MediaDirectoriesUiHelper $media_directories_ui_helper) {
-    parent::__construct($entity_type_manager, $current_user, $token, $theme_manager, $element_info);
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, Token $token, ThemeManagerInterface $theme_manager, ElementInfoManagerInterface $element_info, RendererInterface $renderer, FileSystemInterface $file_system, MediaDirectoriesUiHelper $media_directories_ui_helper, FileRepositoryInterface $file_repository) {
+    parent::__construct($entity_type_manager, $current_user, $token, $theme_manager, $element_info, $renderer);
     $this->fileSystem = $file_system;
     $this->mediaDirectoriesUiHelper = $media_directories_ui_helper;
+    $this->fileRepository = $file_repository;
   }
 
   /**
@@ -68,8 +82,10 @@ class MediaCombinedUploadForm extends FileUploadForm {
       $container->get('token'),
       $container->get('theme.manager'),
       $container->get('element_info'),
+      $container->get('renderer'),
       $container->get('file_system'),
-      $container->get('media_directories_ui.helper')
+      $container->get('media_directories_ui.helper'),
+      $container->get('file.repository')
     );
   }
 
@@ -138,7 +154,7 @@ class MediaCombinedUploadForm extends FileUploadForm {
       $field_config = $this->entityTypeManager->getStorage('field_config')->load('media.' . $media_type->id() . '.' . $source_field_name);
       $destination = $this->getUploadLocation($field_config->getSettings());
       if ($this->fileSystem->prepareDirectory($destination, FileSystemInterface::CREATE_DIRECTORY)) {
-        $source_field_value = \Drupal::service('file.repository')->move($source_field_value, $destination);
+        $source_field_value = $this->fileRepository->move($source_field_value, $destination);
       }
 
       $media[] = $this->createMediaFromValue($media_type, $media_storage, $source_field_name, $source_field_value, $form_state);

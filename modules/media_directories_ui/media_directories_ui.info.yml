@@ -1,7 +1,7 @@
 name: 'Media Directories UI'
 description: 'Provides alternative UI for media management.'
 type: module
-core_version_requirement: ^8.8.3 || ^9
+core_version_requirement: ^9.3 || ^10
 
 dependencies:
   - media_directories:media_directories

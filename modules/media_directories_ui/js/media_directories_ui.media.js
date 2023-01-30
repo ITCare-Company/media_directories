@@ -1,4 +1,4 @@
-(function ($, Drupal) {
+(function ($, Drupal, once) {
   /**
    * Media item functionality.
    *
@@ -21,7 +21,7 @@
 
       // Attach listener to the top document and current document to
       // register keypress inside iframe without focusing iframe first.
-      $(top.document).once('media-browser-keypress-top').each(function () {
+      $(once('media-browser-keypress-top', top.document)).each(function () {
         $(this).on('keydown', function (e) {
           if (e.ctrlKey || e.metaKey || e.which === 17) {
             Drupal.MediaBrowser.media.ctrlPressed = true;
@@ -31,7 +31,7 @@
         });
       });
 
-      $(document).once('media-browser-keypress').each(function () {
+      $(once('media-browser-keypress', document)).each(function () {
         $(this).on('keydown', function (e) {
           if (e.ctrlKey || e.metaKey || e.which === 17) {
             Drupal.MediaBrowser.media.ctrlPressed = true;
@@ -44,12 +44,12 @@
       // Media item click actions.
       var $items = $browser_listing.find('.media-item');
       if ($items.length == 0 && Drupal.MediaBrowser.searchString && Drupal.MediaBrowser.searchString != '') {
-        $('.view-empty').once().append('<a id="media-browser-clear-search-string">' + Drupal.t('Clear filter') + '</a>');
+        $(once('media-browser-append-clear', '.view-empty')).append('<a id="media-browser-clear-search-string">' + Drupal.t('Clear filter') + '</a>');
         $('#media-browser-clear-search-string').on('click', function () {
           Drupal.MediaBrowser.toolbar.filterMediaBrowserByName('');
         });
       }
-      $items.once('media-browser-click').each(function () {
+      $(once('media-browser-click', $items)).each(function () {
         $(this).on('click', function () {
           var media_id = $(this).data('mid');
           var selected_items = Drupal.MediaBrowser.selectedMedia.length;
@@ -144,4 +144,4 @@
       });
     }
   };
-})(jQuery, Drupal);
+})(jQuery, Drupal, once);

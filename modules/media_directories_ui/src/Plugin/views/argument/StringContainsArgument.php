@@ -15,13 +15,6 @@ use Drupal\views\Plugin\views\argument\ArgumentPluginBase;
 class StringContainsArgument extends ArgumentPluginBase {
 
   /**
-   * The operator used for the query: or|and.
-   *
-   * @var string
-   */
-  public $operator;
-
-  /**
    * The actual value which is used for querying.
    *
    * @var array

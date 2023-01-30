@@ -46,7 +46,7 @@ media-ui.browser:
     js/media_directories_ui.browser.js: {}
   dependencies:
     - core/jquery
-    - core/jquery.once
+    - core/once
     - core/drupalSettings
     - core/drupal.ajax
     - core/drupal.debounce
