@@ -271,6 +271,10 @@ abstract class AddMediaFormBase extends FormBase {
     else if ($theme_name === 'gin') {
       $form['#attached']['library'][] = 'gin/media_library.theme';
     }
+    else if ($theme_name === 'seven') {
+      // Legacy D9 - seven will not live longer.
+      $form['#attached']['library'][] = 'seven/media_library';
+    }
 
     // The form is posted via AJAX. When there are messages set during the
     // validation or submission of the form, the messages need to be shown to
