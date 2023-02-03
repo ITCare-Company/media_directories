@@ -52,6 +52,7 @@
         }
       });
       this.inputs.media_name_filter.on('keyup', debounce(Drupal.MediaBrowser.toolbar.filterMediaBrowserByName, 400));
+      this.inputs.media_name_filter.closest('form').submit(function (event) { event.preventDefault(); });
 
       // Add new media button.
       this.buttons.media_add.on('click', function (e) {
@@ -219,6 +220,7 @@
      */
     filterMediaBrowserByName: function filterMediaBrowserByName(searchTerm) {
       if (searchTerm !== undefined && typeof searchTerm === 'string') {
+        // Otherwise searchTerm will be a browser event.
         Drupal.MediaBrowser.toolbar.inputs.media_name_filter.val(searchTerm);
       }
       Drupal.MediaBrowser.searchString = Drupal.MediaBrowser.toolbar.inputs.media_name_filter.val();
