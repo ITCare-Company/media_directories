@@ -1,6 +1,7 @@
 .browser {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  height: calc(100vh - 1px);
   box-sizing: border-box;
   border: 1px solid #ccc;
   border-radius: 3px;
@@ -37,7 +38,7 @@
   flex-wrap: nowrap;
   align-items: stretch;
   align-self: stretch;
-  height: 75vh;
+  flex: 1;
   width: 100%;
 }
 

@@ -64,3 +64,7 @@
 .media-item .media-info .media-info--Image {
   display: none;
 }
+
+body.media-directories-modal:not(.toolbar-tray-open) .layout-container {
+  margin: 0;
+}
