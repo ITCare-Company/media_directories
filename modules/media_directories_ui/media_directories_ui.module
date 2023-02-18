@@ -105,6 +105,13 @@ function media_directories_ui_preprocess_html__entity_browser__modal__media_dire
 /**
  * Implements hook_preprocess_HOOK().
  */
+function media_directories_ui_preprocess_html__entity_browser__iframe__media_directories_editor_browser(&$variables) {
+  $variables['attributes']['class'][] = 'media-directories-modal';
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
 function media_directories_ui_preprocess_views_view_unformatted__media_directories_base(&$variables) {
   foreach ($variables['rows'] as &$row) {
     /** @var \Drupal\media\Entity\Media $entity */
