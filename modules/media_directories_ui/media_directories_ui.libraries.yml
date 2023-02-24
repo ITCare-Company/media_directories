@@ -93,3 +93,8 @@ media-library.quick-edit-dialog:
   css:
     theme:
       css/media_directories_ui.dialog.css: {}
+
+widget:
+  css:
+    theme:
+      css/media_directories_ui.widget.css: {}
