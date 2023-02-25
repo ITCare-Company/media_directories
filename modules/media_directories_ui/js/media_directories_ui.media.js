@@ -69,7 +69,7 @@
           // only one item is available to choose.
           if (!Drupal.MediaBrowser.media.ctrlPressed || remaining === 1) {
             $browser_listing.find('.media-item').each(function () {
-              $(this).removeClass('selected');
+              $(this).removeClass('selected is-focus');
               $('input[type="checkbox"]', this).prop('checked', false);
             });
 
@@ -96,6 +96,7 @@
           // Toggle media element checkbox state.
           $checkbox.prop("checked", !$checkbox.prop("checked"));
           $(this).toggleClass('selected');
+          $(this).toggleClass('is-focus');
 
           // Notify toolbar items.
           Drupal.MediaBrowser.toolbar.selectionChanged();

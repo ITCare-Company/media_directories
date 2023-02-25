@@ -120,6 +120,10 @@ function media_directories_ui_preprocess_views_view_unformatted__media_directori
     $row['attributes']->setAttribute('data-mid', $entity_id);
     $row['attributes']->addClass('media-item');
     $row['attributes']->addClass('media-type--' . $entity->bundle());
+    $row['attributes']->addClass('js-media-library-item');
+    $row['attributes']->addClass('js-click-to-select');
+    $row['attributes']->addClass('media-library-item');
+    $row['attributes']->addClass('media-library-item--grid');
   }
 }
 
