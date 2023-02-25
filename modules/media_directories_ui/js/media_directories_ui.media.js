@@ -7,6 +7,11 @@
   Drupal.MediaBrowser.media = {
 
     /**
+     * Track key events.
+     */
+    keyEvents: false,
+
+    /**
      * Holds Control key state.
      */
     ctrlPressed: false,
@@ -19,27 +24,32 @@
       var cardinality = Drupal.MediaBrowser.cardinality;
       var remaining = Drupal.MediaBrowser.remainingItems;
 
-      // Attach listener to the top document and current document to
-      // register keypress inside iframe without focusing iframe first.
-      once('media-browser-keypress-top', top.document.body).forEach(function (element) {
-        $(element).on('keydown', function (e) {
-          if (e.ctrlKey || e.metaKey || e.which === 17) {
-            Drupal.MediaBrowser.media.ctrlPressed = true;
-          }
-        }).on('keyup', function () {
-          Drupal.MediaBrowser.media.ctrlPressed = false;
-        });
-      });
+      function handleCtrlDown(e) {
+        if (e.ctrlKey || e.metaKey || e.which === 17) {
+          Drupal.MediaBrowser.media.ctrlPressed = true;
+        }
+      }
 
-      once('media-browser-keypress', document.body).forEach(function (element) {
-        $(element).on('keydown', function (e) {
-          if (e.ctrlKey || e.metaKey || e.which === 17) {
-            Drupal.MediaBrowser.media.ctrlPressed = true;
-          }
-        }).on('keyup', function () {
+      function handleCtrlUp(e) {
+        if (e.ctrlKey || e.metaKey || e.which === 17) {
           Drupal.MediaBrowser.media.ctrlPressed = false;
-        });
-      });
+        }
+      }
+
+      // If not already added, add listeners.
+      if (!this.keyEvents) {
+        // Attach listener to the top document and current document to
+        // register keypress inside iframe without focusing iframe first.
+        top.document.addEventListener('keydown', handleCtrlDown, {capture: true});
+        top.document.addEventListener('keyup', handleCtrlUp, {capture: true});
+
+        document.addEventListener('keydown', handleCtrlDown, {capture: true});
+        document.addEventListener('keyup', handleCtrlUp, {capture: true});
+
+        // Set state to true.
+        this.keyEvents = true;
+      }
+
 
       // Media item click actions.
       var $items = $browser_listing.find('.media-item');

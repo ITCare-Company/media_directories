@@ -112,39 +112,37 @@
    * Global event bindings.
    */
   Drupal.MediaBrowser.globalBindings = function () {
-    $(once('media-browser-dnd-move', document)).each(function () {
-      // Drag&Drop indicators for media dnd operation.
-      $(this).on('dnd_move.vakata', function (e, data) {
-        // Only work on media: folders drag&drop are handled from jsTree events directly.
-        if (data.data.handleDndStopMedia) {
-          // Check if the tree instance is dnd enabled.
-          var jsTree = $(Drupal.MediaBrowser.treeSelector).jstree(true);
-          if (jsTree && jsTree._data && jsTree._data.dnd) {
-            // Check if hovering a folder.
-            ref = jsTree.settings.dnd.large_drop_target ? $(data.event.target).closest('.jstree-node').children('.jstree-anchor') : $(data.event.target).closest('.jstree-anchor');
-            if (ref && ref.length && ref.parent().is('.jstree-closed, .jstree-open, .jstree-leaf')) {
-              if (data.data.currentDirectory !== data.event.target.dataset.tid) {
-                data.helper.find('.jstree-icon').first().removeClass('jstree-er').addClass('jstree-ok');
-              } else {
-                data.helper.find('.jstree-icon').removeClass('jstree-ok').addClass('jstree-er');
-              }
+    // Drag&Drop indicators for media dnd operation.
+    $(document).on('dnd_move.vakata', function (e, data) {
+      // Only work on media: folders drag&drop are handled from jsTree events directly.
+      if (data.data.handleDndStopMedia) {
+        // Check if the tree instance is dnd enabled.
+        var jsTree = $(Drupal.MediaBrowser.treeSelector).jstree(true);
+        if (jsTree && jsTree._data && jsTree._data.dnd) {
+          // Check if hovering a folder.
+          ref = jsTree.settings.dnd.large_drop_target ? $(data.event.target).closest('.jstree-node').children('.jstree-anchor') : $(data.event.target).closest('.jstree-anchor');
+          if (ref && ref.length && ref.parent().is('.jstree-closed, .jstree-open, .jstree-leaf')) {
+            if (data.data.currentDirectory !== data.event.target.dataset.tid) {
+              data.helper.find('.jstree-icon').first().removeClass('jstree-er').addClass('jstree-ok');
+            } else {
+              data.helper.find('.jstree-icon').removeClass('jstree-ok').addClass('jstree-er');
             }
           }
         }
-      });
+      }
+    });
 
-      // Drag and Drop event bind for external sources.
-      $(this).on('dnd_stop.vakata', function (e, data) {
-        var targetDirectory = data.event.target.dataset.tid;
-        // Only work on media: folders drag&drop are handled from jsTree events directly.
-        if (data.data.handleDndStopMedia && data.data.currentDirectory !== targetDirectory) {
-          var media_items = [];
-          for (var i = 0; i < data.data.nodes.length; i++) {
-            media_items.push(data.data.nodes[i].id);
-          }
-          Drupal.MediaBrowser.moveMediaToDirectory(media_items, targetDirectory);
+    // Drag and Drop event bind for external sources.
+    $(document).on('dnd_stop.vakata', function (e, data) {
+      var targetDirectory = data.event.target.dataset.tid;
+      // Only work on media: folders drag&drop are handled from jsTree events directly.
+      if (data.data.handleDndStopMedia && data.data.currentDirectory !== targetDirectory) {
+        var media_items = [];
+        for (var i = 0; i < data.data.nodes.length; i++) {
+          media_items.push(data.data.nodes[i].id);
         }
-      });
+        Drupal.MediaBrowser.moveMediaToDirectory(media_items, targetDirectory);
+      }
     });
   };
 
