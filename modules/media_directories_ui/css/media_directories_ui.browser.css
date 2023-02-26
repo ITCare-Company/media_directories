@@ -1,7 +1,7 @@
 .browser {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 1px);
+  height: calc(100vh - 2px);
   box-sizing: border-box;
   border: 1px solid var(--color-gray-200-o-80, #ccc);
   border-radius: 3px;
