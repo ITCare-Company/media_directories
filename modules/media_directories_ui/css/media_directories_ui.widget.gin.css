@@ -8,12 +8,14 @@
   top: 0.625rem;
   right: 0.625rem;
   background-size: 0.75rem;
+  border-width: 1px !important;
 }
 
 [dir="ltr"] .media-directories-widget .entities-list .media-library-item .media-library-item__edit {
   margin: var(--gin-spacing-s);
   top: 0.625rem;
   right: 3.125rem;
+  border-width: 1px !important;
 }
 
 .media-directories-widget .entities-list .media-library-item .media-library-item__remove:hover,
@@ -25,3 +27,8 @@
   background-size: 0.75rem;
 }
 
+[dir="ltr"] .media-directories-widget .entities-list .media-library-item .media-library-item__edit:hover,
+[dir="ltr"] .media-directories-widget .entities-list .media-library-item .media-library-item__edit:focus,
+[dir="ltr"] .media-directories-widget .entities-list .media-library-item .media-library-item__edit:active {
+  border-width: 1px !important;
+}
