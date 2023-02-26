@@ -165,24 +165,28 @@
 
     // Lock the UI.
     Drupal.MediaBrowser.startLoader();
-    Drupal.ajax(ajaxSettings).execute().done(function () {
+    Drupal.ajax(ajaxSettings).execute().then(function (data) {
       Drupal.MediaBrowser.activeDirectory = directory_id;
       Drupal.MediaBrowser.media.init($('.browser--listing'));
 
       // Unlock the UI.
       Drupal.MediaBrowser.stopLoader();
 
-      // Set previous selection, if there is any.
-      $.each(Drupal.MediaBrowser.getSelectedMids(), function (key, value) {
-        var $element = Drupal.MediaBrowser.getMediaElement(value);
-        if ($element.length > 0) {
-          $element.addClass('selected');
-          $('input[type="checkbox"]', $element).prop('checked', true);
-        }
-      });
-      Drupal.MediaBrowser.toolbar.selectionChanged();
+      Drupal.MediaBrowser.setMediaSelected();
     });
   };
+
+  Drupal.MediaBrowser.setMediaSelected = function () {
+    // Set previous selection, if there is any.
+    $.each(Drupal.MediaBrowser.getSelectedMids(), function (key, value) {
+      var $element = Drupal.MediaBrowser.getMediaElement(value);
+      if ($element.length > 0) {
+        $element.addClass('selected');
+        $('input[type="checkbox"]', $element).prop('checked', true);
+      }
+    });
+    Drupal.MediaBrowser.toolbar.selectionChanged();
+  }
 
   /**
    * Move media item(s) into directory.
