@@ -1,0 +1,27 @@
+.media-directories-widget .entities-list .rendered-entity {
+  width: auto;
+  border: 0;
+}
+
+[dir="ltr"] .media-directories-widget .entities-list .media-library-item .media-library-item__remove {
+  margin: var(--gin-spacing-s);
+  top: 0.625rem;
+  right: 0.625rem;
+  background-size: 0.75rem;
+}
+
+[dir="ltr"] .media-directories-widget .entities-list .media-library-item .media-library-item__edit {
+  margin: var(--gin-spacing-s);
+  top: 0.625rem;
+  right: 3.125rem;
+}
+
+.media-directories-widget .entities-list .media-library-item .media-library-item__remove:hover,
+.media-directories-widget .entities-list .media-library-item .media-library-item__remove:focus,
+.media-directories-widget .entities-list .media-library-item .media-library-item__remove:active {
+  margin: var(--gin-spacing-s);
+  top: 0.625rem;
+  right: 0.625rem;
+  background-size: 0.75rem;
+}
+

@@ -309,6 +309,7 @@ function media_directories_ui_field_widget_single_element_entity_browser_entity_
         break;
       case 'gin':
         $element['#attached']['library'][] = 'gin/media_library';
+        $element['#attached']['library'][] = 'media_directories_ui/widget.gin';
         break;
     }
 

@@ -98,3 +98,8 @@ widget:
   css:
     theme:
       css/media_directories_ui.widget.css: {}
+
+widget.gin:
+  css:
+    theme:
+      css/media_directories_ui.widget.gin.css: {}
