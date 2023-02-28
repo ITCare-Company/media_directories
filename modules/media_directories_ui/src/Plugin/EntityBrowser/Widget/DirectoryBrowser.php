@@ -247,7 +247,7 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
     }
 
     $enabled_bundles = [];
-    if ($target_bundles && count($target_bundles['bundle']) > 0) {
+    if (isset($target_bundles['bundle']) && count($target_bundles['bundle']) > 0) {
       $enabled_bundles = $target_bundles['bundle'];
     }
     else {
