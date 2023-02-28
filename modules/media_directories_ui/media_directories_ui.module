@@ -285,7 +285,9 @@ function media_directories_ui_form_entity_browser_media_directories_modal_form_a
  * Implements hook_field_widget_WIDGET_TYPE_form_alter().
  */
 function media_directories_ui_field_widget_single_element_entity_browser_entity_reference_form_alter(&$element, FormStateInterface $form_state, $context) {
-  if (isset($element['entity_browser']) && $element['entity_browser']['#entity_browser'] === 'media_directories_modal') {
+  /** @var \Drupal\entity_browser\Plugin\Field\FieldWidget\EntityReferenceBrowserWidget $widget */
+  $widget = $context['widget'];
+  if ($widget->getSetting('entity_browser') === 'media_directories_modal') {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $items */
     $items = $context['items'];
     $handler_settings = $items->getSetting('handler_settings');
@@ -294,7 +296,7 @@ function media_directories_ui_field_widget_single_element_entity_browser_entity_
     $element['entity_browser']['#entity_browser_validators']['target_bundles'] = ['bundle' => $target_bundles];
 
     $current_items = $element['current']['items'];
-    $cardinality = $element['entity_browser']['#cardinality'];
+    $cardinality = $element['entity_browser']['#cardinality'] ?? 1;
 
     $element['entity_browser']['#widget_context']['remaining'] = $cardinality - count($current_items);
 
