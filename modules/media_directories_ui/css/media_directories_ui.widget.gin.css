@@ -1,13 +1,19 @@
+
+.media-directories-widget .entities-list:not(.entities-list--single-item) {
+  margin: 0;
+  grid-template-columns: repeat(5, 1fr);
+}
+
 .media-directories-widget .entities-list .rendered-entity {
   width: auto;
   border: 0;
+  padding: 0;
 }
 
 [dir="ltr"] .media-directories-widget .entities-list .media-library-item .media-library-item__remove {
   margin: var(--gin-spacing-s);
   top: 0.625rem;
   right: 0.625rem;
-  background-size: 0.75rem;
   border-width: 1px !important;
 }
 
@@ -17,6 +23,7 @@
   height: 31px;
   top: 0.625rem;
   right: 3.125rem;
+  background-size: 0.75rem 0.75rem;
   border-width: 1px !important;
 }
 
@@ -26,7 +33,6 @@
   margin: var(--gin-spacing-s);
   top: 0.625rem;
   right: 0.625rem;
-  background-size: 0.75rem;
 }
 
 [dir="ltr"] .media-directories-widget .entities-list .media-library-item .media-library-item__edit:hover,
@@ -39,4 +45,5 @@
   right: 3.125rem;
   border-width: 1px !important;
   border-color: transparent!important;
+  background-size: 0.75rem 0.75rem;
 }

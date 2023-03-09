@@ -109,6 +109,13 @@
   opacity: 0.75;
 }
 
+#vakata-dnd .media-library-item--grid .media-library-item__attributes {
+  display: none;
+}
 #vakata-dnd .media-library-item--grid {
-  width: 100%;
+  width: 150px !important;
+}
+
+.view-media-directories-base {
+  padding: 1em;
 }

@@ -100,6 +100,7 @@ function media_directories_ui_views_data_alter(array &$data) {
  */
 function media_directories_ui_preprocess_html__entity_browser__modal__media_directories_modal(&$variables) {
   $variables['attributes']['class'][] = 'media-directories-modal';
+  $variables['attributes']['class'][] = 'media-library-widget-modal';
 }
 
 /**
@@ -107,6 +108,7 @@ function media_directories_ui_preprocess_html__entity_browser__modal__media_dire
  */
 function media_directories_ui_preprocess_html__entity_browser__iframe__media_directories_editor_browser(&$variables) {
   $variables['attributes']['class'][] = 'media-directories-modal';
+  $variables['attributes']['class'][] = 'media-library-widget-modal';
 }
 
 /**

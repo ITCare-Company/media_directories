@@ -54,6 +54,15 @@ media-ui.browser:
     - core/jquery.form
     - core/jquery.ui.draggable
 
+media-ui.browser.gin:
+  css:
+    theme:
+      css/media_directories_ui.browser.gin.css: {}
+  dependencies:
+    - media_directories_ui/media-ui.browser
+    - claro/media_library.theme
+    - gin/media_library
+
 # Toolbar functionality.
 media-ui.toolbar:
   js:

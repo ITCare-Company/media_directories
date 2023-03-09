@@ -167,7 +167,7 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
         $form['#attached']['library'][] = 'claro/media_library.theme';
         break;
       case 'gin':
-        $form['#attached']['library'][] = 'gin/media_library';
+        $form['#attached']['library'][] = 'media_directories_ui/media-ui.browser.gin';
         break;
     }
 
