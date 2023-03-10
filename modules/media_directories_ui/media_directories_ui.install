@@ -184,7 +184,7 @@ function media_directories_ui_update_8004() {
 /**
  * Update media directories base view configuration.
  */
-function media_directories_ui_update_9001(): void {
+function media_directories_ui_update_9002(): void {
   $config_path = \Drupal::service('extension.list.module')->getPath('media_directories_ui') . '/config/install';
   $source = new FileStorage($config_path);
 
