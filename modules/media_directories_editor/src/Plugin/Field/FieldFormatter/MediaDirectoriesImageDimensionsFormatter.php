@@ -217,12 +217,14 @@ class MediaDirectoriesImageDimensionsFormatter extends MediaThumbnailFormatter {
     foreach ($media_items as $delta => $media) {
       /** @var \Drupal\file\Entity\File $file */
       $file = $media->get('thumbnail')->entity;
+      $alt = $media->get('thumbnail')->alt;
 
       $elements[$delta] = [
         '#theme' => 'image',
         '#attributes' => [
           'width' => $this->getSetting('dimensions')['image_width'],
           'height' => $this->getSetting('dimensions')['image_height'],
+          'alt' => $alt,
           'class' => [],
         ],
         '#uri' => $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri()),
