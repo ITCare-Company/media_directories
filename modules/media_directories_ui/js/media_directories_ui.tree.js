@@ -177,12 +177,19 @@
   };
 
   Drupal.MediaBrowser.setMediaSelected = function () {
+    var scrolled = false;
     // Set previous selection, if there is any.
     $.each(Drupal.MediaBrowser.getSelectedMids(), function (key, value) {
       var $element = Drupal.MediaBrowser.getMediaElement(value);
       if ($element.length > 0) {
-        $element.addClass('selected');
+        $element.addClass('selected is-focus checked');
         $('input[type="checkbox"]', $element).prop('checked', true);
+
+        if (!scrolled) {
+          // Scroll to the first selected item.
+          $element[0].scrollIntoView(false);
+          scrolled = true;
+        }
       }
     });
     Drupal.MediaBrowser.toolbar.selectionChanged();
