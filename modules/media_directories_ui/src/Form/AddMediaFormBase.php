@@ -606,8 +606,10 @@ abstract class AddMediaFormBase extends FormBase {
     $element['#description_display'] = 'none';
 
     // Remove the filename display.
-    foreach ($element['#files'] as $file) {
-      $element['file_' . $file->id()]['filename']['#access'] = FALSE;
+    if (isset($element['#files'])) {
+      foreach ($element['#files'] as $file) {
+        $element['file_' . $file->id()]['filename']['#access'] = FALSE;
+      }
     }
     return $element;
   }
