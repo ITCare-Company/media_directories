@@ -126,7 +126,7 @@ class DirectoryDeleteForm extends ConfirmFormBase {
     $response = new AjaxResponse();
 
     if ($this->directory->access('delete')) {
-      $query = $this->entityTypeManager->getStorage('media')->getQuery();
+      $query = $this->entityTypeManager->getStorage('media')->getQuery()->accessCheck(FALSE);
       $query->condition('directory', $this->directory->id());
       $media_ids = $query->execute();
 
