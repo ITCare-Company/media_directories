@@ -51,6 +51,15 @@
           }
         }
       });
+
+      // Prevent enter key from submitting the form.
+      this.inputs.media_name_filter.on('keydown', function (e) {
+        if (e.keyCode === 13) {
+          e.preventDefault();
+          return false;
+        }
+      });
+
       this.inputs.media_name_filter.on('keyup', debounce(Drupal.MediaBrowser.toolbar.filterMediaBrowserByName, 400));
 
       // Add new media button.
