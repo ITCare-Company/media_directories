@@ -35,15 +35,15 @@ function media_directories_help($route_name) {
 }
 
 /**
- * Implements hook_field_widget_WIDGET_TYPE_form_alter().
+ * Implements hook_field_widget_complete_WIDGET_TYPE_form_alter().
  */
-function media_directories_field_widget_options_select_form_alter(&$element, FormStateInterface $form_state, $context) {
+function media_directories_field_widget_complete_options_select_form_alter(&$element, FormStateInterface $form_state, $context) {
   /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $items */
   $items = $context['items'];
 
   if ($items->getName() === 'directory') {
     // Set better name for empty value.
-    $element['#options']['_none'] = t('Root directory');
+    $element['widget']['#options']['_none'] = t('Root directory');
   }
 }
 
