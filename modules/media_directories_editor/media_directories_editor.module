@@ -7,8 +7,8 @@
 
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Media;
 use Drupal\Core\Url;
+use Drupal\media\MediaInterface;
 
 /**
  * Implements hook_form_FORM_ID_alter().
@@ -88,12 +88,12 @@ function media_directories_editor_form_entity_embed_dialog_alter(&$form, FormSta
     /** @var \Drupal\media\Entity\Media $entity */
     $entity = $storage['entity'];
 
-    if ($entity !== NULL && $entity instanceof Media) {
-      /** @var \Drupal\file\Entity\File $file */
+    if ($entity instanceof MediaInterface) {
+      /** @var \Drupal\file\FileInterface $file */
       $file = $entity->get('thumbnail')->entity;
       $image = [
         '#theme' => 'image_style',
-        '#style_name' => 'thumbnail',
+        '#style_name' => 'media_library',
         '#alt' => $entity->label(),
         '#uri' => $file->getFileUri(),
       ];
