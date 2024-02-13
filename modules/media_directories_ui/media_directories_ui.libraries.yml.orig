@@ -2,7 +2,6 @@ jstree:
   remote: https://github.com/vakata/jstree/archive/3.3.16.zip
   license:
     name: MIT
-    url: http://opensource.org/licenses/mit-license.php
     gpl-compatible: true
   css:
     component:
@@ -16,7 +15,6 @@ jstree-cdn:
   remote: https://github.com/vakata/jstree/archive/3.3.16.zip
   license:
     name: MIT
-    url: http://opensource.org/licenses/mit-license.php
     gpl-compatible: true
   css:
     component:
