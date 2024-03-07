@@ -4,6 +4,7 @@ namespace Drupal\media_directories_ui\Form;
 
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\CloseModalDialogCommand;
+use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
@@ -200,10 +201,15 @@ class MediaEditForm extends AddMediaFormBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    *
-   * @return \Drupal\Core\Ajax\AjaxResponse
-   *   An AJAX response.
+   * @return array|\Drupal\Core\Ajax\AjaxResponse
+   *    The form array if there are validation errors, or an AJAX response to add
+   *    the created items to the current selection.
    */
   public static function saveMedia(array &$form, FormStateInterface $form_state) {
+    if ($form_state::hasAnyErrors()) {
+      return $form;
+    }
+
     $response = new AjaxResponse();
     $added_media = $form_state->get('media');
 
@@ -216,6 +222,11 @@ class MediaEditForm extends AddMediaFormBase {
 
     $response->addCommand(new LoadDirectoryContent());
     $response->addCommand(new CloseModalDialogCommand());
+    $status_messages = ['#type' => 'status_messages'];
+    $messages = \Drupal::service('renderer')->renderRoot($status_messages);
+    if (!empty($messages)) {
+      $response->addCommand(new OpenModalDialogCommand('', $messages));
+    }
 
     return $response;
   }
