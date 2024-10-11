@@ -9,6 +9,7 @@ use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\file\FileInterface;
 use Drupal\image\ImageStyleStorageInterface;
 use Drupal\media\Plugin\Field\FieldFormatter\MediaThumbnailFormatter;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -217,6 +218,11 @@ class MediaDirectoriesImageDimensionsFormatter extends MediaThumbnailFormatter {
     foreach ($media_items as $delta => $media) {
       /** @var \Drupal\file\Entity\File $file */
       $file = $media->get('thumbnail')->entity;
+
+      if (!$file instanceof FileInterface) {
+        continue; // Skip this media item if there's no file.
+      }
+
       $alt = $media->get('thumbnail')->alt;
 
       $elements[$delta] = [
