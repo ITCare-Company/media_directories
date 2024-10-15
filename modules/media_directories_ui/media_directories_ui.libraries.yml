@@ -1,5 +1,5 @@
 jstree:
-  remote: https://github.com/vakata/jstree/archive/3.3.16.zip
+  remote: https://github.com/vakata/jstree/archive/3.3.17.zip
   license:
     name: MIT
     url: http://opensource.org/licenses/mit-license.php
@@ -13,16 +13,16 @@ jstree:
     - core/jquery
 
 jstree-cdn:
-  remote: https://github.com/vakata/jstree/archive/3.3.16.zip
+  remote: https://github.com/vakata/jstree/archive/3.3.17.zip
   license:
     name: MIT
     url: http://opensource.org/licenses/mit-license.php
     gpl-compatible: true
   css:
     component:
-      //cdnjs.cloudflare.com/ajax/libs/jstree/3.3.16/themes/default/style.min.css: { external: true, minified: true}
+      //cdnjs.cloudflare.com/ajax/libs/jstree/3.3.17/themes/default/style.min.css: { external: true, minified: true}
   js:
-    //cdnjs.cloudflare.com/ajax/libs/jstree/3.3.16/jstree.min.js: { external: true, minified: true }
+    //cdnjs.cloudflare.com/ajax/libs/jstree/3.3.17/jstree.min.js: { external: true, minified: true }
   dependencies:
     - core/jquery
 

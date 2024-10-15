@@ -10,13 +10,13 @@
          "type":"package",
          "package":{
             "name":"vakata/jstree",
-            "version":"3.3.16",
+            "version":"3.3.17",
             "type":"drupal-library",
             "extra":{
                "installer-name":"jstree"
             },
             "dist":{
-               "url":"https://github.com/vakata/jstree/archive/3.3.16.zip",
+               "url":"https://github.com/vakata/jstree/archive/3.3.17.zip",
                "type":"zip"
             },
             "require":{
@@ -26,6 +26,6 @@
       }
    },
    "require":{
-      "vakata/jstree":"3.3.16"
+      "vakata/jstree":"3.3.17"
    }
 }
