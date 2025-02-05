@@ -124,6 +124,7 @@ class MediaCombinedUploadForm extends FileUploadForm {
         ['Drupal\file\Element\ManagedFile', 'processManagedFile'],
         '::processUploadElement',
       ],
+      // This will work in D11 and is a phpstan false positive.
       '#pre_render' => array_merge($pre_render, [[static::class, 'preRenderUploadElement']]),
     ];
 

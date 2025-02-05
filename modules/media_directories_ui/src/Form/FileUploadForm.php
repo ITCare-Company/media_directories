@@ -88,6 +88,7 @@ class FileUploadForm extends AddMediaFormBase implements TrustedCallbackInterfac
       '#multiple' => TRUE,
       '#upload_location' => $this->getUploadLocation($field_config->getSettings()),
       '#process' => array_merge(['::validateUploadElement'], $process, ['::processUploadElement']),
+      // This will work in D11 and is a phpstan false positive.
       '#pre_render' => array_merge($pre_render, [[static::class, 'preRenderUploadElement']]),
     ];
 
