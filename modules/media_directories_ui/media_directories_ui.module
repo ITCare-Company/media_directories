@@ -55,21 +55,6 @@ function media_directories_ui_css_alter(&$css, AttachedAssetsInterface $assets) 
 }
 
 /**
- * Implements hook_library_info_alter().
- *
- * Note: libraries_get_path() is deprecated and will be removed before a stable
- * libraries Drupal 8 release. Needs update when libraries module is supporting
- * variants.
- * https://www.drupal.org/node/1704734
- */
-function media_directories_ui_library_info_alter(&$libraries, $extension) {
-  if ($extension === 'jstree' && function_exists('libraries_get_path')) {
-    // Use Libraries API's path.
-    $libraries['jstree']['js'] = ['/' . libraries_get_path('jstree') . '/jstree.min.js' => ['weight' => -4]];
-  }
-}
-
-/**
  * Implements hook_block_access().
  */
 function media_directories_ui_block_access(Block $block, $operation, AccountInterface $account) {
@@ -547,11 +532,6 @@ function _media_directories_ui_requirements_check() {
  * Helper function to see if a library file exists.
  */
 function _media_directories_ui_library_file_exists($library_name) {
-  if (function_exists('libraries_get_path') && libraries_get_path($library_name)) {
-    // Libraries API is active and library file is in place.
-    return TRUE;
-  }
-
   /** @var \Drupal\Core\Asset\LibraryDiscoveryInterface $library_discovery */
   $library_discovery = Drupal::service('library.discovery');
   $library = $library_discovery->getLibraryByName('media_directories_ui', $library_name);
