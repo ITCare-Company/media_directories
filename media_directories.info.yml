@@ -1,7 +1,7 @@
 name: Media Directories
 description: 'Add directory structure to Media entities.'
 type: module
-core_version_requirement: ^9.5 || ^10
+core_version_requirement: ^10.2 || ^11
 configure: media_directories.config_form
 
 dependencies:
