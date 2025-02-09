@@ -241,9 +241,9 @@ abstract class AddMediaFormBase extends FormBase {
       ];
     }
 
-    if (!isset($upload_validators['file_validate_size'])) {
+    if (!isset($upload_validators['FileSizeLimit'])) {
       $max_filesize = Environment::getUploadMaxSize();
-      $upload_validators['file_validate_size'] = [$max_filesize];
+      $upload_validators['FileSizeLimit'] = ['fileLimit' => $max_filesize];
     }
 
     return $upload_validators;
