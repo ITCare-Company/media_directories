@@ -244,7 +244,11 @@ function media_directories_ui_preprocess_media_directories_add(&$variables) {
     $form_state->set('media_type', $type);
 
     $plugin_definition = $type->getSource()->getPluginDefinition();
-    if (isset($plugin_definition['deriver']) && $plugin_definition['deriver'] == 'Drupal\media\Plugin\media\Source\OEmbedDeriver') {
+    // Support media types using an oembed provider.
+    if (isset($plugin_definition['provider']) && $plugin_definition['provider'] === 'oembed_providers') {
+      $variables['media_form'] = Drupal::formBuilder()->buildForm(OEmbedForm::class, $form_state);
+    }
+    elseif (isset($plugin_definition['deriver']) && $plugin_definition['deriver'] == 'Drupal\media\Plugin\media\Source\OEmbedDeriver') {
       $variables['media_form'] = Drupal::formBuilder()->buildForm(OEmbedForm::class, $form_state);
     }
     else {
