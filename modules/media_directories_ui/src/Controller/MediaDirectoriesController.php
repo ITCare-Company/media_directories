@@ -6,6 +6,8 @@ use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\HtmlCommand;
 use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Ajax\PrependCommand;
+use Drupal\Core\Cache\Cache;
+use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormAjaxException;
@@ -86,6 +88,13 @@ class MediaDirectoriesController extends ControllerBase {
   protected $mediaDirectoriesUiHelper;
 
   /**
+   * The cache backend that should be used.
+   *
+   * @var \Drupal\Core\Cache\CacheBackendInterface
+   */
+  protected $cache;
+
+  /**
    * MediaDirectoriesController constructor.
    *
    * @param \Drupal\Core\Form\FormBuilder $formBuilder
@@ -99,11 +108,12 @@ class MediaDirectoriesController extends ControllerBase {
    * @param \Drupal\media_directories_ui\MediaDirectoriesUiHelper $media_directories_ui_helper
    *   The media directories ui helper.
    */
-  public function __construct(FormBuilder $formBuilder, RendererInterface $renderer, ModuleHandlerInterface $module_handler, LanguageManagerInterface $language_manager, MediaDirectoriesUiHelper $media_directories_ui_helper) {
+  public function __construct(FormBuilder $formBuilder, RendererInterface $renderer, ModuleHandlerInterface $module_handler, LanguageManagerInterface $language_manager, MediaDirectoriesUiHelper $media_directories_ui_helper, CacheBackendInterface $cache) {
     $this->formBuilder = $formBuilder;
     $this->renderer = $renderer;
     $this->moduleHandler = $module_handler;
     $this->languageManager = $language_manager;
+    $this->cache = $cache;
 
     $config = $this->config('media_directories.settings');
     $this->vocabularyId = $config->get('directory_taxonomy');
@@ -120,7 +130,8 @@ class MediaDirectoriesController extends ControllerBase {
       $container->get('renderer'),
       $container->get('module_handler'),
       $container->get('language_manager'),
-      $container->get('media_directories_ui.helper')
+      $container->get('media_directories_ui.helper'),
+      $container->get('cache.default'),
     );
   }
 
@@ -134,6 +145,11 @@ class MediaDirectoriesController extends ControllerBase {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function directoryTree() {
+    $cid = 'media_directories_ui_directory_tree';
+    if ($cache = $this->cache->get($cid)) {
+      return new JsonResponse($cache->data);
+    }
+
     $tree = [];
     $this->termStorage = $this->entityTypeManager()->getStorage('taxonomy_term');
     $terms = $this->termStorage->loadTree($this->vocabularyId);
@@ -162,6 +178,9 @@ class MediaDirectoriesController extends ControllerBase {
       ],
     ];
 
+    $cache_tags = ['taxonomy_term_list:' . $this->vocabularyId];
+    // Save to cache and return data.
+    $this->cache->set($cid, $tree, Cache::PERMANENT, $cache_tags);
     return new JsonResponse($tree);
   }
 
