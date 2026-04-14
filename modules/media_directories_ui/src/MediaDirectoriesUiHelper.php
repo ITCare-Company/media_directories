@@ -74,7 +74,7 @@ class MediaDirectoriesUiHelper {
       $source_field = $type->getSource()->getConfiguration()['source_field'];
       $field_config = $this->entityTypeManager->getStorage('field_config')->load('media.' . $type->id() . '.' . $source_field);
 
-      if (in_array($extension, explode(' ', $field_config->getSetting('file_extensions')))) {
+      if (in_array(strtolower($extension), explode(' ', strtolower($field_config->getSetting('file_extensions'))))) {
         return $type;
       }
     }
