@@ -1,0 +1,10 @@
+entity_browser.browser.widget.media_directories_browser_widget:
+  type: mapping
+  label: 'Media directories widget configuration'
+  mapping:
+    submit_text:
+      type: text
+      label: 'Submit text'
+    auto_select:
+      type: boolean
+      label: 'Auto select'

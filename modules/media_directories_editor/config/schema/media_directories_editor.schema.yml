@@ -12,3 +12,18 @@ media_directories_editor.settings:
           sequence:
             type: string
             label: 'Image style'
+
+field.formatter.settings.media_directories_image_dimensions:
+  type: mapping
+  label: 'Image with dimensions format settings'
+  mapping:
+    dimensions:
+      type: mapping
+      label: 'Dimension settings'
+      mapping:
+        image_width:
+          type: string
+          label: 'Width'
+        image_height:
+          type: string
+          label: 'Height'
