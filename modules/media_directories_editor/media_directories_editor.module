@@ -84,6 +84,7 @@ function media_directories_editor_form_entity_embed_dialog_alter(&$form, FormSta
 
   // Make sure we only alter the form for the button defined by our module.
   if ($embed_button->id() == 'media_directories') {
+    $form['#attached']['library'][] = 'media_directories_editor/dialog';
 
     /** @var \Drupal\media\Entity\Media $entity */
     $entity = $storage['entity'];

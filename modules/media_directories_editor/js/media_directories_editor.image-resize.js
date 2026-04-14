@@ -23,7 +23,7 @@
       $width.on('change', function () {
         var value = $(this).val();
 
-        if (value && value !== '0') {
+        if (value && value !== '0' && orig_width && orig_height) {
           value = Math.round(orig_height * (value / orig_width));
         }
 
@@ -35,7 +35,7 @@
       $height.on('change', function () {
         var value = $(this).val();
 
-        if (value && value !== '0') {
+        if (value && value !== '0' && orig_width && orig_height) {
           value = Math.round(orig_width * (value / orig_height));
         }
 

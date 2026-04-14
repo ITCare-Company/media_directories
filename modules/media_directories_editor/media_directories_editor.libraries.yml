@@ -6,3 +6,8 @@ image-resize:
     js/media_directories_editor.image-resize.js: {}
   dependencies:
     - core/jquery
+
+dialog:
+  css:
+    theme:
+      css/media_directories_editor.dialog.css: {}

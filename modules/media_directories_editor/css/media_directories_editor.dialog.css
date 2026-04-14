@@ -1,0 +1,12 @@
+/* Set a proper height on the entity browser iframe within the CKEditor embed dialog. */
+.entity-select-dialog iframe[name="entity_browser_iframe_media_directories_editor_browser"] {
+  height: 75vh;
+}
+
+/* Constrain the selected media preview image in the embed dialog. */
+.entity-select-dialog .form-item--entity img {
+  max-width: 240px;
+  max-height: 240px;
+  width: auto;
+  height: auto;
+}

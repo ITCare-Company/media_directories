@@ -134,13 +134,24 @@ class MediaDirectoriesImageDimensionsFormatter extends MediaThumbnailFormatter {
       $element['image_style']['#empty_option'] = $this->t('Custom dimensions');
       $element['image_style']['#description'] = $this->t('Choose from pre-defined image styles or set custom dimensions.');
 
+      $thumbnail_width = $entity->get('thumbnail')->width;
+      $thumbnail_height = $entity->get('thumbnail')->height;
+      $has_dimensions = !empty($thumbnail_width) && !empty($thumbnail_height);
+
+      if ($has_dimensions) {
+        $description = $this->t('Original image size: @widthx@height', [
+          '@width' => $thumbnail_width,
+          '@height' => $thumbnail_height,
+        ]);
+      }
+      else {
+        $description = $this->t('Original image dimensions are not available (e.g. SVG).');
+      }
+
       $element['dimensions'] = [
         '#type' => 'details',
         '#title' => $this->t('Image size'),
-        '#description' => $this->t('Original image size: @widthx@height', [
-          '@width' => $entity->get('thumbnail')->width,
-          '@height' => $entity->get('thumbnail')->height,
-        ]),
+        '#description' => $description,
         '#open' => TRUE,
         '#attributes' => [
           'class' => ['media-directories-editor--dimensions'],
@@ -154,8 +165,8 @@ class MediaDirectoriesImageDimensionsFormatter extends MediaThumbnailFormatter {
 
       $dimensions = $this->getSetting('dimensions');
 
-      $img_width = empty($dimensions['image_width']) ? $entity->get('thumbnail')->width : $dimensions['image_width'];
-      $img_height = empty($dimensions['image_height']) ? $entity->get('thumbnail')->height : $dimensions['image_height'];
+      $img_width = empty($dimensions['image_width']) ? ($thumbnail_width ?: '') : $dimensions['image_width'];
+      $img_height = empty($dimensions['image_height']) ? ($thumbnail_height ?: '') : $dimensions['image_height'];
 
       $element['dimensions']['image_width'] = [
         '#title' => t('Width'),
@@ -187,8 +198,8 @@ class MediaDirectoriesImageDimensionsFormatter extends MediaThumbnailFormatter {
           '#tag' => 'a',
           '#attributes' => [
             'class' => ['media-directories-editor--reset', 'button'],
-            'data-width' => $entity->get('thumbnail')->width,
-            'data-height' => $entity->get('thumbnail')->height,
+            'data-width' => $thumbnail_width ?: '',
+            'data-height' => $thumbnail_height ?: '',
           ],
           '#value' => $this->t('Reset'),
         ],
