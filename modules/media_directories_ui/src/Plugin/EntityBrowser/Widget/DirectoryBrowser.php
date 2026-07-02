@@ -215,6 +215,7 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
       // We are on the media overview page.
       $selection_mode = 'keep';
     }
+
     $form['#attached']['drupalSettings']['media_directories']['selection_mode'] = $selection_mode;
 
     $cardinality = (int) NestedArray::getValue($form_state->getStorage(), [
@@ -223,20 +224,17 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
       'cardinality',
       'cardinality',
     ]);
+
     $remaining = (int) NestedArray::getValue($form_state->getStorage(), [
       'entity_browser',
       'widget_context',
       'remaining',
     ]);
+
     if ($route_parameter_entity_browser_id == 'media_directories_editor_browser') {
       // Allow only one item to be selected in the editor.
       $remaining = 1;
     }
-    $target_bundles = NestedArray::getValue($form_state->getStorage(), [
-      'entity_browser',
-      'validators',
-      'target_bundles',
-    ]);
 
     if ($cardinality) {
       $form['#attached']['drupalSettings']['media_directories']['cardinality'] = $cardinality;
@@ -246,14 +244,13 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
       $form['#attached']['drupalSettings']['media_directories']['remaining'] = $remaining;
     }
 
-    $enabled_bundles = [];
-    if (isset($target_bundles['bundle']) && count($target_bundles['bundle']) > 0) {
-      $enabled_bundles = $target_bundles['bundle'];
-    }
-    else {
+    // Resolve bundles via shared helper.
+    $enabled_bundles = $this->resolveTargetBundles($form_state);
+
+    // Legacy fallback: allow all bundles if none defined.
+    if (empty($enabled_bundles)) {
       /** @var \Drupal\media\Entity\MediaType[] $types */
       $types = $this->entityTypeManager->getStorage('media_type')->loadMultiple();
-
       foreach ($types as $type) {
         $enabled_bundles[$type->id()] = $type->id();
       }
@@ -269,6 +266,7 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
       }
       $form['#attached']['drupalSettings']['media_directories']['media_translation_enabled'][$type] = $media_translation_enabled;
     }
+
     $term_translation_enabled = FALSE;
     if (isset($this->contentTranslationManager)) {
       $term_translation_enabled = $this->contentTranslationManager->isEnabled('taxonomy_term', $this->vocabularyId);
@@ -326,51 +324,55 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
    */
   public function validate(array &$form, FormStateInterface $form_state) {
     $user_input = $form_state->getUserInput();
+
     if (isset($user_input['entity_browser_select'])) {
       $selected_rows = array_values(array_filter($user_input['entity_browser_select']));
 
       foreach ($selected_rows as $row) {
         // Verify that the user input is a string and split it.
         // Each $row is in the format entity_type:id.
-        if (is_string($row) && $parts = explode(':', $row, 2)) {
-          // Make sure we have a type and id present.
-          if (count($parts) == 2) {
-            try {
-              $storage = $this->entityTypeManager->getStorage($parts[0]);
-              if (!$storage->load($parts[1])) {
-                $message = $this->t('The @type Entity @id does not exist.', [
+        if (is_string($row) && ($parts = explode(':', $row, 2)) && count($parts) === 2) {
+          try {
+            $storage = $this->entityTypeManager->getStorage($parts[0]);
+            if (!$storage->load($parts[1])) {
+              $form_state->setError(
+                $form['widget']['view']['entity_browser_select'],
+                $this->t('The @type Entity @id does not exist.', [
                   '@type' => $parts[0],
                   '@id' => $parts[1],
-                ]);
-                $form_state->setError($form['widget']['view']['entity_browser_select'], $message);
-              }
+                ])
+              );
             }
-            catch (PluginNotFoundException $e) {
-              $message = $this->t('The Entity Type @type does not exist.', [
+          }
+          catch (PluginNotFoundException $e) {
+            $form_state->setError(
+              $form['widget']['view']['entity_browser_select'],
+              $this->t('The Entity Type @type does not exist.', [
                 '@type' => $parts[0],
-              ]);
-              $form_state->setError($form['widget']['view']['entity_browser_select'], $message);
-            }
+              ])
+            );
           }
         }
       }
 
       // If there weren't any errors set, run the normal validators.
       if (empty($form_state->getErrors())) {
-        $target_bundles = NestedArray::getValue($form_state->getStorage(), [
-          'entity_browser',
-          'validators',
-          'target_bundles',
-        ]);
-        // Here we alter the form state to make sure all bundles are listed for the entity_browser validator,
-        // if there is no target bundle selected in the button config. See #3193549.
-        if (isset($target_bundles['bundle']) && count($target_bundles['bundle']) == 0) {
+
+        // Resolve bundles via shared helper.
+        $enabled_bundles = $this->resolveTargetBundles($form_state);
+
+        // Legacy safeguard: allow all bundles if none defined.
+        if (empty($enabled_bundles)) {
           /** @var \Drupal\media\Entity\MediaType[] $types */
           $types = $this->entityTypeManager->getStorage('media_type')->loadMultiple();
-          $all_bundles['bundle'] = [];
+
+          $all_bundles = ['bundle' => []];
           foreach ($types as $type) {
             $all_bundles['bundle'][$type->id()] = $type->id();
           }
+
+          // Keep both locations in sync.
+          $form_state->set(['entity_browser', 'widget_context', 'target_bundles'], $all_bundles);
           $form_state->set(['entity_browser', 'validators', 'target_bundles'], $all_bundles);
         }
 
@@ -422,6 +424,39 @@ class DirectoryBrowser extends WidgetBase implements ContainerFactoryPluginInter
     $values = $form_state->getValues()['table'][$this->uuid()]['form'];
     $this->configuration['submit_text'] = $values['submit_text'];
     $this->configuration['auto_select'] = $values['auto_select'];
+  }
+
+  /**
+   * Resolve target bundles from widget context or validators.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *
+   * @return array
+   *   Array of enabled media bundle IDs.
+   */
+  protected function resolveTargetBundles(FormStateInterface $form_state): array {
+    // Prefer widget_context (newer Entity Browser behavior).
+    $target_bundles = NestedArray::getValue($form_state->getStorage(), [
+      'entity_browser',
+      'widget_context',
+      'target_bundles',
+    ]);
+
+    // Fallback to validators (legacy behavior).
+    if (empty($target_bundles)) {
+      $target_bundles = NestedArray::getValue($form_state->getStorage(), [
+        'entity_browser',
+        'validators',
+        'target_bundles',
+      ]);
+    }
+
+    // Normalize structure.
+    if (isset($target_bundles['bundle'])) {
+      return array_filter($target_bundles['bundle']);
+    }
+
+    return is_array($target_bundles) ? array_filter($target_bundles) : [];
   }
 
 }
