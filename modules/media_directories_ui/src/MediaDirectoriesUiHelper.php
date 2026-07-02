@@ -51,7 +51,7 @@ class MediaDirectoriesUiHelper {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function getMediaType(FileInterface $file = NULL) {
+  public function getMediaType(?FileInterface $file = NULL) {
     if ($file === NULL) {
       return NULL;
     }
