@@ -202,7 +202,19 @@ class MediaDirectoriesController extends ControllerBase {
     $media_name_search = $request->request->get('media_name');
 
     $bundles = $target_bundles ? implode('+', $target_bundles) : 'all';
-    $view = views_embed_view('media_directories_base', 'media_browser', $directory_id, $bundles, $media_name_search);
+    // views_embed_view() is deprecated (CR#3572594); build the equivalent
+    // '#type' => 'view' render array directly, same access-check guard the
+    // deprecated function itself used.
+    $view = NULL;
+    $views_view = \Drupal\views\Views::getView('media_directories_base');
+    if ($views_view && $views_view->access('media_browser')) {
+      $view = [
+        '#type' => 'view',
+        '#name' => 'media_directories_base',
+        '#display_id' => 'media_browser',
+        '#arguments' => [$directory_id, $bundles, $media_name_search],
+      ];
+    }
 
     $response->addCommand(new HtmlCommand('.browser--listing', $view));
 
